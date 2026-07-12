@@ -243,6 +243,10 @@ function App() {
     setErrorMessage('');
 
     try {
+      if (!supabase) {
+        throw new Error('Supabase environment variables (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY) are missing. Please add them to your Vercel project environment variables to connect your database.');
+      }
+
       // 1. Query person to see if table exists
       const { data: devsData, error: devsError } = await supabase
         .from('person')
