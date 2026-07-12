@@ -1235,7 +1235,14 @@ function App() {
               onClick={() => setActiveTab('skills')}
             >
               <BookOpen size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-              Skills & Categories
+              Tracked Skills ({skills.length})
+            </button>
+            <button 
+              className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
+              onClick={() => setActiveTab('categories')}
+            >
+              <LayoutGrid size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+              Categories ({categories.length})
             </button>
             <button 
               className={`tab-btn ${activeTab === 'teams' ? 'active' : ''}`}
@@ -1556,302 +1563,309 @@ function App() {
             </div>
           )}
 
-          {/* Tab 3: Skills & Categories Split Management */}
+          {/* Tab 3: Tracked Skills */}
           {activeTab === 'skills' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
-              {/* Skills Panel */}
-              <div className="glass-panel" style={{ padding: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Tracked Skills List</h3>
-                
-                {/* Add Skill Form */}
-                <form onSubmit={handleAddSkill} style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.25rem' }}>
-                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-                    <label style={{ fontSize: '0.8rem' }}>Skill Name</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      placeholder="e.g. TypeScript" 
-                      value={newSkillName}
-                      onChange={(e) => setNewSkillName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-                    <label style={{ fontSize: '0.8rem' }}>Category</label>
-                    <select 
-                      className="form-select"
-                      value={newSkillCategoryId}
-                      onChange={(e) => setNewSkillCategoryId(e.target.value)}
-                      required
-                    >
-                      <option value="" disabled>Select Category</option>
-                      {categories.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <button type="submit" className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} disabled={loading}>
-                    <Plus size={14} />
-                    Add Skill
-                  </button>
-                </form>
-                {skills.length === 0 ? (
-                  <div className="empty-state">
-                    <BookOpen size={48} />
-                    <p>No skills tracked yet.</p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {skills.map((skill) => (
-                      editingSkillId === skill.id ? (
-                        <div 
-                          key={skill.id} 
-                          style={{ 
-                            display: 'flex', 
-                            flexDirection: 'column',
-                            gap: '0.5rem',
-                            padding: '0.75rem 1rem',
-                            background: 'rgba(30, 41, 59, 0.6)',
-                            border: '1px solid var(--accent-primary)',
-                            borderRadius: '10px'
-                          }}
-                        >
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.7rem' }}>Skill Name</label>
-                            <input 
-                              type="text" 
-                              className="form-input" 
-                              style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
-                              value={editSkillName}
-                              onChange={(e) => setEditSkillName(e.target.value)}
-                              required
-                            />
-                          </div>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.7rem' }}>Category</label>
-                            <select 
-                              className="form-input"
-                              style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem', height: 'auto' }}
-                              value={editSkillCategoryId}
-                              onChange={(e) => setEditSkillCategoryId(e.target.value)}
-                              required
-                            >
-                              <option value="" disabled>Select Category</option>
-                              {categories.map(c => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-                            <button 
-                              className="btn-secondary" 
-                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', width: 'auto' }}
-                              onClick={() => setEditingSkillId(null)}
-                            >
-                              Cancel
-                            </button>
-                            <button 
-                              className="btn-primary" 
-                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', width: 'auto' }}
-                              onClick={() => handleUpdateSkill(skill.id)}
-                            >
-                              Save
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div 
-                          key={skill.id} 
-                          style={{ 
-                            padding: '0.75rem 1rem',
-                            background: 'rgba(255, 255, 255, 0.02)',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '10px',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                          }}
-                        >
-                          <div>
-                            <div style={{ fontWeight: 600, fontSize: '1rem' }}>{skill.name}</div>
-                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Category: {skill.category}</div>
-                          </div>
-                          <div style={{ display: 'flex', gap: '0.35rem' }}>
-                            <button 
-                              className="btn-secondary" 
-                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', width: 'auto' }}
-                              onClick={() => {
-                                setEditingSkillId(skill.id);
-                                setEditSkillName(skill.name);
-                                setEditSkillCategoryId(skill.category_id || '');
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              className="btn-secondary" 
-                              style={{ 
-                                padding: '0.25rem 0.5rem', 
-                                fontSize: '0.75rem', 
-                                width: 'auto',
-                                borderColor: 'rgba(239, 68, 68, 0.1)',
-                                color: '#ef4444'
-                              }}
-                              onClick={() => handleDeleteSkill(skill.id, skill.name)}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      )
+            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Tracked Skills List</h3>
+              
+              {/* Add Skill Form */}
+              <form onSubmit={handleAddSkill} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Skill Name</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. TypeScript" 
+                    value={newSkillName}
+                    onChange={(e) => setNewSkillName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Category</label>
+                  <select 
+                    className="form-select"
+                    style={{ height: '42px' }}
+                    value={newSkillCategoryId}
+                    onChange={(e) => setNewSkillCategoryId(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Select Category</option>
+                    {categories.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
-                  </div>
-                )}
-              </div>
+                  </select>
+                </div>
+                <button type="submit" className="btn-primary" style={{ height: '42px' }} disabled={loading}>
+                  <Plus size={16} />
+                  Add Skill
+                </button>
+              </form>
 
-              {/* Categories Panel */}
-              <div className="glass-panel" style={{ padding: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Manage Categories</h3>
-                
-                {/* Add Category Form */}
-                <form onSubmit={handleAddCategory} style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.25rem' }}>
-                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-                    <label style={{ fontSize: '0.8rem' }}>Category Name</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      placeholder="e.g. Mobile" 
-                      value={newCategoryName}
-                      onChange={(e) => setNewCategoryName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-                    <label style={{ fontSize: '0.8rem' }}>Description</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      placeholder="e.g. Android & iOS skills" 
-                      value={newCategoryDesc}
-                      onChange={(e) => setNewCategoryDesc(e.target.value)}
-                    />
-                  </div>
-                  <button type="submit" className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} disabled={loading}>
-                    <Plus size={14} />
-                    Add Category
-                  </button>
-                </form>
+              {skills.length === 0 ? (
+                <div className="empty-state">
+                  <BookOpen size={48} />
+                  <p>No skills tracked yet.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                  {skills.map((skill) => (
+                    editingSkillId === skill.id ? (
+                      <div 
+                        key={skill.id} 
+                        style={{ 
+                          display: 'flex', 
+                          flexDirection: 'column',
+                          gap: '0.75rem',
+                          padding: '1.25rem',
+                          background: 'rgba(30, 41, 59, 0.6)',
+                          border: '1px solid var(--accent-primary)',
+                          borderRadius: '10px'
+                        }}
+                      >
+                        <div className="form-group" style={{ margin: 0 }}>
+                          <label style={{ fontSize: '0.75rem' }}>Skill Name</label>
+                          <input 
+                            type="text" 
+                            className="form-input" 
+                            style={{ padding: '0.5rem 0.75rem' }}
+                            value={editSkillName}
+                            onChange={(e) => setEditSkillName(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="form-group" style={{ margin: 0 }}>
+                          <label style={{ fontSize: '0.75rem' }}>Category</label>
+                          <select 
+                            className="form-input"
+                            style={{ padding: '0.5rem 0.75rem', height: 'auto' }}
+                            value={editSkillCategoryId}
+                            onChange={(e) => setEditSkillCategoryId(e.target.value)}
+                            required
+                          >
+                            <option value="" disabled>Select Category</option>
+                            {categories.map(c => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
+                          <button 
+                            className="btn-secondary" 
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
+                            onClick={() => setEditingSkillId(null)}
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            className="btn-primary" 
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
+                            onClick={() => handleUpdateSkill(skill.id)}
+                            disabled={loading}
+                          >
+                            Save Changes
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        key={skill.id} 
+                        style={{ 
+                          padding: '1.25rem',
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '10px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{skill.name}</div>
+                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Category: {skill.category}</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button 
+                            className="btn-secondary" 
+                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: 'auto' }}
+                            onClick={() => {
+                              setEditingSkillId(skill.id);
+                              setEditSkillName(skill.name);
+                              setEditSkillCategoryId(skill.category_id || '');
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            className="btn-secondary" 
+                            style={{ 
+                              padding: '0.35rem 0.75rem', 
+                              fontSize: '0.8rem', 
+                              width: 'auto',
+                              borderColor: 'rgba(239, 68, 68, 0.2)',
+                              color: '#ef4444'
+                            }}
+                            onClick={() => handleDeleteSkill(skill.id, skill.name)}
+                            disabled={loading}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-                {categories.length === 0 ? (
-                  <div className="empty-state" style={{ minHeight: '120px' }}>
-                    <LayoutGrid size={32} />
-                    <p>No categories found.</p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {categories.map((cat) => (
-                      editingCategoryId === cat.id ? (
-                        <div 
-                          key={cat.id} 
-                          style={{ 
-                            display: 'flex', 
-                            flexDirection: 'column',
-                            gap: '0.5rem',
-                            padding: '0.75rem',
-                            background: 'rgba(30, 41, 59, 0.6)',
-                            border: '1px solid var(--accent-primary)',
-                            borderRadius: '10px'
-                          }}
-                        >
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <input 
-                              type="text" 
-                              className="form-input" 
-                              style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
-                              value={editCategoryName}
-                              onChange={(e) => setEditCategoryName(e.target.value)}
-                              required
-                            />
-                          </div>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <input 
-                              type="text" 
-                              className="form-input" 
-                              style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
-                              value={editCategoryDesc}
-                              placeholder="Description (Optional)"
-                              onChange={(e) => setEditCategoryDesc(e.target.value)}
-                            />
-                          </div>
-                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-                            <button 
-                              className="btn-secondary" 
-                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', width: 'auto' }}
-                              onClick={() => setEditingCategoryId(null)}
-                            >
-                              Cancel
-                            </button>
-                            <button 
-                              className="btn-primary" 
-                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', width: 'auto' }}
-                              onClick={() => handleUpdateCategory(cat.id)}
-                            >
-                              Save
-                            </button>
-                          </div>
+          {/* Tab 4: Skill Categories */}
+          {activeTab === 'categories' && (
+            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Manage Categories</h3>
+              
+              {/* Add Category Form */}
+              <form onSubmit={handleAddCategory} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Category Name</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. Mobile" 
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Description</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. Android & iOS skills" 
+                    value={newCategoryDesc}
+                    onChange={(e) => setNewCategoryDesc(e.target.value)}
+                  />
+                </div>
+                <button type="submit" className="btn-primary" style={{ height: '42px' }} disabled={loading}>
+                  <Plus size={16} />
+                  Add Category
+                </button>
+              </form>
+
+              {categories.length === 0 ? (
+                <div className="empty-state">
+                  <LayoutGrid size={48} />
+                  <p>No categories found.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                  {categories.map((cat) => (
+                    editingCategoryId === cat.id ? (
+                      <div 
+                        key={cat.id} 
+                        style={{ 
+                          display: 'flex', 
+                          flexDirection: 'column',
+                          gap: '0.75rem',
+                          padding: '1.25rem',
+                          background: 'rgba(30, 41, 59, 0.6)',
+                          border: '1px solid var(--accent-primary)',
+                          borderRadius: '10px'
+                        }}
+                      >
+                        <div className="form-group" style={{ margin: 0 }}>
+                          <label style={{ fontSize: '0.75rem' }}>Category Name</label>
+                          <input 
+                            type="text" 
+                            className="form-input" 
+                            style={{ padding: '0.5rem 0.75rem' }}
+                            value={editCategoryName}
+                            onChange={(e) => setEditCategoryName(e.target.value)}
+                            required
+                          />
                         </div>
-                      ) : (
-                        <div 
-                          key={cat.id} 
-                          style={{ 
-                            padding: '0.75rem',
-                            background: 'rgba(255, 255, 255, 0.01)',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '8px',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                          }}
-                        >
-                          <div>
-                            <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{cat.name}</div>
-                            {cat.description && (
-                              <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{cat.description}</div>
-                            )}
-                          </div>
-                          <div style={{ display: 'flex', gap: '0.35rem' }}>
-                            <button 
-                              className="btn-secondary" 
-                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', width: 'auto' }}
-                              onClick={() => {
-                                setEditingCategoryId(cat.id);
-                                setEditCategoryName(cat.name);
-                                setEditCategoryDesc(cat.description || '');
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              className="btn-secondary" 
-                              style={{ 
-                                padding: '0.25rem 0.5rem', 
-                                fontSize: '0.75rem', 
-                                width: 'auto',
-                                borderColor: 'rgba(239, 68, 68, 0.1)',
-                                color: '#ef4444'
-                              }}
-                              onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                              disabled={loading}
-                            >
-                              Delete
-                            </button>
-                          </div>
+                        <div className="form-group" style={{ margin: 0 }}>
+                          <label style={{ fontSize: '0.75rem' }}>Description</label>
+                          <input 
+                            type="text" 
+                            className="form-input" 
+                            style={{ padding: '0.5rem 0.75rem' }}
+                            value={editCategoryDesc}
+                            placeholder="Description (Optional)"
+                            onChange={(e) => setEditCategoryDesc(e.target.value)}
+                          />
                         </div>
-                      )
-                    ))}
-                  </div>
-                )}
-              </div>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
+                          <button 
+                            className="btn-secondary" 
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
+                            onClick={() => setEditingCategoryId(null)}
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            className="btn-primary" 
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
+                            onClick={() => handleUpdateCategory(cat.id)}
+                            disabled={loading}
+                          >
+                            Save Changes
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        key={cat.id} 
+                        style={{ 
+                          padding: '1.25rem',
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '10px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          gap: '1rem'
+                        }}
+                      >
+                        <div>
+                          <span style={{ fontWeight: 600, fontSize: '1.1rem' }}>{cat.name}</span>
+                          {cat.description && (
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem', marginBottom: 0 }}>{cat.description}</p>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
+                          <button 
+                            className="btn-secondary" 
+                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: 'auto' }}
+                            onClick={() => {
+                              setEditingCategoryId(cat.id);
+                              setEditCategoryName(cat.name);
+                              setEditCategoryDesc(cat.description || '');
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            className="btn-secondary" 
+                            style={{ 
+                              padding: '0.35rem 0.75rem', 
+                              fontSize: '0.8rem', 
+                              width: 'auto',
+                              borderColor: 'rgba(239, 68, 68, 0.2)',
+                              color: '#ef4444'
+                            }}
+                            onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                            disabled={loading}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
