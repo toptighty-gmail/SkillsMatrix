@@ -273,10 +273,11 @@ function App() {
         .select('*');
       if (skillsError) throw skillsError;
 
-      // 4. Query person_skill_assessments junction
+      // 4. Query person_skill_assessments junction (active rows only)
       const { data: junctionData, error: junctionError } = await supabase
         .from('person_skill_assessments')
-        .select('*');
+        .select('*')
+        .eq('is_current', true);
       if (junctionError) throw junctionError;
 
       // 5. Query teams
@@ -1005,12 +1006,18 @@ function App() {
     try {
       const nextLevelIdx = levels.indexOf(nextLevel);
 
+      const todayStr = new Date().toISOString().split('T')[0];
+
       if (nextLevel === 'None') {
-        // Delete junction record in person_skill_assessments
+        // Close current active record in person_skill_assessments
         const { error } = await supabase
           .from('person_skill_assessments')
-          .delete()
-          .match({ person_id: devId, skill_id: skillId });
+          .update({
+            is_current: false,
+            valid_to: todayStr,
+            updated_at: new Date().toISOString()
+          })
+          .match({ person_id: devId, skill_id: skillId, is_current: true });
 
         if (error) throw error;
 
@@ -1022,33 +1029,53 @@ function App() {
         const exists = currentRecord !== undefined;
 
         if (exists) {
-          // Update
-          const { error } = await supabase
+          // Temporal Update:
+          // 1. Close current active record
+          const { error: closeErr } = await supabase
             .from('person_skill_assessments')
             .update({ 
-              competency_level_id: nextLevelIdx,
+              is_current: false,
+              valid_to: todayStr,
               updated_at: new Date().toISOString()
             })
-            .match({ person_id: devId, skill_id: skillId });
+            .match({ person_id: devId, skill_id: skillId, is_current: true });
 
-          if (error) throw error;
-        } else {
-          // Insert
-          const { error } = await supabase
+          if (closeErr) throw closeErr;
+
+          // 2. Insert new active record
+          const { error: insertErr } = await supabase
             .from('person_skill_assessments')
             .insert([{ 
               person_id: devId, 
               skill_id: skillId, 
-              competency_level_id: nextLevelIdx
+              competency_level_id: nextLevelIdx,
+              is_current: true,
+              valid_from: todayStr,
+              assessed_on: todayStr
             }]);
 
-          if (error) throw error;
+          if (insertErr) throw insertErr;
+        } else {
+          // Insert new active record
+          const { error: insertErr } = await supabase
+            .from('person_skill_assessments')
+            .insert([{ 
+              person_id: devId, 
+              skill_id: skillId, 
+              competency_level_id: nextLevelIdx,
+              is_current: true,
+              valid_from: todayStr,
+              assessed_on: todayStr
+            }]);
+
+          if (insertErr) throw insertErr;
         }
 
         // Fetch all assessments again and update client cache
         const { data: junctionData, error: fetchErr } = await supabase
           .from('person_skill_assessments')
-          .select('*');
+          .select('*')
+          .eq('is_current', true);
         
         if (fetchErr) throw fetchErr;
         
