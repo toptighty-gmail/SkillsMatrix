@@ -1185,74 +1185,7 @@ function App() {
       <div className="dashboard-grid">
         {/* Sidebar Controls */}
         <aside className="sidebar">
-          {/* Add Developer Panel */}
-          <div className="glass-panel" style={{ padding: '1.5rem' }}>
-            <h3 className="card-title">
-              <UserPlus size={18} color="var(--accent-primary)" />
-              Add Team Member
-            </h3>
-            <form onSubmit={handleAddDeveloper}>
-              <div className="form-group">
-                <label>Developer Name</label>
-                <input 
-                  type="text" 
-                  className="form-input" 
-                  placeholder="e.g. Ellen Ripley" 
-                  value={newDevName}
-                  onChange={(e) => setNewDevName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Role</label>
-                <input 
-                  type="text" 
-                  className="form-input" 
-                  placeholder="e.g. Devops Architect" 
-                  value={newDevRole}
-                  onChange={(e) => setNewDevRole(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Manager Name</label>
-                <input 
-                  type="text" 
-                  className="form-input" 
-                  placeholder="e.g. John Miller (Optional)" 
-                  value={newDevManagerName}
-                  onChange={(e) => setNewDevManagerName(e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label>Manager Company Login ID</label>
-                <input 
-                  type="text" 
-                  className="form-input" 
-                  placeholder="e.g. jmiller (Optional)" 
-                  value={newDevManagerCompanyLoginId}
-                  onChange={(e) => setNewDevManagerCompanyLoginId(e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label>Assign to Team</label>
-                <select 
-                  className="form-input" 
-                  value={newDevTeamId}
-                  onChange={(e) => setNewDevTeamId(e.target.value)}
-                >
-                  <option value="">No Team</option>
-                  {teams.map(t => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
-              </div>
-              <button type="submit" className="btn-primary" disabled={loading}>
-                <Plus size={16} />
-                Add Member
-              </button>
-            </form>
-          </div>
+
 
 
           
@@ -1367,6 +1300,70 @@ function App() {
           {activeTab === 'developers' && (
             <div className="glass-panel" style={{ padding: '1.5rem' }}>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Team Members List</h3>
+              
+              {/* Add Team Member Form */}
+              <form onSubmit={handleAddDeveloper} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Developer Name</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. Ellen Ripley" 
+                    value={newDevName}
+                    onChange={(e) => setNewDevName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Role</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. Devops Architect" 
+                    value={newDevRole}
+                    onChange={(e) => setNewDevRole(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Manager Name</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. John Miller (Optional)" 
+                    value={newDevManagerName}
+                    onChange={(e) => setNewDevManagerName(e.target.value)}
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Manager Company Login ID</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. jmiller (Optional)" 
+                    value={newDevManagerCompanyLoginId}
+                    onChange={(e) => setNewDevManagerCompanyLoginId(e.target.value)}
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Assign to Team</label>
+                  <select 
+                    className="form-input" 
+                    style={{ height: '42px' }}
+                    value={newDevTeamId}
+                    onChange={(e) => setNewDevTeamId(e.target.value)}
+                  >
+                    <option value="">No Team</option>
+                    {teams.map(t => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <button type="submit" className="btn-primary" style={{ height: '42px' }} disabled={loading}>
+                  <Plus size={16} />
+                  Add Member
+                </button>
+              </form>
               
               {developers.length === 0 ? (
                 <div className="empty-state">
