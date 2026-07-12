@@ -1254,44 +1254,7 @@ function App() {
             </form>
           </div>
 
-          {/* Add Skill Panel */}
-          <div className="glass-panel" style={{ padding: '1.5rem' }}>
-            <h3 className="card-title">
-              <BookOpen size={18} color="var(--accent-primary)" />
-              Add Competency Skill
-            </h3>
-            <form onSubmit={handleAddSkill}>
-              <div className="form-group">
-                <label>Skill Name</label>
-                <input 
-                  type="text" 
-                  className="form-input" 
-                  placeholder="e.g. TypeScript" 
-                  value={newSkillName}
-                  onChange={(e) => setNewSkillName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Category</label>
-                <select 
-                  className="form-select"
-                  value={newSkillCategoryId}
-                  onChange={(e) => setNewSkillCategoryId(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>Select Category</option>
-                  {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-              <button type="submit" className="btn-primary" disabled={loading}>
-                <Plus size={16} />
-                Add Skill
-              </button>
-            </form>
-          </div>
+
           
           {/* Quick Stats Panel */}
           <div className="glass-panel" style={{ padding: '1.5rem' }}>
@@ -1602,6 +1565,39 @@ function App() {
               {/* Skills Panel */}
               <div className="glass-panel" style={{ padding: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Tracked Skills List</h3>
+                
+                {/* Add Skill Form */}
+                <form onSubmit={handleAddSkill} style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.25rem' }}>
+                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ fontSize: '0.8rem' }}>Skill Name</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="e.g. TypeScript" 
+                      value={newSkillName}
+                      onChange={(e) => setNewSkillName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ fontSize: '0.8rem' }}>Category</label>
+                    <select 
+                      className="form-select"
+                      value={newSkillCategoryId}
+                      onChange={(e) => setNewSkillCategoryId(e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>Select Category</option>
+                      {categories.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button type="submit" className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} disabled={loading}>
+                    <Plus size={14} />
+                    Add Skill
+                  </button>
+                </form>
                 {skills.length === 0 ? (
                   <div className="empty-state">
                     <BookOpen size={48} />
