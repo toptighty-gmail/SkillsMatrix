@@ -168,6 +168,7 @@ function App() {
   const [newSkillCategoryId, setNewSkillCategoryId] = useState('');
   const [newDevManagerName, setNewDevManagerName] = useState('');
   const [newDevManagerCompanyLoginId, setNewDevManagerCompanyLoginId] = useState('');
+  const [newDevCompanyLoginId, setNewDevCompanyLoginId] = useState('');
   const [newDevTeamId, setNewDevTeamId] = useState('');
 
   // Editing Developer States
@@ -177,6 +178,7 @@ function App() {
   const [editDevEmail, setEditDevEmail] = useState('');
   const [editDevManagerName, setEditDevManagerName] = useState('');
   const [editDevManagerCompanyLoginId, setEditDevManagerCompanyLoginId] = useState('');
+  const [editDevCompanyLoginId, setEditDevCompanyLoginId] = useState('');
   const [editDevTeamId, setEditDevTeamId] = useState('');
 
   // Teams CRUD form states
@@ -301,7 +303,8 @@ function App() {
           team: teamObj ? teamObj.name : 'No Team',
           teamId: teamObj ? teamObj.id : null,
           managerName: row.manager_fullname,
-          managerCompanyLoginId: row.manager_company_login_id
+          managerCompanyLoginId: row.manager_company_login_id,
+          companyLoginId: row.company_login_id
         };
       });
 
@@ -391,7 +394,8 @@ function App() {
           full_name: newDevName, 
           role_title: newDevRole,
           manager_fullname: newDevManagerName || null,
-          manager_company_login_id: newDevManagerCompanyLoginId || null
+          manager_company_login_id: newDevManagerCompanyLoginId || null,
+          company_login_id: newDevCompanyLoginId || null
         }])
         .select();
 
@@ -429,7 +433,8 @@ function App() {
         team: assignedTeamName,
         teamId: assignedTeamId,
         managerName: newRow.manager_fullname,
-        managerCompanyLoginId: newRow.manager_company_login_id
+        managerCompanyLoginId: newRow.manager_company_login_id,
+        companyLoginId: newRow.company_login_id
       };
 
       setDevelopers([...developers, newDevMapped]);
@@ -437,6 +442,7 @@ function App() {
       setNewDevRole('');
       setNewDevManagerName('');
       setNewDevManagerCompanyLoginId('');
+      setNewDevCompanyLoginId('');
       setNewDevTeamId('');
       showToast(`Successfully added team member: ${newDevName}`);
     } catch (err) {
@@ -478,7 +484,8 @@ function App() {
         team: teamName,
         teamId: newTeamId,
         managerName: editDevManagerName,
-        managerCompanyLoginId: editDevManagerCompanyLoginId
+        managerCompanyLoginId: editDevManagerCompanyLoginId,
+        companyLoginId: editDevCompanyLoginId
       } : d));
       setEditingDevId(null);
       showToast(`Updated member details (Demo)`);
@@ -495,6 +502,7 @@ function App() {
           email: editDevEmail || null,
           manager_fullname: editDevManagerName || null,
           manager_company_login_id: editDevManagerCompanyLoginId || null,
+          company_login_id: editDevCompanyLoginId || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', devId);
@@ -1327,6 +1335,16 @@ function App() {
                   />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Company Login ID</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. jdoe (Optional)" 
+                    value={newDevCompanyLoginId}
+                    onChange={(e) => setNewDevCompanyLoginId(e.target.value)}
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
                   <label style={{ fontSize: '0.8rem' }}>Assign to Team</label>
                   <select 
                     className="form-input" 
@@ -1424,6 +1442,17 @@ function App() {
                             />
                           </div>
                           <div className="form-group" style={{ margin: 0 }}>
+                            <label style={{ fontSize: '0.75rem' }}>Company Login ID</label>
+                            <input 
+                              type="text" 
+                              className="form-input" 
+                              style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                              value={editDevCompanyLoginId}
+                              placeholder="Optional"
+                              onChange={(e) => setEditDevCompanyLoginId(e.target.value)}
+                            />
+                          </div>
+                          <div className="form-group" style={{ margin: 0 }}>
                             <label style={{ fontSize: '0.75rem' }}>Team</label>
                             <select 
                               className="form-input" 
@@ -1484,11 +1513,18 @@ function App() {
                               {dev.team}
                             </span>
                           </div>
-                          {(dev.managerName || dev.managerCompanyLoginId) && (
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                              Manager: {dev.managerName || '—'} {dev.managerCompanyLoginId ? `(ID: ${dev.managerCompanyLoginId})` : ''}
-                            </div>
-                          )}
+                          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
+                            {dev.companyLoginId && (
+                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                Login ID: <strong>{dev.companyLoginId}</strong>
+                              </span>
+                            )}
+                            {(dev.managerName || dev.managerCompanyLoginId) && (
+                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                Manager: {dev.managerName || '—'} {dev.managerCompanyLoginId ? `(ID: ${dev.managerCompanyLoginId})` : ''}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -1507,6 +1543,7 @@ function App() {
                                 setEditDevEmail(dev.email || '');
                                 setEditDevManagerName(dev.managerName || '');
                                 setEditDevManagerCompanyLoginId(dev.managerCompanyLoginId || '');
+                                setEditDevCompanyLoginId(dev.companyLoginId || '');
                                 setEditDevTeamId(dev.teamId || '');
                               }}
                             >
