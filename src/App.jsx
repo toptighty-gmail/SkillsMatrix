@@ -1184,33 +1184,7 @@ function App() {
       {/* Main Grid */}
       <div className="dashboard-grid">
         {/* Sidebar Controls */}
-        <aside className="sidebar">
-
-
-
-          
-          {/* Quick Stats Panel */}
-          <div className="glass-panel" style={{ padding: '1.5rem' }}>
-            <h3 className="card-title">
-              <Briefcase size={18} color="var(--accent-primary)" />
-              Platform Overview
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Team Members:</span>
-                <span style={{ fontWeight: 600 }}>{developers.length}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Tracked Skills:</span>
-                <span style={{ fontWeight: 600 }}>{skills.length}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Mappings:</span>
-                <span style={{ fontWeight: 600 }}>{developerSkills.length}</span>
-              </div>
-            </div>
-          </div>
-        </aside>
+        
 
         {/* Content Area */}
         <main style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
