@@ -1315,6 +1315,16 @@ function App() {
                   />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Company Login ID</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. jdoe (Optional)" 
+                    value={newDevCompanyLoginId}
+                    onChange={(e) => setNewDevCompanyLoginId(e.target.value)}
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
                   <label style={{ fontSize: '0.8rem' }}>Manager Name</label>
                   <input 
                     type="text" 
@@ -1332,16 +1342,6 @@ function App() {
                     placeholder="e.g. jmiller (Optional)" 
                     value={newDevManagerCompanyLoginId}
                     onChange={(e) => setNewDevManagerCompanyLoginId(e.target.value)}
-                  />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label style={{ fontSize: '0.8rem' }}>Company Login ID</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="e.g. jdoe (Optional)" 
-                    value={newDevCompanyLoginId}
-                    onChange={(e) => setNewDevCompanyLoginId(e.target.value)}
                   />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
@@ -1409,6 +1409,17 @@ function App() {
                             />
                           </div>
                           <div className="form-group" style={{ margin: 0 }}>
+                            <label style={{ fontSize: '0.75rem' }}>Company Login ID</label>
+                            <input 
+                              type="text" 
+                              className="form-input" 
+                              style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                              value={editDevCompanyLoginId}
+                              placeholder="Optional"
+                              onChange={(e) => setEditDevCompanyLoginId(e.target.value)}
+                            />
+                          </div>
+                          <div className="form-group" style={{ margin: 0 }}>
                             <label style={{ fontSize: '0.75rem' }}>Email</label>
                             <input 
                               type="email" 
@@ -1439,17 +1450,6 @@ function App() {
                               value={editDevManagerCompanyLoginId}
                               placeholder="Optional"
                               onChange={(e) => setEditDevManagerCompanyLoginId(e.target.value)}
-                            />
-                          </div>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.75rem' }}>Company Login ID</label>
-                            <input 
-                              type="text" 
-                              className="form-input" 
-                              style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                              value={editDevCompanyLoginId}
-                              placeholder="Optional"
-                              onChange={(e) => setEditDevCompanyLoginId(e.target.value)}
                             />
                           </div>
                           <div className="form-group" style={{ margin: 0 }}>
