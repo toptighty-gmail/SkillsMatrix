@@ -966,8 +966,8 @@ function App() {
     }
   };
 
-  // CRUD: Update/Cycle Skill Level for a Developer
-  const cycleSkillLevel = async (devId, skillId) => {
+  // CRUD: Set Skill Level directly for a Developer
+  const handleSetSkillLevel = async (devId, skillId, targetLevel) => {
     const levels = ['None', 'Basic', 'Emerging', 'Competent', 'Strong', 'Expert'];
     
     // Find current level
@@ -975,14 +975,15 @@ function App() {
       (ds) => ds.developer_id === devId && ds.skill_id === skillId
     );
     const currentLevel = currentRecord ? currentRecord.level : 'None';
-    const nextIndex = (levels.indexOf(currentLevel) + 1) % levels.length;
-    const nextLevel = levels[nextIndex];
+    
+    // If target is same as current, do nothing
+    if (targetLevel === currentLevel) return;
 
     setLoading(true);
 
     if (useDemoMode) {
       let updatedSkills;
-      if (nextLevel === 'None') {
+      if (targetLevel === 'None') {
         updatedSkills = developerSkills.filter(
           (ds) => !(ds.developer_id === devId && ds.skill_id === skillId)
         );
@@ -992,23 +993,22 @@ function App() {
         );
         if (index > -1) {
           updatedSkills = [...developerSkills];
-          updatedSkills[index] = { ...updatedSkills[index], level: nextLevel };
+          updatedSkills[index] = { ...updatedSkills[index], level: targetLevel };
         } else {
-          updatedSkills = [...developerSkills, { developer_id: devId, skill_id: skillId, level: nextLevel }];
+          updatedSkills = [...developerSkills, { developer_id: devId, skill_id: skillId, level: targetLevel }];
         }
       }
       setDeveloperSkills(updatedSkills);
-      showToast(`Updated to ${nextLevel} (Demo)`);
+      showToast(`Updated to ${targetLevel} (Demo)`);
       setLoading(false);
       return;
     }
 
     try {
-      const nextLevelIdx = levels.indexOf(nextLevel);
-
+      const targetLevelIdx = levels.indexOf(targetLevel);
       const todayStr = new Date().toISOString().split('T')[0];
 
-      if (nextLevel === 'None') {
+      if (targetLevel === 'None') {
         // Close current active record in person_skill_assessments
         const { error } = await supabase
           .from('person_skill_assessments')
@@ -1048,7 +1048,7 @@ function App() {
             .insert([{ 
               person_id: devId, 
               skill_id: skillId, 
-              competency_level_id: nextLevelIdx,
+              competency_level_id: targetLevelIdx,
               is_current: true,
               valid_from: todayStr,
               assessed_on: todayStr
@@ -1062,7 +1062,7 @@ function App() {
             .insert([{ 
               person_id: devId, 
               skill_id: skillId, 
-              competency_level_id: nextLevelIdx,
+              competency_level_id: targetLevelIdx,
               is_current: true,
               valid_from: todayStr,
               assessed_on: todayStr
@@ -1086,7 +1086,7 @@ function App() {
         }));
         setDeveloperSkills(mappedJunction);
       }
-      showToast(`Updated status to ${nextLevel}`);
+      showToast(`Updated skill level to ${targetLevel}`);
     } catch (err) {
       console.error(err);
       showToast(`Failed to update proficiency: ${err.message}`);
@@ -1095,34 +1095,42 @@ function App() {
     }
   };
 
-  // Helper to retrieve the current proficiency level badge
+  // Helper to retrieve the current proficiency level select dropdown
   const getProficiencyBadge = (devId, skillId) => {
     const record = developerSkills.find(
       (ds) => ds.developer_id === devId && ds.skill_id === skillId
     );
     
-    if (!record) {
-      return (
-        <span 
-          className="badge empty" 
-          onClick={() => cycleSkillLevel(devId, skillId)}
-          title="0 - None: No experience at all (Click to set to Basic)"
-        >
-          0 – None
-        </span>
-      );
-    }
-
-    const level = record.level;
-    const details = levelDetails[level] || { label: level, desc: '' };
+    const level = record ? record.level : 'None';
+    const classLevel = level === 'None' ? 'empty' : level.toLowerCase();
+    
     return (
-      <span 
-        className={`badge ${level.toLowerCase()}`} 
-        onClick={() => cycleSkillLevel(devId, skillId)}
-        title={`${level}: ${details.desc} (Click to cycle)`}
+      <select
+        className={`badge ${classLevel}`}
+        value={level}
+        onChange={(e) => handleSetSkillLevel(devId, skillId, e.target.value)}
+        disabled={loading}
+        title="Select competency level"
+        style={{
+          appearance: 'none',
+          WebkitAppearance: 'none',
+          MozAppearance: 'none',
+          textAlign: 'center',
+          textAlignLast: 'center',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          paddingRight: '0.65rem',
+          paddingLeft: '0.65rem',
+          height: '32px',
+          width: '120px'
+        }}
       >
-        {details.label}
-      </span>
+        <option value="None" style={{ background: '#1e293b', color: 'var(--text-muted)' }}>0 – None</option>
+        <option value="Basic" style={{ background: '#1e293b', color: 'var(--color-basic)' }}>1 – Basic</option>
+        <option value="Emerging" style={{ background: '#1e293b', color: 'var(--color-emerging)' }}>2 – Emerging</option>
+        <option value="Competent" style={{ background: '#1e293b', color: 'var(--color-competent)' }}>3 – Competent</option>
+        <option value="Strong" style={{ background: '#1e293b', color: 'var(--color-strong)' }}>4 – Strong</option>
+        <option value="Expert" style={{ background: '#1e293b', color: 'var(--color-expert)' }}>5 – Expert</option>
+      </select>
     );
   };
 
