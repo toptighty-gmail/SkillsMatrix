@@ -187,6 +187,7 @@ function App() {
   const [editingTeamId, setEditingTeamId] = useState(null);
   const [editTeamName, setEditTeamName] = useState('');
   const [editTeamDesc, setEditTeamDesc] = useState('');
+  const [expandedTeamId, setExpandedTeamId] = useState(null);
 
   // Skills CRUD states
   const [editingSkillId, setEditingSkillId] = useState(null);
@@ -2028,12 +2029,54 @@ function App() {
                           <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                               <span style={{ fontWeight: 600, fontSize: '1.1rem' }}>{team.name}</span>
-                              <span className="badge empty" style={{ fontSize: '0.75rem', padding: '0.1rem 0.4rem' }}>
+                              <span 
+                                className="badge empty" 
+                                style={{ 
+                                  fontSize: '0.75rem', 
+                                  padding: '0.1rem 0.4rem',
+                                  cursor: 'pointer',
+                                  userSelect: 'none',
+                                  border: expandedTeamId === team.id ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                                  background: expandedTeamId === team.id ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                                  color: expandedTeamId === team.id ? 'var(--text-primary)' : 'var(--text-muted)'
+                                }}
+                                onClick={() => setExpandedTeamId(expandedTeamId === team.id ? null : team.id)}
+                                title="Click to view team members"
+                              >
                                 {memberCount} {memberCount === 1 ? 'member' : 'members'}
                               </span>
                             </div>
                             {team.description && (
                               <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>{team.description}</p>
+                            )}
+                            {expandedTeamId === team.id && (
+                              <div style={{
+                                marginTop: '1rem',
+                                padding: '0.75rem',
+                                background: 'rgba(15, 23, 42, 0.4)',
+                                borderRadius: '8px',
+                                border: '1px solid var(--border-color)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.5rem'
+                              }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.25rem', marginBottom: '0.25rem' }}>
+                                  <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Team Members</h5>
+                                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({memberCount})</span>
+                                </div>
+                                {developers.filter(d => d.teamId === team.id).length === 0 ? (
+                                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                    No members in this team.
+                                  </div>
+                                ) : (
+                                  developers.filter(d => d.teamId === team.id).map(dev => (
+                                    <div key={dev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                                      <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{dev.name}</span>
+                                      <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{dev.role}</span>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
                             )}
                           </div>
                           
