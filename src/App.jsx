@@ -1240,7 +1240,7 @@ function App() {
             <pre className="code-block">{SQL_SETUP_SCRIPT}</pre>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
             <button className="btn-primary" style={{ width: 'auto' }} onClick={() => checkConnectionAndLoad(false)}>
               <RefreshCw size={16} className={loading ? 'loading-spinner' : ''} />
               Refresh Database Connection Status
@@ -1553,9 +1553,10 @@ function App() {
                         key={dev.id} 
                         style={{ 
                           display: 'flex', 
+                          flexDirection: 'column',
                           justifyContent: 'space-between', 
-                          alignItems: 'center',
-                          padding: '1rem 1.25rem',
+                          gap: '1rem',
+                          padding: '1.25rem',
                           background: 'rgba(255, 255, 255, 0.02)',
                           border: '1px solid var(--border-color)',
                           borderRadius: '10px'
@@ -1570,13 +1571,13 @@ function App() {
                               </span>
                             )}
                           </div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
                             {dev.role}
                             <span className="badge empty" style={{ fontSize: '0.75rem', padding: '0.1rem 0.4rem', border: '1px solid var(--border-color)', pointerEvents: 'none' }}>
                               {dev.team}
                             </span>
                           </div>
-                          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
+                          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
                             {dev.companyLoginId && (
                               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                                 Login ID: <strong>{dev.companyLoginId}</strong>
@@ -1584,13 +1585,13 @@ function App() {
                             )}
                             {(dev.managerName || dev.managerCompanyLoginId) && (
                               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                Manager: {dev.managerName || '—'} {dev.managerCompanyLoginId ? `(ID: ${dev.managerCompanyLoginId})` : ''}
+                                Manager: <strong>{dev.managerName || '—'}</strong> {dev.managerCompanyLoginId ? `(ID: ${dev.managerCompanyLoginId})` : ''}
                               </span>
                             )}
                           </div>
                         </div>
                         
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
                           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                             ID: {String(dev.id).substring(0, 8)}
                           </span>
@@ -1790,8 +1791,8 @@ function App() {
                           border: '1px solid var(--border-color)',
                           borderRadius: '10px',
                           display: 'flex',
+                          flexDirection: 'column',
                           justifyContent: 'space-between',
-                          alignItems: 'flex-start',
                           gap: '1rem'
                         }}
                       >
@@ -1821,7 +1822,7 @@ function App() {
                             </div>
                           )}
                         </div>
-                        <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
                           <button 
                             className="btn-secondary" 
                             style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: 'auto' }}
