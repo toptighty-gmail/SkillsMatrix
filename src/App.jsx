@@ -1416,7 +1416,7 @@ function App() {
                     onChange={(e) => setNewDevTeamId(e.target.value)}
                   >
                     <option value="">No Team</option>
-                    {teams.map(t => (
+                    {[...teams].sort((a, b) => a.name.localeCompare(b.name)).map(t => (
                       <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
                   </select>
@@ -1524,7 +1524,7 @@ function App() {
                               onChange={(e) => setEditDevTeamId(e.target.value)}
                             >
                               <option value="">No Team</option>
-                              {teams.map(t => (
+                              {[...teams].sort((a, b) => a.name.localeCompare(b.name)).map(t => (
                                 <option key={t.id} value={t.id}>{t.name}</option>
                               ))}
                             </select>
@@ -1685,7 +1685,7 @@ function App() {
                     required
                   >
                     <option value="" disabled>Select Category</option>
-                    {categories.map(c => (
+                    {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
@@ -1758,7 +1758,7 @@ function App() {
                             required
                           >
                             <option value="" disabled>Select Category</option>
-                            {categories.map(c => (
+                            {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
                               <option key={c.id} value={c.id}>{c.name}</option>
                             ))}
                           </select>
