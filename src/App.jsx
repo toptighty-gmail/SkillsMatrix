@@ -28,11 +28,11 @@ const mockDevelopers = [
 ];
 
 const mockSkills = [
-  { id: 'skill-1', name: 'React', category: 'Frontend', category_id: 1 },
-  { id: 'skill-2', name: 'Node.js', category: 'Backend', category_id: 2 },
-  { id: 'skill-3', name: 'PostgreSQL', category: 'Database', category_id: 3 },
-  { id: 'skill-4', name: 'Docker', category: 'DevOps', category_id: 4 },
-  { id: 'skill-5', name: 'CSS Grid & Flexbox', category: 'Frontend', category_id: 1 }
+  { id: 'skill-1', name: 'React', category: 'Frontend', category_id: 1, vendor: 'Meta', description: 'JavaScript library for building user interfaces' },
+  { id: 'skill-2', name: 'Node.js', category: 'Backend', category_id: 2, vendor: 'OpenJS Foundation', description: 'JavaScript runtime built on Chrome\'s V8 engine' },
+  { id: 'skill-3', name: 'PostgreSQL', category: 'Database', category_id: 3, vendor: 'PostgreSQL Global Development Group', description: 'Powerful, open source object-relational database' },
+  { id: 'skill-4', name: 'Docker', category: 'DevOps', category_id: 4, vendor: 'Docker Inc.', description: 'Containerization platform' },
+  { id: 'skill-5', name: 'CSS Grid & Flexbox', category: 'Frontend', category_id: 1, vendor: 'W3C', description: 'CSS layout methodologies' }
 ];
 
 const mockCategories = [
@@ -81,7 +81,9 @@ CREATE TABLE IF NOT EXISTS developers (
 CREATE TABLE IF NOT EXISTS skills (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
-  category TEXT NOT NULL,
+  category_id INTEGER REFERENCES categories(id),
+  vendor TEXT,
+  description TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -165,6 +167,8 @@ function App() {
   const [newDevName, setNewDevName] = useState('');
   const [newDevRole, setNewDevRole] = useState('');
   const [newSkillName, setNewSkillName] = useState('');
+  const [newSkillVendor, setNewSkillVendor] = useState('');
+  const [newSkillDescription, setNewSkillDescription] = useState('');
   const [newSkillCategoryId, setNewSkillCategoryId] = useState('');
   const [newDevManagerName, setNewDevManagerName] = useState('');
   const [newDevManagerCompanyLoginId, setNewDevManagerCompanyLoginId] = useState('');
@@ -192,6 +196,8 @@ function App() {
   // Skills CRUD states
   const [editingSkillId, setEditingSkillId] = useState(null);
   const [editSkillName, setEditSkillName] = useState('');
+  const [editSkillVendor, setEditSkillVendor] = useState('');
+  const [editSkillDescription, setEditSkillDescription] = useState('');
   const [editSkillCategoryId, setEditSkillCategoryId] = useState('');
 
   // Categories CRUD states
@@ -316,7 +322,9 @@ function App() {
           id: row.id,
           name: row.name,
           category: cat ? cat.name : 'Other',
-          category_id: row.category_id
+          category_id: row.category_id,
+          vendor: row.vendor || '',
+          description: row.description || ''
         };
       });
 
@@ -608,11 +616,15 @@ function App() {
       const newSkill = {
         id: `skill-${Date.now()}`,
         name: newSkillName,
+        vendor: newSkillVendor,
+        description: newSkillDescription,
         category: catObj ? catObj.name : 'Other',
         category_id: parseInt(newSkillCategoryId)
       };
       setSkills([...skills, newSkill]);
       setNewSkillName('');
+      setNewSkillVendor('');
+      setNewSkillDescription('');
       showToast(`Added skill: ${newSkillName} (Demo)`);
       setLoading(false);
       return;
@@ -622,7 +634,12 @@ function App() {
       const catId = parseInt(newSkillCategoryId);
       const { data: skillData, error: skillError } = await supabase
         .from('skills')
-        .insert([{ name: newSkillName, category_id: catId }])
+        .insert([{ 
+          name: newSkillName, 
+          category_id: catId,
+          vendor: newSkillVendor || null,
+          description: newSkillDescription || null
+        }])
         .select();
 
       if (skillError) throw skillError;
@@ -631,12 +648,16 @@ function App() {
       const newSkillMapped = {
         id: skillData[0].id,
         name: skillData[0].name,
+        vendor: skillData[0].vendor || '',
+        description: skillData[0].description || '',
         category: catObj ? catObj.name : 'Other',
         category_id: skillData[0].category_id
       };
 
       setSkills([...skills, newSkillMapped]);
       setNewSkillName('');
+      setNewSkillVendor('');
+      setNewSkillDescription('');
       showToast(`Successfully added skill: ${newSkillName}`);
     } catch (err) {
       console.error(err);
@@ -658,6 +679,8 @@ function App() {
       setSkills(skills.map(s => s.id === skillId ? { 
         ...s, 
         name: editSkillName, 
+        vendor: editSkillVendor,
+        description: editSkillDescription,
         category: catObj ? catObj.name : 'Other',
         category_id: catId
       } : s));
@@ -673,6 +696,8 @@ function App() {
         .update({ 
           name: editSkillName, 
           category_id: catId,
+          vendor: editSkillVendor || null,
+          description: editSkillDescription || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', skillId);
@@ -682,6 +707,8 @@ function App() {
       setSkills(skills.map(s => s.id === skillId ? { 
         ...s, 
         name: editSkillName, 
+        vendor: editSkillVendor,
+        description: editSkillDescription,
         category: catObj ? catObj.name : 'Other',
         category_id: catId
       } : s));
@@ -1616,7 +1643,17 @@ function App() {
               <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Tracked Skills List</h3>
               
               {/* Add Skill Form */}
-              <form onSubmit={handleAddSkill} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
+              <form onSubmit={handleAddSkill} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Vendor</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. Microsoft" 
+                    value={newSkillVendor}
+                    onChange={(e) => setNewSkillVendor(e.target.value)}
+                  />
+                </div>
                 <div className="form-group" style={{ margin: 0 }}>
                   <label style={{ fontSize: '0.8rem' }}>Skill Name</label>
                   <input 
@@ -1626,6 +1663,16 @@ function App() {
                     value={newSkillName}
                     onChange={(e) => setNewSkillName(e.target.value)}
                     required
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Description</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. Strongly typed language" 
+                    value={newSkillDescription}
+                    onChange={(e) => setNewSkillDescription(e.target.value)}
                   />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
@@ -1671,6 +1718,16 @@ function App() {
                         }}
                       >
                         <div className="form-group" style={{ margin: 0 }}>
+                          <label style={{ fontSize: '0.75rem' }}>Vendor</label>
+                          <input 
+                            type="text" 
+                            className="form-input" 
+                            style={{ padding: '0.5rem 0.75rem' }}
+                            value={editSkillVendor}
+                            onChange={(e) => setEditSkillVendor(e.target.value)}
+                          />
+                        </div>
+                        <div className="form-group" style={{ margin: 0 }}>
                           <label style={{ fontSize: '0.75rem' }}>Skill Name</label>
                           <input 
                             type="text" 
@@ -1679,6 +1736,16 @@ function App() {
                             value={editSkillName}
                             onChange={(e) => setEditSkillName(e.target.value)}
                             required
+                          />
+                        </div>
+                        <div className="form-group" style={{ margin: 0 }}>
+                          <label style={{ fontSize: '0.75rem' }}>Description</label>
+                          <input 
+                            type="text" 
+                            className="form-input" 
+                            style={{ padding: '0.5rem 0.75rem' }}
+                            value={editSkillDescription}
+                            onChange={(e) => setEditSkillDescription(e.target.value)}
                           />
                         </div>
                         <div className="form-group" style={{ margin: 0 }}>
@@ -1724,20 +1791,45 @@ function App() {
                           borderRadius: '10px',
                           display: 'flex',
                           justifyContent: 'space-between',
-                          alignItems: 'center'
+                          alignItems: 'flex-start',
+                          gap: '1rem'
                         }}
                       >
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{skill.name}</div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Category: {skill.category}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 600, fontSize: '1.1rem', wordBreak: 'break-word' }}>{skill.name}</span>
+                            {skill.vendor && (
+                              <span className="badge" style={{ 
+                                fontSize: '0.75rem', 
+                                background: 'rgba(139, 92, 246, 0.1)', 
+                                color: 'var(--accent-primary)',
+                                border: '1px solid rgba(139, 92, 246, 0.2)',
+                                padding: '0.1rem 0.4rem', 
+                                borderRadius: '4px',
+                                fontWeight: 500
+                              }}>
+                                {skill.vendor}
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                            Category: <span style={{ color: 'var(--text-primary)' }}>{skill.category}</span>
+                          </div>
+                          {skill.description && (
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.25rem', lineHeight: '1.4' }}>
+                              {skill.description}
+                            </div>
+                          )}
                         </div>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
                           <button 
                             className="btn-secondary" 
                             style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: 'auto' }}
                             onClick={() => {
                               setEditingSkillId(skill.id);
                               setEditSkillName(skill.name);
+                              setEditSkillVendor(skill.vendor || '');
+                              setEditSkillDescription(skill.description || '');
                               setEditSkillCategoryId(skill.category_id || '');
                             }}
                           >
