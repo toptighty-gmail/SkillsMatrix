@@ -1643,9 +1643,9 @@ function App() {
               <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Tracked Skills List</h3>
               
               {/* Add Skill Form */}
-              <form onSubmit={handleAddSkill} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label style={{ fontSize: '0.8rem' }}>Vendor</label>
+              <form onSubmit={handleAddSkill} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
+                <div className="form-group" style={{ margin: 0, width: '100%' }}>
+                  <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Vendor</label>
                   <input 
                     type="text" 
                     className="form-input" 
@@ -1654,8 +1654,8 @@ function App() {
                     onChange={(e) => setNewSkillVendor(e.target.value)}
                   />
                 </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label style={{ fontSize: '0.8rem' }}>Skill Name</label>
+                <div className="form-group" style={{ margin: 0, width: '100%' }}>
+                  <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Skill Name</label>
                   <input 
                     type="text" 
                     className="form-input" 
@@ -1665,8 +1665,8 @@ function App() {
                     required
                   />
                 </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label style={{ fontSize: '0.8rem' }}>Description</label>
+                <div className="form-group" style={{ margin: 0, width: '100%' }}>
+                  <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Description</label>
                   <input 
                     type="text" 
                     className="form-input" 
@@ -1675,11 +1675,11 @@ function App() {
                     onChange={(e) => setNewSkillDescription(e.target.value)}
                   />
                 </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label style={{ fontSize: '0.8rem' }}>Category</label>
+                <div className="form-group" style={{ margin: 0, width: '100%' }}>
+                  <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Category</label>
                   <select 
                     className="form-select"
-                    style={{ height: '42px' }}
+                    style={{ height: '42px', width: '100%' }}
                     value={newSkillCategoryId}
                     onChange={(e) => setNewSkillCategoryId(e.target.value)}
                     required
@@ -1690,7 +1690,7 @@ function App() {
                     ))}
                   </select>
                 </div>
-                <button type="submit" className="btn-primary" style={{ height: '42px' }} disabled={loading}>
+                <button type="submit" className="btn-primary" style={{ height: '42px', width: '100%' }} disabled={loading}>
                   <Plus size={16} />
                   Add Skill
                 </button>
@@ -1717,8 +1717,8 @@ function App() {
                           borderRadius: '10px'
                         }}
                       >
-                        <div className="form-group" style={{ margin: 0 }}>
-                          <label style={{ fontSize: '0.75rem' }}>Vendor</label>
+                        <div className="form-group" style={{ margin: 0, width: '100%' }}>
+                          <label style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Vendor</label>
                           <input 
                             type="text" 
                             className="form-input" 
@@ -1727,8 +1727,8 @@ function App() {
                             onChange={(e) => setEditSkillVendor(e.target.value)}
                           />
                         </div>
-                        <div className="form-group" style={{ margin: 0 }}>
-                          <label style={{ fontSize: '0.75rem' }}>Skill Name</label>
+                        <div className="form-group" style={{ margin: 0, width: '100%' }}>
+                          <label style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Skill Name</label>
                           <input 
                             type="text" 
                             className="form-input" 
@@ -1738,8 +1738,8 @@ function App() {
                             required
                           />
                         </div>
-                        <div className="form-group" style={{ margin: 0 }}>
-                          <label style={{ fontSize: '0.75rem' }}>Description</label>
+                        <div className="form-group" style={{ margin: 0, width: '100%' }}>
+                          <label style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Description</label>
                           <input 
                             type="text" 
                             className="form-input" 
@@ -1748,11 +1748,11 @@ function App() {
                             onChange={(e) => setEditSkillDescription(e.target.value)}
                           />
                         </div>
-                        <div className="form-group" style={{ margin: 0 }}>
-                          <label style={{ fontSize: '0.75rem' }}>Category</label>
+                        <div className="form-group" style={{ margin: 0, width: '100%' }}>
+                          <label style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Category</label>
                           <select 
                             className="form-input"
-                            style={{ padding: '0.5rem 0.75rem', height: 'auto' }}
+                            style={{ padding: '0.5rem 0.75rem', height: 'auto', width: '100%' }}
                             value={editSkillCategoryId}
                             onChange={(e) => setEditSkillCategoryId(e.target.value)}
                             required
