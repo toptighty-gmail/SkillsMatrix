@@ -17,7 +17,8 @@ import {
   Check, 
   Copy,
   Trash2,
-  Star
+  Star,
+  Palette
 } from 'lucide-react';
 
 // Predefined mock data for Demo Mode
@@ -188,9 +189,18 @@ const StarRating = ({ value, onChange, disabled }) => {
 
 function App() {
   // App states
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('skillsmatrix-theme') || 'babcock';
+  });
   const [useDemoMode, setUseDemoMode] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('checking'); // checking, connected, error, partial
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Sync theme to document element
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('skillsmatrix-theme', theme);
+  }, [theme]);
   
   // Data states
   const [developers, setDevelopers] = useState([]);
@@ -1196,11 +1206,25 @@ function App() {
       {/* Header Section */}
       <header className="header">
         <div className="logo-section">
-          <Activity size={32} color="#8b5cf6" style={{ filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.4))' }} />
+          <Activity size={32} style={{ color: 'var(--accent-primary)', filter: 'drop-shadow(0 0 8px var(--accent-primary))' }} />
           <h1>SkillsMatrix</h1>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {/* Theme Switcher */}
+          <div className="theme-switcher-wrapper">
+            <Palette size={16} className="theme-icon" />
+            <span className="theme-label">Theme:</span>
+            <select
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              className="theme-select"
+            >
+              <option value="babcock">Babcock (Default)</option>
+              <option value="purple">Modern Violet</option>
+              <option value="ocean">Ocean Blue</option>
+            </select>
+          </div>
           {/* Toggles Demo Mode */}
           {connectionStatus === 'error' && (
             <button 

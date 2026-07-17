@@ -1,24 +1,28 @@
 /* Custom Vanilla CSS Design System for SkillsMatrix */
 
-:root {
+:root, [data-theme="babcock"] {
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Color Palette */
-  --bg-dark: #0f172a;
-  --bg-dark-rgb: 15, 23, 42;
-  --bg-card: rgba(30, 41, 59, 0.45);
-  --bg-card-hover: rgba(30, 41, 59, 0.65);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-color-hover: rgba(255, 255, 255, 0.15);
+  /* Color Palette - Babcock Brand Theme (Default) */
+  --bg-dark: #000025; /* Authoritative Deep Navy */
+  --bg-dark-rgb: 0, 0, 37;
+  --bg-card: rgba(0, 0, 83, 0.35); /* Translucent navy card */
+  --bg-card-hover: rgba(0, 0, 83, 0.55);
+  --border-color: rgba(108, 255, 198, 0.12); /* Subtle mint-green borders */
+  --border-color-hover: rgba(108, 255, 198, 0.25);
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #ffffff;
+  --text-secondary: #a2b4cd;
+  --text-muted: #647a9b;
 
-  --accent-primary: #8b5cf6; /* Violet */
-  --accent-primary-hover: #7c3aed;
-  --accent-secondary: #3b82f6; /* Blue */
+  --accent-primary: #6cffc6; /* Babcock Brand Mint/Teal */
+  --accent-primary-hover: #56e5b0;
+  --accent-secondary: #68f2fe; /* Babcock Brand Aquamarine */
+
+  /* Dynamic Gradients */
+  --gradient-color-1: rgba(108, 255, 198, 0.06);
+  --gradient-color-2: rgba(104, 242, 254, 0.05);
 
   /* Proficiency Colors */
   --color-basic: #06b6d4; /* Cyan */
@@ -34,6 +38,48 @@
   --color-expert-light: rgba(16, 185, 129, 0.12);
 }
 
+/* Modern Violet theme */
+[data-theme="purple"] {
+  --bg-dark: #0f172a;
+  --bg-dark-rgb: 15, 23, 42;
+  --bg-card: rgba(30, 41, 59, 0.45);
+  --bg-card-hover: rgba(30, 41, 59, 0.65);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color-hover: rgba(255, 255, 255, 0.15);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --accent-primary: #8b5cf6; /* Violet */
+  --accent-primary-hover: #7c3aed;
+  --accent-secondary: #3b82f6; /* Blue */
+
+  --gradient-color-1: rgba(139, 92, 246, 0.09);
+  --gradient-color-2: rgba(59, 130, 246, 0.07);
+}
+
+/* Ocean Blue theme */
+[data-theme="ocean"] {
+  --bg-dark: #07111e;
+  --bg-dark-rgb: 7, 17, 30;
+  --bg-card: rgba(15, 32, 67, 0.4);
+  --bg-card-hover: rgba(15, 32, 67, 0.65);
+  --border-color: rgba(56, 189, 248, 0.1);
+  --border-color-hover: rgba(56, 189, 248, 0.25);
+
+  --text-primary: #f0f9ff;
+  --text-secondary: #7dd3fc;
+  --text-muted: #38bdf8;
+
+  --accent-primary: #38bdf8; /* Sky blue */
+  --accent-primary-hover: #0ea5e9;
+  --accent-secondary: #0284c7;
+
+  --gradient-color-1: rgba(56, 189, 248, 0.08);
+  --gradient-color-2: rgba(2, 132, 199, 0.06);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -43,8 +89,8 @@
 body {
   background-color: var(--bg-dark);
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
+    radial-gradient(circle at 10% 20%, var(--gradient-color-1) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, var(--gradient-color-2) 0%, transparent 40%);
   color: var(--text-primary);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -66,19 +112,19 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.4);
+  background: var(--accent-primary);
   border-radius: 8px;
   border: 2px solid rgba(15, 23, 42, 0.3);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.6);
+  background: var(--accent-primary-hover);
 }
 
 /* Firefox scrollbar support */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(139, 92, 246, 0.4) rgba(15, 23, 42, 0.3);
+  scrollbar-color: var(--accent-primary) rgba(15, 23, 42, 0.3);
 }
 
 
@@ -607,8 +653,53 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .star-button.active .star-icon {
-  fill: #fbbf24; /* Premium Gold star fill */
-  stroke: #fbbf24;
-  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.45));
+  fill: var(--accent-primary);
+  stroke: var(--accent-primary);
+  filter: drop-shadow(0 0 4px var(--accent-primary));
+}
+
+/* Theme Switcher Styling */
+.theme-switcher-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.4rem 0.8rem;
+  border-radius: 30px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.theme-switcher-wrapper:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-color-hover);
+}
+
+.theme-icon {
+  color: var(--accent-primary);
+  transition: color 0.2s ease;
+}
+
+.theme-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.theme-select {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  padding-right: 0.25rem;
+  font-family: var(--font-body);
+}
+
+.theme-select option {
+  background: var(--bg-dark);
+  color: var(--text-primary);
 }
 
