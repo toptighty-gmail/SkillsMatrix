@@ -16,7 +16,8 @@ import {
   ChevronRight, 
   Check, 
   Copy,
-  Trash2
+  Trash2,
+  Star
 } from 'lucide-react';
 
 // Predefined mock data for Demo Mode
@@ -141,6 +142,48 @@ const levelDetails = {
   'Competent': { label: '3 – Competent', desc: 'Can work independently on most tasks' },
   'Strong': { label: '4 – Strong', desc: 'Can solve complex problems and guide others' },
   'Expert': { label: '5 – Expert', desc: 'Deep mastery, teaches others, sets standards' }
+};
+
+// Custom Star Rating Component
+const StarRating = ({ value, onChange, disabled }) => {
+  const [hoverValue, setHoverValue] = useState(null);
+  
+  const levels = ['None', 'Basic', 'Emerging', 'Competent', 'Strong', 'Expert'];
+  const currentValueIdx = levels.indexOf(value);
+  const displayValue = hoverValue !== null ? hoverValue : currentValueIdx;
+  
+  return (
+    <div 
+      className="star-rating-container"
+      onMouseLeave={() => !disabled && setHoverValue(null)}
+    >
+      {[1, 2, 3, 4, 5].map((starIdx) => {
+        const isFilled = starIdx <= displayValue;
+        const levelName = levels[starIdx];
+        const detail = levelDetails[levelName] || {};
+        
+        return (
+          <button
+            key={starIdx}
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              const nextLevel = currentValueIdx === starIdx ? 'None' : levelName;
+              onChange(nextLevel);
+            }}
+            onMouseEnter={() => !disabled && setHoverValue(starIdx)}
+            title={`${detail.label}: ${detail.desc}`}
+            className={`star-button ${isFilled ? 'active' : ''}`}
+          >
+            <Star
+              size={18}
+              className="star-icon"
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
 };
 
 function App() {
@@ -1123,42 +1166,20 @@ function App() {
     }
   };
 
-  // Helper to retrieve the current proficiency level select dropdown
+  // Helper to retrieve the current proficiency level star rating
   const getProficiencyBadge = (devId, skillId) => {
     const record = developerSkills.find(
       (ds) => ds.developer_id === devId && ds.skill_id === skillId
     );
     
     const level = record ? record.level : 'None';
-    const classLevel = level === 'None' ? 'empty' : level.toLowerCase();
     
     return (
-      <select
-        className={`badge ${classLevel}`}
+      <StarRating
         value={level}
-        onChange={(e) => handleSetSkillLevel(devId, skillId, e.target.value)}
+        onChange={(targetLevel) => handleSetSkillLevel(devId, skillId, targetLevel)}
         disabled={loading}
-        title="Select competency level"
-        style={{
-          appearance: 'none',
-          WebkitAppearance: 'none',
-          MozAppearance: 'none',
-          textAlign: 'center',
-          textAlignLast: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          paddingRight: '0.65rem',
-          paddingLeft: '0.65rem',
-          height: '32px',
-          width: '120px'
-        }}
-      >
-        <option value="None" style={{ background: '#1e293b', color: 'var(--text-muted)' }}>0 – None</option>
-        <option value="Basic" style={{ background: '#1e293b', color: 'var(--color-basic)' }}>1 – Basic</option>
-        <option value="Emerging" style={{ background: '#1e293b', color: 'var(--color-emerging)' }}>2 – Emerging</option>
-        <option value="Competent" style={{ background: '#1e293b', color: 'var(--color-competent)' }}>3 – Competent</option>
-        <option value="Strong" style={{ background: '#1e293b', color: 'var(--color-strong)' }}>4 – Strong</option>
-        <option value="Expert" style={{ background: '#1e293b', color: 'var(--color-expert)' }}>5 – Expert</option>
-      </select>
+      />
     );
   };
 
