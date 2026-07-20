@@ -1279,7 +1279,7 @@ function App() {
         
 
         {/* Content Area */}
-        <main style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <main style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minWidth: 0, width: '100%', maxWidth: '100%' }}>
           {/* Tab Selection */}
           <div className="tabs">
             <button 
@@ -1321,7 +1321,7 @@ function App() {
 
           {/* Tab 1: Skills Matrix Grid */}
           {activeTab === 'matrix' && (
-            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+            <div className="glass-panel" style={{ padding: '1.5rem', minWidth: 0, width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>Team Competency Matrix</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
                 Interactive grid view mapping team skills. Click on any badge to cycle through proficiencies: <strong>0 – None → 1 – Basic → 2 – Emerging → 3 – Competent → 4 – Strong → 5 – Expert</strong>.

@@ -164,6 +164,9 @@ h1, h2, h3, h4, h5, h6 {
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 @media (min-width: 1024px) {
