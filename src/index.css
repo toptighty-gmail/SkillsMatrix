@@ -266,13 +266,18 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Skills Matrix Table/Grid View */
 .matrix-container {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: calc(100vh - 250px);
+  min-height: 350px;
   border-radius: 12px;
+  position: relative;
+  border: 1px solid var(--border-color);
 }
 
 .matrix-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: left;
 }
 
@@ -285,23 +290,35 @@ h1, h2, h3, h4, h5, h6 {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(26, 36, 53, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #1e293b;
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 0.9rem;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.matrix-table th:first-child,
+.matrix-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: #1e293b;
+  border-right: 1px solid var(--border-color);
+}
+
+.matrix-table th:first-child {
+  z-index: 30;
 }
 
 .matrix-table tbody tr {
   transition: background-color 0.2s ease;
 }
 
-.matrix-table tbody tr:hover {
+.matrix-table tbody tr:hover td {
   background-color: rgba(255, 255, 255, 0.02);
 }
 
