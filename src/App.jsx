@@ -1351,9 +1351,8 @@ function App() {
                         <tr key={dev.id}>
                           <td>
                             <div className="dev-name">{dev.name}</div>
-                            <div className="dev-role">
-                              {dev.role} <span style={{ opacity: 0.6, fontSize: '0.75rem' }}>({dev.team})</span>
-                            </div>
+                            <div className="dev-role">{dev.role}</div>
+                            <div className="dev-team">{dev.team}</div>
                           </td>
                           {skills.map((skill) => (
                             <td key={skill.id}>
