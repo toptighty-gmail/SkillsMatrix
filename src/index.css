@@ -635,3 +635,12 @@ h1, h2, h3, h4, h5, h6 {
   filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.45));
 }
 
+/* Scrollable Container for Tab Lists */
+.list-scroll-container {
+  overflow-y: auto;
+  max-height: calc(100vh - 360px);
+  min-height: 300px;
+  padding-right: 0.5rem;
+  border-radius: 10px;
+}
+

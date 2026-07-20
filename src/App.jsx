@@ -1454,7 +1454,7 @@ function App() {
                   <p>No team members found.</p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="list-scroll-container" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {developers.map((dev) => (
                     editingDevId === dev.id ? (
                       <div 
@@ -1724,7 +1724,7 @@ function App() {
                   <p>No skills tracked yet.</p>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                <div className="list-scroll-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
                   {skills.map((skill) => (
                     editingSkillId === skill.id ? (
                       <div 
@@ -1920,7 +1920,7 @@ function App() {
                   <p>No categories found.</p>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                <div className="list-scroll-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
                   {categories.map((cat) => (
                     editingCategoryId === cat.id ? (
                       <div 
@@ -2070,7 +2070,7 @@ function App() {
                   <p>No teams found.</p>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                <div className="list-scroll-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
                   {teams.map((team) => {
                     const memberCount = developers.filter(d => d.teamId === team.id).length;
                     return (
