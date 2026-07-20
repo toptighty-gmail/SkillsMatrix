@@ -51,7 +51,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   line-height: 1.5;
-  overflow-x: auto;
+  overflow-x: clip;
 }
 
 /* Custom Premium Scrollbar Styles */
@@ -112,11 +112,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2.5rem;
-  padding-bottom: 1.5rem;
+  padding: 1.25rem 0;
   border-bottom: 1px solid var(--border-color);
 }
 
