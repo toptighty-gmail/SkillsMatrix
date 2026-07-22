@@ -17,7 +17,8 @@ import {
   Check, 
   Copy,
   Trash2,
-  Star
+  Star,
+  X
 } from 'lucide-react';
 
 // Predefined mock data for Demo Mode
@@ -156,32 +157,47 @@ const StarRating = ({ value, onChange, disabled }) => {
     <div 
       className="star-rating-container"
       onMouseLeave={() => !disabled && setHoverValue(null)}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
     >
-      {[1, 2, 3, 4, 5].map((starIdx) => {
-        const isFilled = starIdx <= displayValue;
-        const levelName = levels[starIdx];
-        const detail = levelDetails[levelName] || {};
-        
-        return (
-          <button
-            key={starIdx}
-            type="button"
-            disabled={disabled}
-            onClick={() => {
-              const nextLevel = currentValueIdx === starIdx ? 'None' : levelName;
-              onChange(nextLevel);
-            }}
-            onMouseEnter={() => !disabled && setHoverValue(starIdx)}
-            title={`${detail.label}: ${detail.desc}`}
-            className={`star-button ${isFilled ? 'active' : ''}`}
-          >
-            <Star
-              size={18}
-              className="star-icon"
-            />
-          </button>
-        );
-      })}
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+        {[1, 2, 3, 4, 5].map((starIdx) => {
+          const isFilled = starIdx <= displayValue;
+          const levelName = levels[starIdx];
+          const detail = levelDetails[levelName] || {};
+          
+          return (
+            <button
+              key={starIdx}
+              type="button"
+              disabled={disabled}
+              onClick={() => {
+                const nextLevel = currentValueIdx === starIdx ? 'None' : levelName;
+                onChange(nextLevel);
+              }}
+              onMouseEnter={() => !disabled && setHoverValue(starIdx)}
+              title={`${detail.label}: ${detail.desc}`}
+              className={`star-button ${isFilled ? 'active' : ''}`}
+            >
+              <Star
+                size={18}
+                className="star-icon"
+              />
+            </button>
+          );
+        })}
+      </div>
+      
+      {currentValueIdx > 0 && (
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => onChange('None')}
+          title="Reset to 0 stars (None)"
+          className="star-reset-button"
+        >
+          <X size={12} />
+        </button>
+      )}
     </div>
   );
 };

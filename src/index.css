@@ -672,3 +672,31 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 10px;
 }
 
+/* Star Reset Button */
+.star-reset-button {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.star-reset-button:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  transform: scale(1.1);
+}
+
+.star-reset-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
