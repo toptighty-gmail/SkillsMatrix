@@ -700,3 +700,49 @@ h1, h2, h3, h4, h5, h6 {
   opacity: 0.5;
 }
 
+/* Condensed List Table Layout */
+.list-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.list-table th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #1e293b;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.85rem 1rem;
+  border-bottom: 2px solid var(--border-color);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.list-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+  font-size: 0.9rem;
+}
+
+.list-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.list-table tbody tr:hover td {
+  background-color: rgba(255, 255, 255, 0.015);
+}
+
+.compact-input {
+  padding: 0.35rem 0.6rem !important;
+  font-size: 0.8rem !important;
+  height: 32px !important;
+  min-height: 32px !important;
+}
+

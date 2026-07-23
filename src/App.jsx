@@ -1469,206 +1469,185 @@ function App() {
                   <p>No team members found.</p>
                 </div>
               ) : (
-                <div className="list-scroll-container" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {developers.map((dev) => (
-                    editingDevId === dev.id ? (
-                      <div 
-                        key={dev.id} 
-                        style={{ 
-                          display: 'flex', 
-                          flexDirection: 'column',
-                          gap: '0.75rem',
-                          padding: '1.25rem',
-                          background: 'rgba(30, 41, 59, 0.6)',
-                          border: '1px solid var(--accent-primary)',
-                          borderRadius: '10px'
-                        }}
-                      >
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.75rem' }}>Name</label>
-                            <input 
-                              type="text" 
-                              className="form-input" 
-                              style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                              value={editDevName}
-                              onChange={(e) => setEditDevName(e.target.value)}
-                              required
-                            />
-                          </div>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.75rem' }}>Role</label>
-                            <input 
-                              type="text" 
-                              className="form-input" 
-                              style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                              value={editDevRole}
-                              onChange={(e) => setEditDevRole(e.target.value)}
-                              required
-                            />
-                          </div>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.75rem' }}>Company Login ID</label>
-                            <input 
-                              type="text" 
-                              className="form-input" 
-                              style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                              value={editDevCompanyLoginId}
-                              placeholder="Optional"
-                              onChange={(e) => setEditDevCompanyLoginId(e.target.value)}
-                            />
-                          </div>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.75rem' }}>Email</label>
-                            <input 
-                              type="email" 
-                              className="form-input" 
-                              style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                              value={editDevEmail}
-                              placeholder="Optional"
-                              onChange={(e) => setEditDevEmail(e.target.value)}
-                            />
-                          </div>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.75rem' }}>Manager Name</label>
-                            <input 
-                              type="text" 
-                              className="form-input" 
-                              style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                              value={editDevManagerName}
-                              placeholder="Optional"
-                              onChange={(e) => setEditDevManagerName(e.target.value)}
-                            />
-                          </div>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.75rem' }}>Manager Login ID</label>
-                            <input 
-                              type="text" 
-                              className="form-input" 
-                              style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                              value={editDevManagerCompanyLoginId}
-                              placeholder="Optional"
-                              onChange={(e) => setEditDevManagerCompanyLoginId(e.target.value)}
-                            />
-                          </div>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.75rem' }}>Team</label>
-                            <select 
-                              className="form-input" 
-                              style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', height: 'auto' }}
-                              value={editDevTeamId}
-                              onChange={(e) => setEditDevTeamId(e.target.value)}
-                            >
-                              <option value="">No Team</option>
-                              {[...teams].sort((a, b) => a.name.localeCompare(b.name)).map(t => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-                          <button 
-                            className="btn-secondary" 
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
-                            onClick={() => setEditingDevId(null)}
-                          >
-                            Cancel
-                          </button>
-                          <button 
-                            className="btn-primary" 
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
-                            onClick={() => handleUpdateDeveloper(dev.id)}
-                            disabled={loading}
-                          >
-                            Save Changes
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div 
-                        key={dev.id} 
-                        style={{ 
-                          display: 'flex', 
-                          flexDirection: 'column',
-                          justifyContent: 'space-between', 
-                          gap: '1rem',
-                          padding: '1.25rem',
-                          background: 'rgba(255, 255, 255, 0.02)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '10px'
-                        }}
-                      >
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                            {dev.name}
-                            {dev.email && (
-                              <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-muted)' }}>
-                                ({dev.email})
+                <div className="list-scroll-container">
+                  <table className="list-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '22%' }}>Name</th>
+                        <th style={{ width: '20%' }}>Role</th>
+                        <th style={{ width: '15%' }}>Team</th>
+                        <th style={{ width: '12%' }}>Login ID</th>
+                        <th style={{ width: '18%' }}>Manager</th>
+                        <th style={{ width: '13%' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {developers.map((dev) => (
+                        editingDevId === dev.id ? (
+                          <tr key={dev.id} style={{ background: 'rgba(30, 41, 59, 0.4)' }}>
+                            <td>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                <input 
+                                  type="text" 
+                                  className="form-input compact-input" 
+                                  placeholder="Full Name"
+                                  value={editDevName}
+                                  onChange={(e) => setEditDevName(e.target.value)}
+                                  required
+                                />
+                                <input 
+                                  type="email" 
+                                  className="form-input compact-input" 
+                                  placeholder="Email (Optional)"
+                                  value={editDevEmail}
+                                  onChange={(e) => setEditDevEmail(e.target.value)}
+                                />
+                              </div>
+                            </td>
+                            <td>
+                              <input 
+                                type="text" 
+                                className="form-input compact-input" 
+                                placeholder="Role/Title"
+                                value={editDevRole}
+                                onChange={(e) => setEditDevRole(e.target.value)}
+                                required
+                              />
+                            </td>
+                            <td>
+                              <select 
+                                className="form-input compact-input" 
+                                value={editDevTeamId}
+                                onChange={(e) => setEditDevTeamId(e.target.value)}
+                              >
+                                <option value="">No Team</option>
+                                {[...teams].sort((a, b) => a.name.localeCompare(b.name)).map(t => (
+                                  <option key={t.id} value={t.id}>{t.name}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td>
+                              <input 
+                                type="text" 
+                                className="form-input compact-input" 
+                                placeholder="Login ID"
+                                value={editDevCompanyLoginId}
+                                onChange={(e) => setEditDevCompanyLoginId(e.target.value)}
+                              />
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                <input 
+                                  type="text" 
+                                  className="form-input compact-input" 
+                                  placeholder="Manager Name"
+                                  value={editDevManagerName}
+                                  onChange={(e) => setEditDevManagerName(e.target.value)}
+                                />
+                                <input 
+                                  type="text" 
+                                  className="form-input compact-input" 
+                                  placeholder="Manager ID"
+                                  value={editDevManagerCompanyLoginId}
+                                  onChange={(e) => setEditDevManagerCompanyLoginId(e.target.value)}
+                                />
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                <button 
+                                  className="btn-primary" 
+                                  style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', width: 'auto', height: '32px' }}
+                                  onClick={() => handleUpdateDeveloper(dev.id)}
+                                  disabled={loading}
+                                >
+                                  Save
+                                </button>
+                                <button 
+                                  className="btn-secondary" 
+                                  style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', width: 'auto', height: '32px' }}
+                                  onClick={() => setEditingDevId(null)}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          <tr key={dev.id}>
+                            <td>
+                              <div style={{ fontWeight: 600 }}>{dev.name}</div>
+                              {dev.email && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                  {dev.email}
+                                </div>
+                              )}
+                            </td>
+                            <td>{dev.role}</td>
+                            <td>
+                              <span className="badge empty" style={{ fontSize: '0.75rem', padding: '0.1rem 0.4rem', border: '1px solid var(--border-color)', pointerEvents: 'none' }}>
+                                {dev.team}
                               </span>
-                            )}
-                          </div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                            {dev.role}
-                            <span className="badge empty" style={{ fontSize: '0.75rem', padding: '0.1rem 0.4rem', border: '1px solid var(--border-color)', pointerEvents: 'none' }}>
-                              {dev.team}
-                            </span>
-                          </div>
-                          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-                            {dev.companyLoginId && (
-                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                Login ID: <strong>{dev.companyLoginId}</strong>
-                              </span>
-                            )}
-                            {(dev.managerName || dev.managerCompanyLoginId) && (
-                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                Manager: <strong>{dev.managerName || '—'}</strong> {dev.managerCompanyLoginId ? `(ID: ${dev.managerCompanyLoginId})` : ''}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
-                          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            ID: {String(dev.id).substring(0, 8)}
-                          </span>
-                          
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button 
-                              className="btn-secondary" 
-                              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: 'auto' }}
-                              onClick={() => {
-                                setEditingDevId(dev.id);
-                                setEditDevName(dev.name);
-                                setEditDevRole(dev.role);
-                                setEditDevEmail(dev.email || '');
-                                setEditDevManagerName(dev.managerName || '');
-                                setEditDevManagerCompanyLoginId(dev.managerCompanyLoginId || '');
-                                setEditDevCompanyLoginId(dev.companyLoginId || '');
-                                setEditDevTeamId(dev.teamId || '');
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              className="btn-secondary" 
-                              style={{ 
-                                padding: '0.35rem 0.75rem', 
-                                fontSize: '0.8rem', 
-                                width: 'auto',
-                                borderColor: 'rgba(239, 68, 68, 0.2)',
-                                color: '#ef4444'
-                              }}
-                              onClick={() => handleDeleteDeveloper(dev.id, dev.name)}
-                              disabled={loading}
-                            >
-                              <Trash2 size={12} style={{ marginRight: '2px', verticalAlign: 'middle' }} />
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  ))}
+                            </td>
+                            <td>
+                              <code>{dev.companyLoginId || '—'}</code>
+                            </td>
+                            <td>
+                              {dev.managerName ? (
+                                <div>
+                                  <div style={{ fontWeight: 500 }}>{dev.managerName}</div>
+                                  {dev.managerCompanyLoginId && (
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                      ID: {dev.managerCompanyLoginId}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : dev.managerCompanyLoginId ? (
+                                <span style={{ fontSize: '0.85rem' }}>ID: {dev.managerCompanyLoginId}</span>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)' }}>—</span>
+                              )}
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                <button 
+                                  className="btn-secondary" 
+                                  style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', width: 'auto', height: '30px' }}
+                                  onClick={() => {
+                                    setEditingDevId(dev.id);
+                                    setEditDevName(dev.name);
+                                    setEditDevRole(dev.role);
+                                    setEditDevEmail(dev.email || '');
+                                    setEditDevManagerName(dev.managerName || '');
+                                    setEditDevManagerCompanyLoginId(dev.managerCompanyLoginId || '');
+                                    setEditDevCompanyLoginId(dev.companyLoginId || '');
+                                    setEditDevTeamId(dev.teamId || '');
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                <button 
+                                  className="btn-secondary" 
+                                  style={{ 
+                                    padding: '0.3rem 0.6rem', 
+                                    fontSize: '0.75rem', 
+                                    width: 'auto',
+                                    height: '30px',
+                                    borderColor: 'rgba(239, 68, 68, 0.2)',
+                                    color: '#ef4444'
+                                  }}
+                                  onClick={() => handleDeleteDeveloper(dev.id, dev.name)}
+                                  disabled={loading}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
