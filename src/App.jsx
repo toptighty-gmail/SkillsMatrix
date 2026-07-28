@@ -222,6 +222,9 @@ function App() {
   const [activeTab, setActiveTab] = useState('matrix'); // matrix, developers, skills
   const [matrixSortOrder, setMatrixSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [devListSortOrder, setDevListSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [skillsSortOrder, setSkillsSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [categoriesSortOrder, setCategoriesSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [teamsSortOrder, setTeamsSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState(null);
@@ -1766,157 +1769,172 @@ function App() {
                   <p>No skills tracked yet.</p>
                 </div>
               ) : (
-                <div className="list-scroll-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
-                  {skills.map((skill) => (
-                    editingSkillId === skill.id ? (
-                      <div 
-                        key={skill.id} 
-                        style={{ 
-                          display: 'flex', 
-                          flexDirection: 'column',
-                          gap: '0.75rem',
-                          padding: '1.25rem',
-                          background: 'rgba(30, 41, 59, 0.6)',
-                          border: '1px solid var(--accent-primary)',
-                          borderRadius: '10px'
-                        }}
-                      >
-                        <div className="form-group" style={{ margin: 0, width: '100%' }}>
-                          <label style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Vendor</label>
-                          <input 
-                            type="text" 
-                            className="form-input" 
-                            style={{ padding: '0.5rem 0.75rem' }}
-                            value={editSkillVendor}
-                            onChange={(e) => setEditSkillVendor(e.target.value)}
-                          />
-                        </div>
-                        <div className="form-group" style={{ margin: 0, width: '100%' }}>
-                          <label style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Skill Name</label>
-                          <input 
-                            type="text" 
-                            className="form-input" 
-                            style={{ padding: '0.5rem 0.75rem' }}
-                            value={editSkillName}
-                            onChange={(e) => setEditSkillName(e.target.value)}
-                            required
-                          />
-                        </div>
-                        <div className="form-group" style={{ margin: 0, width: '100%' }}>
-                          <label style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Description</label>
-                          <input 
-                            type="text" 
-                            className="form-input" 
-                            style={{ padding: '0.5rem 0.75rem' }}
-                            value={editSkillDescription}
-                            onChange={(e) => setEditSkillDescription(e.target.value)}
-                          />
-                        </div>
-                        <div className="form-group" style={{ margin: 0, width: '100%' }}>
-                          <label style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Category</label>
-                          <select 
-                            className="form-input"
-                            style={{ padding: '0.5rem 0.75rem', height: 'auto', width: '100%' }}
-                            value={editSkillCategoryId}
-                            onChange={(e) => setEditSkillCategoryId(e.target.value)}
-                            required
-                          >
-                            <option value="" disabled>Select Category</option>
-                            {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
-                              <option key={c.id} value={c.id}>{c.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-                          <button 
-                            className="btn-secondary" 
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
-                            onClick={() => setEditingSkillId(null)}
-                          >
-                            Cancel
-                          </button>
-                          <button 
-                            className="btn-primary" 
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
-                            onClick={() => handleUpdateSkill(skill.id)}
-                            disabled={loading}
-                          >
-                            Save Changes
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div 
-                        key={skill.id} 
-                        style={{ 
-                          padding: '1.25rem',
-                          background: 'rgba(255, 255, 255, 0.02)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '10px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          gap: '1rem'
-                        }}
-                      >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                            <span style={{ fontWeight: 600, fontSize: '1.1rem', wordBreak: 'break-word' }}>{skill.name}</span>
-                            {skill.vendor && (
-                              <span className="badge" style={{ 
-                                fontSize: '0.75rem', 
-                                background: 'rgba(139, 92, 246, 0.1)', 
-                                color: 'var(--accent-primary)',
-                                border: '1px solid rgba(139, 92, 246, 0.2)',
-                                padding: '0.1rem 0.4rem', 
-                                borderRadius: '4px',
-                                fontWeight: 500
-                              }}>
-                                {skill.vendor}
-                              </span>
+                <div className="list-scroll-container">
+                  <table className="list-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '15%' }}>Vendor</th>
+                        <th 
+                          onClick={() => setSkillsSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                          style={{ width: '25%', cursor: 'pointer', userSelect: 'none' }}
+                          className="sortable-header"
+                          title={`Sort by Skill Name ${skillsSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>Skill Name</span>
+                            {skillsSortOrder === 'asc' ? (
+                              <ArrowUp size={14} style={{ color: 'var(--accent-primary)' }} />
+                            ) : (
+                              <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
                             )}
                           </div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                            Category: <span style={{ color: 'var(--text-primary)' }}>{skill.category}</span>
-                          </div>
-                          {skill.description && (
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.25rem', lineHeight: '1.4' }}>
-                              {skill.description}
-                            </div>
-                          )}
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
-                          <button 
-                            className="btn-secondary" 
-                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: 'auto' }}
-                            onClick={() => {
-                              setEditingSkillId(skill.id);
-                              setEditSkillName(skill.name);
-                              setEditSkillVendor(skill.vendor || '');
-                              setEditSkillDescription(skill.description || '');
-                              setEditSkillCategoryId(skill.category_id || '');
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button 
-                            className="btn-secondary" 
-                            style={{ 
-                              padding: '0.35rem 0.75rem', 
-                              fontSize: '0.8rem', 
-                              width: 'auto',
-                              borderColor: 'rgba(239, 68, 68, 0.2)',
-                              color: '#ef4444'
-                            }}
-                            onClick={() => handleDeleteSkill(skill.id, skill.name)}
-                            disabled={loading}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  ))}
+                        </th>
+                        <th style={{ width: '20%' }}>Category</th>
+                        <th style={{ width: '27%' }}>Description</th>
+                        <th style={{ width: '13%' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...skills]
+                        .sort((a, b) => {
+                          const nameA = (a.name || '').toLowerCase();
+                          const nameB = (b.name || '').toLowerCase();
+                          return skillsSortOrder === 'asc'
+                            ? nameA.localeCompare(nameB)
+                            : nameB.localeCompare(nameA);
+                        })
+                        .map((skill) => (
+                          editingSkillId === skill.id ? (
+                            <tr key={skill.id} style={{ background: 'rgba(30, 41, 59, 0.4)' }}>
+                              <td>
+                                <input 
+                                  type="text" 
+                                  className="form-input compact-input" 
+                                  placeholder="Vendor"
+                                  value={editSkillVendor}
+                                  onChange={(e) => setEditSkillVendor(e.target.value)}
+                                />
+                              </td>
+                              <td>
+                                <input 
+                                  type="text" 
+                                  className="form-input compact-input" 
+                                  placeholder="Skill Name"
+                                  value={editSkillName}
+                                  onChange={(e) => setEditSkillName(e.target.value)}
+                                  required
+                                />
+                              </td>
+                              <td>
+                                <select 
+                                  className="form-input compact-input" 
+                                  value={editSkillCategoryId}
+                                  onChange={(e) => setEditSkillCategoryId(e.target.value)}
+                                  required
+                                >
+                                  <option value="" disabled>Select Category</option>
+                                  {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td>
+                                <input 
+                                  type="text" 
+                                  className="form-input compact-input" 
+                                  placeholder="Description"
+                                  value={editSkillDescription}
+                                  onChange={(e) => setEditSkillDescription(e.target.value)}
+                                />
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                  <button 
+                                    className="btn-primary" 
+                                    style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', width: 'auto', height: '32px' }}
+                                    onClick={() => handleUpdateSkill(skill.id)}
+                                    disabled={loading}
+                                  >
+                                    Save
+                                  </button>
+                                  <button 
+                                    className="btn-secondary" 
+                                    style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', width: 'auto', height: '32px' }}
+                                    onClick={() => setEditingSkillId(null)}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ) : (
+                            <tr key={skill.id}>
+                              <td>
+                                {skill.vendor ? (
+                                  <span className="badge" style={{ 
+                                    fontSize: '0.75rem', 
+                                    background: 'rgba(139, 92, 246, 0.1)', 
+                                    color: 'var(--accent-primary)',
+                                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                                    padding: '0.1rem 0.4rem', 
+                                    borderRadius: '4px',
+                                    fontWeight: 500,
+                                    pointerEvents: 'none'
+                                  }}>
+                                    {skill.vendor}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: 'var(--text-muted)' }}>—</span>
+                                )}
+                              </td>
+                              <td>
+                                <div style={{ fontWeight: 600 }}>{skill.name}</div>
+                              </td>
+                              <td>
+                                <span className="badge empty" style={{ fontSize: '0.75rem', padding: '0.1rem 0.4rem', border: '1px solid var(--border-color)', pointerEvents: 'none' }}>
+                                  {skill.category}
+                                </span>
+                              </td>
+                              <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                {skill.description || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                  <button 
+                                    className="btn-secondary" 
+                                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', width: 'auto', height: '30px' }}
+                                    onClick={() => {
+                                      setEditingSkillId(skill.id);
+                                      setEditSkillName(skill.name);
+                                      setEditSkillVendor(skill.vendor || '');
+                                      setEditSkillDescription(skill.description || '');
+                                      setEditSkillCategoryId(skill.category_id || '');
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button 
+                                    className="btn-secondary" 
+                                    style={{ 
+                                      padding: '0.3rem 0.6rem', 
+                                      fontSize: '0.75rem', 
+                                      width: 'auto',
+                                      height: '30px',
+                                      borderColor: 'rgba(239, 68, 68, 0.2)',
+                                      color: '#ef4444'
+                                    }}
+                                    onClick={() => handleDeleteSkill(skill.id, skill.name)}
+                                    disabled={loading}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
@@ -1962,111 +1980,123 @@ function App() {
                   <p>No categories found.</p>
                 </div>
               ) : (
-                <div className="list-scroll-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
-                  {categories.map((cat) => (
-                    editingCategoryId === cat.id ? (
-                      <div 
-                        key={cat.id} 
-                        style={{ 
-                          display: 'flex', 
-                          flexDirection: 'column',
-                          gap: '0.75rem',
-                          padding: '1.25rem',
-                          background: 'rgba(30, 41, 59, 0.6)',
-                          border: '1px solid var(--accent-primary)',
-                          borderRadius: '10px'
-                        }}
-                      >
-                        <div className="form-group" style={{ margin: 0 }}>
-                          <label style={{ fontSize: '0.75rem' }}>Category Name</label>
-                          <input 
-                            type="text" 
-                            className="form-input" 
-                            style={{ padding: '0.5rem 0.75rem' }}
-                            value={editCategoryName}
-                            onChange={(e) => setEditCategoryName(e.target.value)}
-                            required
-                          />
-                        </div>
-                        <div className="form-group" style={{ margin: 0 }}>
-                          <label style={{ fontSize: '0.75rem' }}>Description</label>
-                          <input 
-                            type="text" 
-                            className="form-input" 
-                            style={{ padding: '0.5rem 0.75rem' }}
-                            value={editCategoryDesc}
-                            placeholder="Description (Optional)"
-                            onChange={(e) => setEditCategoryDesc(e.target.value)}
-                          />
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-                          <button 
-                            className="btn-secondary" 
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
-                            onClick={() => setEditingCategoryId(null)}
-                          >
-                            Cancel
-                          </button>
-                          <button 
-                            className="btn-primary" 
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
-                            onClick={() => handleUpdateCategory(cat.id)}
-                            disabled={loading}
-                          >
-                            Save Changes
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div 
-                        key={cat.id} 
-                        style={{ 
-                          padding: '1.25rem',
-                          background: 'rgba(255, 255, 255, 0.02)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '10px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          gap: '1rem'
-                        }}
-                      >
-                        <div>
-                          <span style={{ fontWeight: 600, fontSize: '1.1rem' }}>{cat.name}</span>
-                          {cat.description && (
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem', marginBottom: 0 }}>{cat.description}</p>
-                          )}
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
-                          <button 
-                            className="btn-secondary" 
-                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: 'auto' }}
-                            onClick={() => {
-                              setEditingCategoryId(cat.id);
-                              setEditCategoryName(cat.name);
-                              setEditCategoryDesc(cat.description || '');
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button 
-                            className="btn-secondary" 
-                            style={{ 
-                              padding: '0.35rem 0.75rem', 
-                              fontSize: '0.8rem', 
-                              width: 'auto',
-                              borderColor: 'rgba(239, 68, 68, 0.2)',
-                              color: '#ef4444'
-                            }}
-                            onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                            disabled={loading}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  ))}
+                <div className="list-scroll-container">
+                  <table className="list-table">
+                    <thead>
+                      <tr>
+                        <th 
+                          onClick={() => setCategoriesSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                          style={{ width: '30%', cursor: 'pointer', userSelect: 'none' }}
+                          className="sortable-header"
+                          title={`Sort by Category Name ${categoriesSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>Category Name</span>
+                            {categoriesSortOrder === 'asc' ? (
+                              <ArrowUp size={14} style={{ color: 'var(--accent-primary)' }} />
+                            ) : (
+                              <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
+                            )}
+                          </div>
+                        </th>
+                        <th style={{ width: '57%' }}>Description</th>
+                        <th style={{ width: '13%' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...categories]
+                        .sort((a, b) => {
+                          const nameA = (a.name || '').toLowerCase();
+                          const nameB = (b.name || '').toLowerCase();
+                          return categoriesSortOrder === 'asc'
+                            ? nameA.localeCompare(nameB)
+                            : nameB.localeCompare(nameA);
+                        })
+                        .map((cat) => (
+                          editingCategoryId === cat.id ? (
+                            <tr key={cat.id} style={{ background: 'rgba(30, 41, 59, 0.4)' }}>
+                              <td>
+                                <input 
+                                  type="text" 
+                                  className="form-input compact-input" 
+                                  placeholder="Category Name"
+                                  value={editCategoryName}
+                                  onChange={(e) => setEditCategoryName(e.target.value)}
+                                  required
+                                />
+                              </td>
+                              <td>
+                                <input 
+                                  type="text" 
+                                  className="form-input compact-input" 
+                                  placeholder="Description"
+                                  value={editCategoryDesc}
+                                  onChange={(e) => setEditCategoryDesc(e.target.value)}
+                                />
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                  <button 
+                                    className="btn-primary" 
+                                    style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', width: 'auto', height: '32px' }}
+                                    onClick={() => handleUpdateCategory(cat.id)}
+                                    disabled={loading}
+                                  >
+                                    Save
+                                  </button>
+                                  <button 
+                                    className="btn-secondary" 
+                                    style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', width: 'auto', height: '32px' }}
+                                    onClick={() => setEditingCategoryId(null)}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ) : (
+                            <tr key={cat.id}>
+                              <td>
+                                <div style={{ fontWeight: 600 }}>{cat.name}</div>
+                              </td>
+                              <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                {cat.description || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                  <button 
+                                    className="btn-secondary" 
+                                    style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: 'auto', height: '30px' }}
+                                    onClick={() => {
+                                      setEditingCategoryId(cat.id);
+                                      setEditCategoryName(cat.name);
+                                      setEditCategoryDesc(cat.description || '');
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button 
+                                    className="btn-secondary" 
+                                    style={{ 
+                                      padding: '0.35rem 0.75rem', 
+                                      fontSize: '0.8rem', 
+                                      width: 'auto',
+                                      height: '30px',
+                                      borderColor: 'rgba(239, 68, 68, 0.2)',
+                                      color: '#ef4444'
+                                    }}
+                                    onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                                    disabled={loading}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
@@ -2112,161 +2142,187 @@ function App() {
                   <p>No teams found.</p>
                 </div>
               ) : (
-                <div className="list-scroll-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
-                  {teams.map((team) => {
-                    const memberCount = developers.filter(d => d.teamId === team.id).length;
-                    return (
-                      editingTeamId === team.id ? (
-                        <div 
-                          key={team.id} 
-                          style={{ 
-                            display: 'flex', 
-                            flexDirection: 'column',
-                            gap: '0.75rem',
-                            padding: '1.25rem',
-                            background: 'rgba(30, 41, 59, 0.6)',
-                            border: '1px solid var(--accent-primary)',
-                            borderRadius: '10px'
-                          }}
+                <div className="list-scroll-container">
+                  <table className="list-table">
+                    <thead>
+                      <tr>
+                        <th 
+                          onClick={() => setTeamsSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                          style={{ width: '30%', cursor: 'pointer', userSelect: 'none' }}
+                          className="sortable-header"
+                          title={`Sort by Team Name ${teamsSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                         >
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.75rem' }}>Team Name</label>
-                            <input 
-                              type="text" 
-                              className="form-input" 
-                              style={{ padding: '0.5rem 0.75rem' }}
-                              value={editTeamName}
-                              onChange={(e) => setEditTeamName(e.target.value)}
-                              required
-                            />
-                          </div>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label style={{ fontSize: '0.75rem' }}>Description</label>
-                            <input 
-                              type="text" 
-                              className="form-input" 
-                              style={{ padding: '0.5rem 0.75rem' }}
-                              value={editTeamDesc}
-                              placeholder="Optional"
-                              onChange={(e) => setEditTeamDesc(e.target.value)}
-                            />
-                          </div>
-                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-                            <button 
-                              className="btn-secondary" 
-                              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
-                              onClick={() => setEditingTeamId(null)}
-                            >
-                              Cancel
-                            </button>
-                            <button 
-                              className="btn-primary" 
-                              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: 'auto' }}
-                              onClick={() => handleUpdateTeam(team.id)}
-                            >
-                              Save Changes
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div 
-                          key={team.id} 
-                          style={{ 
-                            padding: '1.25rem',
-                            background: 'rgba(255, 255, 255, 0.02)',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '10px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                            gap: '1rem'
-                          }}
-                        >
-                          <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                              <span style={{ fontWeight: 600, fontSize: '1.1rem' }}>{team.name}</span>
-                              <span 
-                                className="badge empty" 
-                                style={{ 
-                                  fontSize: '0.75rem', 
-                                  padding: '0.1rem 0.4rem',
-                                  cursor: 'pointer',
-                                  userSelect: 'none',
-                                  border: expandedTeamId === team.id ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                                  background: expandedTeamId === team.id ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                                  color: expandedTeamId === team.id ? 'var(--text-primary)' : 'var(--text-muted)'
-                                }}
-                                onClick={() => setExpandedTeamId(expandedTeamId === team.id ? null : team.id)}
-                                title="Click to view team members"
-                              >
-                                {memberCount} {memberCount === 1 ? 'member' : 'members'}
-                              </span>
-                            </div>
-                            {team.description && (
-                              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>{team.description}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>Team Name</span>
+                            {teamsSortOrder === 'asc' ? (
+                              <ArrowUp size={14} style={{ color: 'var(--accent-primary)' }} />
+                            ) : (
+                              <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
                             )}
-                            {expandedTeamId === team.id && (
-                              <div style={{
-                                marginTop: '1rem',
-                                padding: '0.75rem',
-                                background: 'rgba(15, 23, 42, 0.4)',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border-color)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.5rem'
-                              }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.25rem', marginBottom: '0.25rem' }}>
-                                  <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Team Members</h5>
-                                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({memberCount})</span>
-                                </div>
-                                {developers.filter(d => d.teamId === team.id).length === 0 ? (
-                                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                                    No members in this team.
-                                  </div>
-                                ) : (
-                                  developers.filter(d => d.teamId === team.id).map(dev => (
-                                    <div key={dev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                                      <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{dev.name}</span>
-                                      <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{dev.role}</span>
+                          </div>
+                        </th>
+                        <th style={{ width: '40%' }}>Description</th>
+                        <th style={{ width: '17%' }}>Members</th>
+                        <th style={{ width: '13%' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...teams]
+                        .sort((a, b) => {
+                          const nameA = (a.name || '').toLowerCase();
+                          const nameB = (b.name || '').toLowerCase();
+                          return teamsSortOrder === 'asc'
+                            ? nameA.localeCompare(nameB)
+                            : nameB.localeCompare(nameA);
+                        })
+                        .map((team) => {
+                          const memberCount = developers.filter(d => d.teamId === team.id).length;
+                          return (
+                            <React.Fragment key={team.id}>
+                              {editingTeamId === team.id ? (
+                                <tr style={{ background: 'rgba(30, 41, 59, 0.4)' }}>
+                                  <td>
+                                    <input 
+                                      type="text" 
+                                      className="form-input compact-input" 
+                                      placeholder="Team Name"
+                                      value={editTeamName}
+                                      onChange={(e) => setEditTeamName(e.target.value)}
+                                      required
+                                    />
+                                  </td>
+                                  <td>
+                                    <input 
+                                      type="text" 
+                                      className="form-input compact-input" 
+                                      placeholder="Description"
+                                      value={editTeamDesc}
+                                      onChange={(e) => setEditTeamDesc(e.target.value)}
+                                    />
+                                  </td>
+                                  <td>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                      {memberCount} {memberCount === 1 ? 'member' : 'members'}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                      <button 
+                                        className="btn-primary" 
+                                        style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', width: 'auto', height: '32px' }}
+                                        onClick={() => handleUpdateTeam(team.id)}
+                                        disabled={loading}
+                                      >
+                                        Save
+                                      </button>
+                                      <button 
+                                        className="btn-secondary" 
+                                        style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', width: 'auto', height: '32px' }}
+                                        onClick={() => setEditingTeamId(null)}
+                                      >
+                                        Cancel
+                                      </button>
                                     </div>
-                                  ))
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
-                            <button 
-                              className="btn-secondary" 
-                              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: 'auto' }}
-                              onClick={() => {
-                                setEditingTeamId(team.id);
-                                setEditTeamName(team.name);
-                                setEditTeamDesc(team.description || '');
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              className="btn-secondary" 
-                              style={{ 
-                                padding: '0.35rem 0.75rem', 
-                                fontSize: '0.8rem', 
-                                width: 'auto',
-                                borderColor: 'rgba(239, 68, 68, 0.2)',
-                                color: '#ef4444'
-                              }}
-                              onClick={() => handleDeleteTeam(team.id, team.name)}
-                              disabled={loading}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    );
-                  })}
+                                  </td>
+                                </tr>
+                              ) : (
+                                <>
+                                  <tr>
+                                    <td>
+                                      <div style={{ fontWeight: 600 }}>{team.name}</div>
+                                    </td>
+                                    <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                      {team.description || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                                    </td>
+                                    <td>
+                                      <button 
+                                        className="badge empty" 
+                                        style={{ 
+                                          fontSize: '0.75rem', 
+                                          padding: '0.1rem 0.4rem',
+                                          cursor: 'pointer',
+                                          userSelect: 'none',
+                                          border: expandedTeamId === team.id ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                                          background: expandedTeamId === team.id ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                                          color: expandedTeamId === team.id ? 'var(--text-primary)' : 'var(--text-muted)'
+                                        }}
+                                        onClick={() => setExpandedTeamId(expandedTeamId === team.id ? null : team.id)}
+                                        title="Click to view team members"
+                                      >
+                                        {memberCount} {memberCount === 1 ? 'member' : 'members'}
+                                      </button>
+                                    </td>
+                                    <td>
+                                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                        <button 
+                                          className="btn-secondary" 
+                                          style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: 'auto', height: '30px' }}
+                                          onClick={() => {
+                                            setEditingTeamId(team.id);
+                                            setEditTeamName(team.name);
+                                            setEditTeamDesc(team.description || '');
+                                          }}
+                                        >
+                                          Edit
+                                        </button>
+                                        <button 
+                                          className="btn-secondary" 
+                                          style={{ 
+                                            padding: '0.35rem 0.75rem', 
+                                            fontSize: '0.8rem', 
+                                            width: 'auto',
+                                            height: '30px',
+                                            borderColor: 'rgba(239, 68, 68, 0.2)',
+                                            color: '#ef4444'
+                                          }}
+                                          onClick={() => handleDeleteTeam(team.id, team.name)}
+                                          disabled={loading}
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  {expandedTeamId === team.id && (
+                                    <tr style={{ background: 'rgba(15, 23, 42, 0.2)' }}>
+                                      <td colSpan={4} style={{ padding: '1rem 1.5rem' }}>
+                                        <div style={{
+                                          padding: '0.75rem 1rem',
+                                          background: 'rgba(15, 23, 42, 0.4)',
+                                          borderRadius: '8px',
+                                          border: '1px solid var(--border-color)',
+                                          display: 'flex',
+                                          flexDirection: 'column',
+                                          gap: '0.5rem',
+                                          maxWidth: '500px'
+                                        }}>
+                                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.25rem', marginBottom: '0.25rem' }}>
+                                            <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Team Members</h5>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({memberCount})</span>
+                                          </div>
+                                          {developers.filter(d => d.teamId === team.id).length === 0 ? (
+                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                              No members in this team.
+                                            </div>
+                                          ) : (
+                                            developers.filter(d => d.teamId === team.id).map(dev => (
+                                              <div key={dev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                                                <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{dev.name}</span>
+                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{dev.role}</span>
+                                              </div>
+                                            ))
+                                          )}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
+                                </>
+                              )}
+                            </React.Fragment>
+                          );
+                        })}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
