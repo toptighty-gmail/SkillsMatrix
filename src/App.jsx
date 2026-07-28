@@ -221,6 +221,7 @@ function App() {
   // UI states
   const [activeTab, setActiveTab] = useState('matrix'); // matrix, developers, skills
   const [matrixSortOrder, setMatrixSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [devListSortOrder, setDevListSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState(null);
@@ -1498,7 +1499,21 @@ function App() {
                   <table className="list-table">
                     <thead>
                       <tr>
-                        <th style={{ width: '22%' }}>Name</th>
+                        <th 
+                          onClick={() => setDevListSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                          style={{ width: '22%', cursor: 'pointer', userSelect: 'none' }}
+                          className="sortable-header"
+                          title={`Sort by Developer Name ${devListSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>Name</span>
+                            {devListSortOrder === 'asc' ? (
+                              <ArrowUp size={14} style={{ color: 'var(--accent-primary)' }} />
+                            ) : (
+                              <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
+                            )}
+                          </div>
+                        </th>
                         <th style={{ width: '20%' }}>Role</th>
                         <th style={{ width: '15%' }}>Team</th>
                         <th style={{ width: '12%' }}>Login ID</th>
@@ -1507,7 +1522,15 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {developers.map((dev) => (
+                      {[...developers]
+                        .sort((a, b) => {
+                          const nameA = (a.name || '').toLowerCase();
+                          const nameB = (b.name || '').toLowerCase();
+                          return devListSortOrder === 'asc'
+                            ? nameA.localeCompare(nameB)
+                            : nameB.localeCompare(nameA);
+                        })
+                        .map((dev) => (
                         editingDevId === dev.id ? (
                           <tr key={dev.id} style={{ background: 'rgba(30, 41, 59, 0.4)' }}>
                             <td>

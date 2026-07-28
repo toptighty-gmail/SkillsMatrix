@@ -753,7 +753,8 @@ h1, h2, h3, h4, h5, h6 {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.matrix-table th.sortable-header:first-child:hover {
+.matrix-table th.sortable-header:first-child:hover,
+.list-table th.sortable-header:hover {
   background: #334155 !important;
   color: var(--text-primary) !important;
 }
@@ -766,5 +767,6 @@ h1, h2, h3, h4, h5, h6 {
   transform: scale(1.1);
   color: var(--accent-primary-hover) !important;
 }
+
 
 
