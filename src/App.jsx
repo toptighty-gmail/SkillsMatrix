@@ -18,7 +18,9 @@ import {
   Copy,
   Trash2,
   Star,
-  X
+  X,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 
 // Predefined mock data for Demo Mode
@@ -218,6 +220,7 @@ function App() {
   
   // UI states
   const [activeTab, setActiveTab] = useState('matrix'); // matrix, developers, skills
+  const [matrixSortOrder, setMatrixSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState(null);
@@ -1353,7 +1356,21 @@ function App() {
                   <table className="matrix-table">
                     <thead>
                       <tr>
-                        <th>Team Member</th>
+                        <th 
+                          onClick={() => setMatrixSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')} 
+                          style={{ cursor: 'pointer', userSelect: 'none' }}
+                          className="sortable-header"
+                          title={`Sort by Team Member Name ${matrixSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>Team Member</span>
+                            {matrixSortOrder === 'asc' ? (
+                              <ArrowUp size={14} style={{ color: 'var(--accent-primary)' }} />
+                            ) : (
+                              <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
+                            )}
+                          </div>
+                        </th>
                         {skills.map((skill) => (
                           <th key={skill.id} title={`${skill.name} (${skill.category})`}>
                             {skill.name}
@@ -1363,20 +1380,28 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {developers.map((dev) => (
-                        <tr key={dev.id}>
-                          <td>
-                            <div className="dev-name">{dev.name}</div>
-                            <div className="dev-role">{dev.role}</div>
-                            <div className="dev-team">{dev.team}</div>
-                          </td>
-                          {skills.map((skill) => (
-                            <td key={skill.id}>
-                              {getProficiencyBadge(dev.id, skill.id)}
+                      {[...developers]
+                        .sort((a, b) => {
+                          const nameA = (a.name || '').toLowerCase();
+                          const nameB = (b.name || '').toLowerCase();
+                          return matrixSortOrder === 'asc'
+                            ? nameA.localeCompare(nameB)
+                            : nameB.localeCompare(nameA);
+                        })
+                        .map((dev) => (
+                          <tr key={dev.id}>
+                            <td>
+                              <div className="dev-name">{dev.name}</div>
+                              <div className="dev-role">{dev.role}</div>
+                              <div className="dev-team">{dev.team}</div>
                             </td>
-                          ))}
-                        </tr>
-                      ))}
+                            {skills.map((skill) => (
+                              <td key={skill.id}>
+                                {getProficiencyBadge(dev.id, skill.id)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
