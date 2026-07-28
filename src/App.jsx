@@ -20,7 +20,8 @@ import {
   Star,
   X,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Info
 } from 'lucide-react';
 
 // Predefined mock data for Demo Mode
@@ -225,6 +226,7 @@ function App() {
   const [skillsSortOrder, setSkillsSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [categoriesSortOrder, setCategoriesSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [teamsSortOrder, setTeamsSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [selectedDevInfo, setSelectedDevInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState(null);
@@ -1395,9 +1397,18 @@ function App() {
                         .map((dev) => (
                           <tr key={dev.id}>
                             <td>
-                              <div className="dev-name">{dev.name}</div>
-                              <div className="dev-role">{dev.role}</div>
-                              <div className="dev-team">{dev.team}</div>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', width: '100%' }}>
+                                <span className="dev-name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {dev.name}
+                                </span>
+                                <button 
+                                  className="info-btn"
+                                  onClick={() => setSelectedDevInfo(dev)}
+                                  title="View details"
+                                >
+                                  <Info size={13} />
+                                </button>
+                              </div>
                             </td>
                             {skills.map((skill) => (
                               <td key={skill.id}>
@@ -2329,6 +2340,66 @@ function App() {
           )}
         </main>
       </div>
+
+      {/* Team Member Details Modal */}
+      {selectedDevInfo && (
+        <div className="modal-overlay" onClick={() => setSelectedDevInfo(null)}>
+          <div className="modal-content glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px', width: '100%', padding: '1.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <h3 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--text-primary)' }}>Team Member Details</h3>
+              <button 
+                onClick={() => setSelectedDevInfo(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0 }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.15rem' }}>Full Name</label>
+                <div style={{ fontWeight: 600, fontSize: '1.2rem', color: 'var(--text-primary)' }}>{selectedDevInfo.name}</div>
+              </div>
+              <div>
+                <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.15rem' }}>Role / Title</label>
+                <div style={{ color: 'var(--text-primary)', fontSize: '0.95rem' }}>{selectedDevInfo.role}</div>
+              </div>
+              <div>
+                <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.15rem' }}>Team</label>
+                <div>
+                  <span className="badge empty" style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', border: '1px solid var(--border-color)', pointerEvents: 'none', marginTop: '0.15rem' }}>
+                    {selectedDevInfo.team || 'No Team'}
+                  </span>
+                </div>
+              </div>
+              {selectedDevInfo.email && (
+                <div>
+                  <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.15rem' }}>Email</label>
+                  <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{selectedDevInfo.email}</div>
+                </div>
+              )}
+              {selectedDevInfo.companyLoginId && (
+                <div>
+                  <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.15rem' }}>Company Login ID</label>
+                  <code style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
+                    {selectedDevInfo.companyLoginId}
+                  </code>
+                </div>
+              )}
+              {(selectedDevInfo.managerName || selectedDevInfo.managerCompanyLoginId) && (
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', marginTop: '0.25rem' }}>
+                  <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.15rem' }}>Reports To</label>
+                  {selectedDevInfo.managerName && (
+                    <div style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{selectedDevInfo.managerName}</div>
+                  )}
+                  {selectedDevInfo.managerCompanyLoginId && (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>ID: {selectedDevInfo.managerCompanyLoginId}</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
