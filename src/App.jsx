@@ -224,6 +224,7 @@ function App() {
   const [matrixSortOrder, setMatrixSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [selectedTeamFilter, setSelectedTeamFilter] = useState('All');
   const [selectedDevFilter, setSelectedDevFilter] = useState('All');
+  const [teamRedirectTarget, setTeamRedirectTarget] = useState(null); // 'matrix' or 'developers'
   const [devListSortOrder, setDevListSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [skillsSortOrder, setSkillsSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [categoriesSortOrder, setCategoriesSortOrder] = useState('asc'); // 'asc' or 'desc'
@@ -989,10 +990,16 @@ function App() {
       setNewTeamName('');
       setNewTeamDesc('');
       
-      // Auto-navigate back to Matrix and set team filter
-      setActiveTab('matrix');
-      setSelectedTeamFilter(newTeam.name);
-      setSelectedDevFilter('All');
+      // Auto-navigate back and set filter/value based on redirect target
+      if (teamRedirectTarget === 'developers') {
+        setActiveTab('developers');
+        setNewDevTeamId(String(newTeam.id));
+      } else {
+        setActiveTab('matrix');
+        setSelectedTeamFilter(newTeam.name);
+        setSelectedDevFilter('All');
+      }
+      setTeamRedirectTarget(null);
       
       showToast(`Added team: ${newTeamName} (Demo)`);
       setLoading(false);
@@ -1011,14 +1018,21 @@ function App() {
       if (error) throw error;
 
       const addedTeamName = data[0].name;
+      const addedTeamId = data[0].id;
       setTeams([...teams, data[0]]);
       setNewTeamName('');
       setNewTeamDesc('');
       
-      // Auto-navigate back to Matrix and set team filter
-      setActiveTab('matrix');
-      setSelectedTeamFilter(addedTeamName);
-      setSelectedDevFilter('All');
+      // Auto-navigate back and set filter/value based on redirect target
+      if (teamRedirectTarget === 'developers') {
+        setActiveTab('developers');
+        setNewDevTeamId(String(addedTeamId));
+      } else {
+        setActiveTab('matrix');
+        setSelectedTeamFilter(addedTeamName);
+        setSelectedDevFilter('All');
+      }
+      setTeamRedirectTarget(null);
       
       showToast(`Successfully added team: ${newTeamName}`);
     } catch (err) {
@@ -1431,6 +1445,7 @@ function App() {
                         value={selectedTeamFilter}
                         onChange={(e) => {
                           if (e.target.value === 'ADD_TEAM') {
+                            setTeamRedirectTarget('matrix');
                             setActiveTab('teams');
                             setSelectedTeamFilter('All');
                           } else {
@@ -1659,12 +1674,22 @@ function App() {
                     className="form-input" 
                     style={{ height: '42px' }}
                     value={newDevTeamId}
-                    onChange={(e) => setNewDevTeamId(e.target.value)}
+                    onChange={(e) => {
+                      if (e.target.value === 'ADD_TEAM') {
+                        setTeamRedirectTarget('developers');
+                        setActiveTab('teams');
+                        setNewDevTeamId('');
+                      } else {
+                        setNewDevTeamId(e.target.value);
+                      }
+                    }}
                   >
                     <option value="">No Team</option>
                     {[...teams].sort((a, b) => a.name.localeCompare(b.name)).map(t => (
                       <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
+                    <option disabled>— Actions —</option>
+                    <option value="ADD_TEAM">+ Add New Team...</option>
                   </select>
                 </div>
                 <button type="submit" className="btn-primary" style={{ height: '42px' }} disabled={loading}>
