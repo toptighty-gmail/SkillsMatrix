@@ -115,8 +115,11 @@ CREATE TABLE IF NOT EXISTS team_skills (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   team_id BIGINT REFERENCES teams(id) ON DELETE CASCADE,
   skill_id UUID REFERENCES skills(id) ON DELETE CASCADE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  UNIQUE(team_id, skill_id)
+  is_required BOOLEAN DEFAULT true NOT NULL,
+  is_current BOOLEAN DEFAULT true NOT NULL,
+  valid_from TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  valid_to TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- 4. Enable Row Level Security (RLS)
@@ -406,7 +409,8 @@ function App() {
           .from('team_skills')
           .select('*');
         if (!tsError && tsData) {
-          fetchedTeamSkills = tsData;
+          // If is_current column exists, filter for active rows (is_current !== false); otherwise return all
+          fetchedTeamSkills = tsData.filter(row => row.is_current === undefined || row.is_current === true || row.is_current === null);
         }
       } catch (tsErr) {
         console.log('team_skills table query notice:', tsErr);
@@ -1212,24 +1216,57 @@ function App() {
 
     try {
       if (isAssigned) {
+        // Soft delete: set is_required=false, valid_to=now, is_current=false
+        const nowIso = new Date().toISOString();
         const { error } = await supabase
           .from('team_skills')
-          .delete()
+          .update({
+            is_required: false,
+            is_current: false,
+            valid_to: nowIso
+          })
           .eq('team_id', teamId)
           .eq('skill_id', skillId);
 
-        if (error) throw error;
+        if (error) {
+          // If update fails due to schema difference (e.g. column missing), fallback to hard delete
+          const { error: delError } = await supabase
+            .from('team_skills')
+            .delete()
+            .eq('team_id', teamId)
+            .eq('skill_id', skillId);
+          if (delError) throw delError;
+        }
+
         setTeamSkills(teamSkills.filter(ts => !(ts.team_id === teamId && ts.skill_id === skillId)));
         showToast(`Removed skill "${skillName}" from ${teamName}`);
       } else {
+        // Assign skill: insert new active row
         const { data, error } = await supabase
           .from('team_skills')
-          .insert([{ team_id: teamId, skill_id: skillId }])
+          .insert([{ 
+            team_id: teamId, 
+            skill_id: skillId,
+            is_required: true,
+            is_current: true,
+            valid_from: new Date().toISOString()
+          }])
           .select();
 
-        if (error) throw error;
-        const insertedRow = data && data[0] ? data[0] : { team_id: teamId, skill_id: skillId };
-        setTeamSkills([...teamSkills, insertedRow]);
+        if (error) {
+          // Fallback if schema doesn't have temporal columns yet
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('team_skills')
+            .insert([{ team_id: teamId, skill_id: skillId }])
+            .select();
+          if (fallbackError) throw fallbackError;
+          const insertedRow = fallbackData && fallbackData[0] ? fallbackData[0] : { team_id: teamId, skill_id: skillId };
+          setTeamSkills([...teamSkills, insertedRow]);
+        } else {
+          const insertedRow = data && data[0] ? data[0] : { team_id: teamId, skill_id: skillId };
+          setTeamSkills([...teamSkills, insertedRow]);
+        }
+
         showToast(`Assigned skill "${skillName}" to ${teamName}`);
       }
     } catch (err) {
