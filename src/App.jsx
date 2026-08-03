@@ -1216,7 +1216,7 @@ function App() {
 
     try {
       if (isAssigned) {
-        // Soft delete: set is_required=false, valid_to=now, is_current=false
+        // Soft delete: update row setting is_required=false, is_current=false, valid_to=now
         const nowIso = new Date().toISOString();
         const { error } = await supabase
           .from('team_skills')
@@ -1229,16 +1229,18 @@ function App() {
           .eq('skill_id', skillId);
 
         if (error) {
-          // If update fails due to schema difference (e.g. column missing), fallback to hard delete
-          const { error: delError } = await supabase
-            .from('team_skills')
-            .delete()
-            .eq('team_id', teamId)
-            .eq('skill_id', skillId);
-          if (delError) throw delError;
+          console.error('Failed to soft-delete team skill:', error);
+          throw error;
         }
 
-        setTeamSkills(teamSkills.filter(ts => !(ts.team_id === teamId && ts.skill_id === skillId)));
+        // Update local React state to reflect active team skills only
+        setTeamSkills(teamSkills.map(ts => {
+          if (ts.team_id === teamId && ts.skill_id === skillId) {
+            return { ...ts, is_required: false, is_current: false, valid_to: nowIso };
+          }
+          return ts;
+        }).filter(ts => ts.is_current !== false && ts.is_required !== false));
+
         showToast(`Removed skill "${skillName}" from ${teamName}`);
       } else {
         // Assign skill: insert new active row
@@ -1254,19 +1256,12 @@ function App() {
           .select();
 
         if (error) {
-          // Fallback if schema doesn't have temporal columns yet
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from('team_skills')
-            .insert([{ team_id: teamId, skill_id: skillId }])
-            .select();
-          if (fallbackError) throw fallbackError;
-          const insertedRow = fallbackData && fallbackData[0] ? fallbackData[0] : { team_id: teamId, skill_id: skillId };
-          setTeamSkills([...teamSkills, insertedRow]);
-        } else {
-          const insertedRow = data && data[0] ? data[0] : { team_id: teamId, skill_id: skillId };
-          setTeamSkills([...teamSkills, insertedRow]);
+          console.error('Failed to insert active team skill:', error);
+          throw error;
         }
 
+        const insertedRow = data && data[0] ? data[0] : { team_id: teamId, skill_id: skillId, is_required: true, is_current: true };
+        setTeamSkills([...teamSkills, insertedRow]);
         showToast(`Assigned skill "${skillName}" to ${teamName}`);
       }
     } catch (err) {
