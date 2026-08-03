@@ -1408,8 +1408,8 @@ function App() {
                           <option key={t.id} value={t.name}>{t.name}</option>
                         ))}
                         <option value="No Team">No Team</option>
-                        <option disabled>────────────────────</option>
-                        <option value="ADD_TEAM" style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>+ Add New Team...</option>
+                        <option disabled>— Actions —</option>
+                        <option value="ADD_TEAM">+ Add New Team...</option>
                       </select>
                     </div>
 
@@ -1437,8 +1437,8 @@ function App() {
                           .map((dev) => (
                             <option key={dev.id} value={dev.id}>{dev.name}</option>
                           ))}
-                        <option disabled>────────────────────</option>
-                        <option value="ADD_DEV" style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>+ Add New Member...</option>
+                        <option disabled>— Actions —</option>
+                        <option value="ADD_DEV">+ Add New Member...</option>
                       </select>
                     </div>
                     
