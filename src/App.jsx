@@ -454,14 +454,32 @@ function App() {
 
     setLoading(true);
     if (useDemoMode) {
+      let assignedTeamName = 'No Team';
+      let assignedTeamId = null;
+      if (newDevTeamId) {
+        const teamObj = teams.find(t => String(t.id) === String(newDevTeamId));
+        if (teamObj) {
+          assignedTeamName = teamObj.name;
+          assignedTeamId = teamObj.id;
+        }
+      }
       const newDev = {
         id: `dev-${Date.now()}`,
         name: newDevName,
-        role: newDevRole
+        role: newDevRole,
+        team: assignedTeamName,
+        teamId: assignedTeamId
       };
       setDevelopers([...developers, newDev]);
       setNewDevName('');
       setNewDevRole('');
+      setNewDevTeamId('');
+      
+      // Auto-navigate back to Matrix and set filters
+      setActiveTab('matrix');
+      setSelectedTeamFilter(assignedTeamName);
+      setSelectedDevFilter(newDev.id);
+      
       showToast(`Added ${newDevName} (Demo)`);
       setLoading(false);
       return;
@@ -524,6 +542,12 @@ function App() {
       setNewDevManagerCompanyLoginId('');
       setNewDevCompanyLoginId('');
       setNewDevTeamId('');
+      
+      // Auto-navigate back to Matrix and set filters
+      setActiveTab('matrix');
+      setSelectedTeamFilter(assignedTeamName);
+      setSelectedDevFilter(newDevMapped.id);
+      
       showToast(`Successfully added team member: ${newDevName}`);
     } catch (err) {
       console.error(err);
@@ -964,6 +988,12 @@ function App() {
       setTeams([...teams, newTeam]);
       setNewTeamName('');
       setNewTeamDesc('');
+      
+      // Auto-navigate back to Matrix and set team filter
+      setActiveTab('matrix');
+      setSelectedTeamFilter(newTeam.name);
+      setSelectedDevFilter('All');
+      
       showToast(`Added team: ${newTeamName} (Demo)`);
       setLoading(false);
       return;
@@ -980,9 +1010,16 @@ function App() {
 
       if (error) throw error;
 
+      const addedTeamName = data[0].name;
       setTeams([...teams, data[0]]);
       setNewTeamName('');
       setNewTeamDesc('');
+      
+      // Auto-navigate back to Matrix and set team filter
+      setActiveTab('matrix');
+      setSelectedTeamFilter(addedTeamName);
+      setSelectedDevFilter('All');
+      
       showToast(`Successfully added team: ${newTeamName}`);
     } catch (err) {
       console.error(err);
