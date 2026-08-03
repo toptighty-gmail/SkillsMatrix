@@ -651,7 +651,7 @@ function App() {
     if (useDemoMode) {
       setDevelopers(developers.filter(d => d.id !== devId));
       setDeveloperSkills(developerSkills.filter(ds => ds.developer_id !== devId));
-      if (selectedDevFilter === devId) {
+      if (String(selectedDevFilter) === String(devId)) {
         setSelectedDevFilter('All');
       }
       showToast(`Removed ${name} (Demo)`);
@@ -669,7 +669,7 @@ function App() {
 
       setDevelopers(developers.filter(d => d.id !== devId));
       setDeveloperSkills(developerSkills.filter(ds => ds.developer_id !== devId));
-      if (selectedDevFilter === devId) {
+      if (String(selectedDevFilter) === String(devId)) {
         setSelectedDevFilter('All');
       }
       showToast(`Successfully removed team member: ${name}`);
@@ -1475,7 +1475,7 @@ function App() {
                           const filteredDevs = [...developers]
                             .filter((dev) => {
                               const matchesTeam = selectedTeamFilter === 'All' || dev.team === selectedTeamFilter;
-                              const matchesDev = selectedDevFilter === 'All' || dev.id === selectedDevFilter;
+                              const matchesDev = selectedDevFilter === 'All' || String(dev.id) === String(selectedDevFilter);
                               return matchesTeam && matchesDev;
                             })
                             .sort((a, b) => {
