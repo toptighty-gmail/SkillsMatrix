@@ -1393,8 +1393,13 @@ function App() {
                         className="form-select"
                         value={selectedTeamFilter}
                         onChange={(e) => {
-                          setSelectedTeamFilter(e.target.value);
-                          setSelectedDevFilter('All');
+                          if (e.target.value === 'ADD_TEAM') {
+                            setActiveTab('teams');
+                            setSelectedTeamFilter('All');
+                          } else {
+                            setSelectedTeamFilter(e.target.value);
+                            setSelectedDevFilter('All');
+                          }
                         }}
                         style={{ height: '42px', padding: '0.5rem 1rem' }}
                       >
@@ -1403,6 +1408,8 @@ function App() {
                           <option key={t.id} value={t.name}>{t.name}</option>
                         ))}
                         <option value="No Team">No Team</option>
+                        <option disabled>────────────────────</option>
+                        <option value="ADD_TEAM" style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>+ Add New Team...</option>
                       </select>
                     </div>
 
@@ -1413,7 +1420,14 @@ function App() {
                       <select
                         className="form-select"
                         value={selectedDevFilter}
-                        onChange={(e) => setSelectedDevFilter(e.target.value)}
+                        onChange={(e) => {
+                          if (e.target.value === 'ADD_DEV') {
+                            setActiveTab('developers');
+                            setSelectedDevFilter('All');
+                          } else {
+                            setSelectedDevFilter(e.target.value);
+                          }
+                        }}
                         style={{ height: '42px', padding: '0.5rem 1rem' }}
                       >
                         <option value="All">All Members</option>
@@ -1423,6 +1437,8 @@ function App() {
                           .map((dev) => (
                             <option key={dev.id} value={dev.id}>{dev.name}</option>
                           ))}
+                        <option disabled>────────────────────</option>
+                        <option value="ADD_DEV" style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>+ Add New Member...</option>
                       </select>
                     </div>
                     
