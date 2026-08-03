@@ -74,6 +74,15 @@ const mockPersonTeams = [
   { person_id: 'dev-4', team_id: 1, is_current: true }
 ];
 
+const mockTeamSkills = [
+  { id: 'ts-1', team_id: 1, skill_id: 'skill-2' },
+  { id: 'ts-2', team_id: 1, skill_id: 'skill-3' },
+  { id: 'ts-3', team_id: 2, skill_id: 'skill-1' },
+  { id: 'ts-4', team_id: 2, skill_id: 'skill-5' },
+  { id: 'ts-5', team_id: 3, skill_id: 'skill-3' },
+  { id: 'ts-6', team_id: 3, skill_id: 'skill-4' }
+];
+
 const SQL_SETUP_SCRIPT = `-- 1. Create developers table
 CREATE TABLE IF NOT EXISTS developers (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -101,10 +110,20 @@ CREATE TABLE IF NOT EXISTS developer_skills (
   PRIMARY KEY (developer_id, skill_id)
 );
 
+-- 3b. Create team_skills join table
+CREATE TABLE IF NOT EXISTS team_skills (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  team_id BIGINT REFERENCES teams(id) ON DELETE CASCADE,
+  skill_id UUID REFERENCES skills(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  UNIQUE(team_id, skill_id)
+);
+
 -- 4. Enable Row Level Security (RLS)
 ALTER TABLE developers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE developer_skills ENABLE ROW LEVEL SECURITY;
+ALTER TABLE team_skills ENABLE ROW LEVEL SECURITY;
 
 -- 5. Create policies to allow public read/write (for this demo app)
 CREATE POLICY "Allow public read developers" ON developers FOR SELECT TO public USING (true);
@@ -121,6 +140,11 @@ CREATE POLICY "Allow public read developer_skills" ON developer_skills FOR SELEC
 CREATE POLICY "Allow public insert developer_skills" ON developer_skills FOR INSERT TO public WITH CHECK (true);
 CREATE POLICY "Allow public update developer_skills" ON developer_skills FOR UPDATE TO public USING (true);
 CREATE POLICY "Allow public delete developer_skills" ON developer_skills FOR DELETE TO public USING (true);
+
+CREATE POLICY "Allow public read team_skills" ON team_skills FOR SELECT TO public USING (true);
+CREATE POLICY "Allow public insert team_skills" ON team_skills FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow public update team_skills" ON team_skills FOR UPDATE TO public USING (true);
+CREATE POLICY "Allow public delete team_skills" ON team_skills FOR DELETE TO public USING (true);
 
 -- 6. Insert some sample seed data
 INSERT INTO developers (name, role) VALUES
@@ -217,15 +241,17 @@ function App() {
   const [developerSkills, setDeveloperSkills] = useState([]);
   const [teams, setTeams] = useState([]);
   const [personTeams, setPersonTeams] = useState([]);
+  const [teamSkills, setTeamSkills] = useState([]);
   const [categories, setCategories] = useState([]);
-  
-  // UI states
+
+  // Sorting and Filter states
   const [activeTab, setActiveTab] = useState('matrix'); // matrix, developers, skills
   const [matrixSortOrder, setMatrixSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [selectedTeamFilter, setSelectedTeamFilter] = useState('All');
   const [selectedDevFilter, setSelectedDevFilter] = useState('All');
-  const [teamRedirectTarget, setTeamRedirectTarget] = useState(null); // 'matrix' or 'developers'
-  const [categoryRedirectTarget, setCategoryRedirectTarget] = useState(null); // 'skills'
+  const [selectedSkillFilter, setSelectedSkillFilter] = useState('All');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
+  const [skillSearchQuery, setSkillSearchQuery] = useState('');
   const [devListSortOrder, setDevListSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [skillsSortOrder, setSkillsSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [categoriesSortOrder, setCategoriesSortOrder] = useState('asc'); // 'asc' or 'desc'
@@ -264,6 +290,7 @@ function App() {
   const [editTeamName, setEditTeamName] = useState('');
   const [editTeamDesc, setEditTeamDesc] = useState('');
   const [expandedTeamId, setExpandedTeamId] = useState(null);
+  const [teamRedirectTarget, setTeamRedirectTarget] = useState(null); // 'developers' or 'matrix'
 
   // Skills CRUD states
   const [editingSkillId, setEditingSkillId] = useState(null);
@@ -309,6 +336,7 @@ function App() {
       setDeveloperSkills(mockDeveloperSkills);
       setTeams(mockTeams);
       setPersonTeams(mockPersonTeams);
+      setTeamSkills(mockTeamSkills);
       setCategories(mockCategories);
       if (mockCategories.length > 0) {
         setNewSkillCategoryId(mockCategories[0].id);
@@ -371,6 +399,19 @@ function App() {
         .select('*');
       if (personTeamsError) throw personTeamsError;
 
+      // 7. Query team_skills junction (gracefully handle if missing)
+      let fetchedTeamSkills = [];
+      try {
+        const { data: tsData, error: tsError } = await supabase
+          .from('team_skills')
+          .select('*');
+        if (!tsError && tsData) {
+          fetchedTeamSkills = tsData;
+        }
+      } catch (tsErr) {
+        console.log('team_skills table query notice:', tsErr);
+      }
+
       // Map DB schema to app state
       const mappedDevs = (devsData || []).map(row => {
         const currentPT = (personTeamsData || []).find(pt => pt.person_id === row.id && pt.is_current === true);
@@ -412,6 +453,7 @@ function App() {
       setDeveloperSkills(mappedJunction);
       setTeams(teamsData || []);
       setPersonTeams(personTeamsData || []);
+      setTeamSkills(fetchedTeamSkills);
       setCategories(categoriesData || []);
       if (categoriesData && categoriesData.length > 0) {
         setNewSkillCategoryId(categoriesData[0].id);
@@ -1140,6 +1182,59 @@ function App() {
     } catch (err) {
       console.error(err);
       showToast(`Error deleting team: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // CRUD: Assign or Unassign a Skill to/from a Team
+  const handleToggleTeamSkill = async (teamId, skillId) => {
+    const isAssigned = teamSkills.some(ts => ts.team_id === teamId && ts.skill_id === skillId);
+    const targetSkill = skills.find(s => s.id === skillId);
+    const targetTeam = teams.find(t => t.id === teamId);
+    const skillName = targetSkill ? targetSkill.name : 'Skill';
+    const teamName = targetTeam ? targetTeam.name : 'Team';
+
+    setLoading(true);
+
+    if (useDemoMode) {
+      if (isAssigned) {
+        setTeamSkills(teamSkills.filter(ts => !(ts.team_id === teamId && ts.skill_id === skillId)));
+        showToast(`Removed skill "${skillName}" from ${teamName} (Demo)`);
+      } else {
+        const newTS = { id: `ts-${Date.now()}`, team_id: teamId, skill_id: skillId };
+        setTeamSkills([...teamSkills, newTS]);
+        showToast(`Assigned skill "${skillName}" to ${teamName} (Demo)`);
+      }
+      setLoading(false);
+      return;
+    }
+
+    try {
+      if (isAssigned) {
+        const { error } = await supabase
+          .from('team_skills')
+          .delete()
+          .eq('team_id', teamId)
+          .eq('skill_id', skillId);
+
+        if (error) throw error;
+        setTeamSkills(teamSkills.filter(ts => !(ts.team_id === teamId && ts.skill_id === skillId)));
+        showToast(`Removed skill "${skillName}" from ${teamName}`);
+      } else {
+        const { data, error } = await supabase
+          .from('team_skills')
+          .insert([{ team_id: teamId, skill_id: skillId }])
+          .select();
+
+        if (error) throw error;
+        const insertedRow = data && data[0] ? data[0] : { team_id: teamId, skill_id: skillId };
+        setTeamSkills([...teamSkills, insertedRow]);
+        showToast(`Assigned skill "${skillName}" to ${teamName}`);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(`Error updating team skill: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -2395,9 +2490,10 @@ function App() {
                             )}
                           </div>
                         </th>
-                        <th style={{ width: '40%' }}>Description</th>
-                        <th style={{ width: '17%' }}>Members</th>
-                        <th style={{ width: '13%' }}>Actions</th>
+                        <th style={{ width: '30%' }}>Description</th>
+                        <th style={{ width: '15%' }}>Members</th>
+                        <th style={{ width: '25%' }}>Assigned Skills</th>
+                        <th style={{ width: '10%' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2411,6 +2507,9 @@ function App() {
                         })
                         .map((team) => {
                           const memberCount = developers.filter(d => d.teamId === team.id).length;
+                          const assignedSkillIds = teamSkills.filter(ts => ts.team_id === team.id).map(ts => ts.skill_id);
+                          const assignedSkills = skills.filter(s => assignedSkillIds.includes(s.id));
+                          
                           return (
                             <React.Fragment key={team.id}>
                               {editingTeamId === team.id ? (
@@ -2437,6 +2536,11 @@ function App() {
                                   <td>
                                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                       {memberCount} {memberCount === 1 ? 'member' : 'members'}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                      {assignedSkills.length} {assignedSkills.length === 1 ? 'skill' : 'skills'}
                                     </span>
                                   </td>
                                   <td>
@@ -2481,10 +2585,35 @@ function App() {
                                           color: expandedTeamId === team.id ? 'var(--text-primary)' : 'var(--text-muted)'
                                         }}
                                         onClick={() => setExpandedTeamId(expandedTeamId === team.id ? null : team.id)}
-                                        title="Click to view team members"
+                                        title="Click to view team details & manage skills"
                                       >
                                         {memberCount} {memberCount === 1 ? 'member' : 'members'}
                                       </button>
+                                    </td>
+                                    <td>
+                                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', alignItems: 'center' }}>
+                                        {assignedSkills.length === 0 ? (
+                                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>None assigned</span>
+                                        ) : (
+                                          assignedSkills.slice(0, 3).map(sk => (
+                                            <span key={sk.id} className="badge level-competent" style={{ fontSize: '0.7rem', padding: '0.1rem 0.35rem' }}>
+                                              {sk.name}
+                                            </span>
+                                          ))
+                                        )}
+                                        {assignedSkills.length > 3 && (
+                                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                                            +{assignedSkills.length - 3} more
+                                          </span>
+                                        )}
+                                        <button 
+                                          className="btn-secondary" 
+                                          style={{ padding: '0.1rem 0.4rem', fontSize: '0.7rem', height: '22px', marginLeft: '0.25rem', width: 'auto' }}
+                                          onClick={() => setExpandedTeamId(expandedTeamId === team.id ? null : team.id)}
+                                        >
+                                          Manage
+                                        </button>
+                                      </div>
                                     </td>
                                     <td>
                                       <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -2519,33 +2648,86 @@ function App() {
                                   </tr>
                                   {expandedTeamId === team.id && (
                                     <tr style={{ background: 'rgba(15, 23, 42, 0.2)' }}>
-                                      <td colSpan={4} style={{ padding: '1rem 1.5rem' }}>
-                                        <div style={{
-                                          padding: '0.75rem 1rem',
-                                          background: 'rgba(15, 23, 42, 0.4)',
-                                          borderRadius: '8px',
-                                          border: '1px solid var(--border-color)',
-                                          display: 'flex',
-                                          flexDirection: 'column',
-                                          gap: '0.5rem',
-                                          maxWidth: '500px'
-                                        }}>
-                                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.25rem', marginBottom: '0.25rem' }}>
-                                            <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Team Members</h5>
-                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({memberCount})</span>
-                                          </div>
-                                          {developers.filter(d => d.teamId === team.id).length === 0 ? (
-                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                                              No members in this team.
+                                      <td colSpan={5} style={{ padding: '1rem 1.5rem' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
+                                          {/* Left Box: Team Members */}
+                                          <div style={{
+                                            padding: '0.75rem 1rem',
+                                            background: 'rgba(15, 23, 42, 0.4)',
+                                            borderRadius: '8px',
+                                            border: '1px solid var(--border-color)',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '0.5rem'
+                                          }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.25rem' }}>
+                                              <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Team Members</h5>
+                                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({memberCount})</span>
                                             </div>
-                                          ) : (
-                                            developers.filter(d => d.teamId === team.id).map(dev => (
-                                              <div key={dev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                                                <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{dev.name}</span>
-                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{dev.role}</span>
+                                            {developers.filter(d => d.teamId === team.id).length === 0 ? (
+                                              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                                No members in this team.
                                               </div>
-                                            ))
-                                          )}
+                                            ) : (
+                                              developers.filter(d => d.teamId === team.id).map(dev => (
+                                                <div key={dev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                                                  <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{dev.name}</span>
+                                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{dev.role}</span>
+                                                </div>
+                                              ))
+                                            )}
+                                          </div>
+
+                                          {/* Right Box: Team Assigned Skills */}
+                                          <div style={{
+                                            padding: '0.75rem 1rem',
+                                            background: 'rgba(15, 23, 42, 0.4)',
+                                            borderRadius: '8px',
+                                            border: '1px solid var(--border-color)',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '0.5rem'
+                                          }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.25rem' }}>
+                                              <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Assigned Team Skills</h5>
+                                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({assignedSkills.length})</span>
+                                            </div>
+
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+                                              Click skills to assign or remove them from <strong>{team.name}</strong>:
+                                            </div>
+
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', maxHeight: '180px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+                                              {skills.map(skill => {
+                                                const isAssigned = assignedSkillIds.includes(skill.id);
+                                                return (
+                                                  <button
+                                                    key={skill.id}
+                                                    type="button"
+                                                    disabled={loading}
+                                                    onClick={() => handleToggleTeamSkill(team.id, skill.id)}
+                                                    style={{
+                                                      display: 'inline-flex',
+                                                      alignItems: 'center',
+                                                      gap: '0.35rem',
+                                                      padding: '0.25rem 0.6rem',
+                                                      borderRadius: '6px',
+                                                      fontSize: '0.75rem',
+                                                      border: isAssigned ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                                                      background: isAssigned ? 'rgba(139, 92, 246, 0.25)' : 'rgba(255, 255, 255, 0.03)',
+                                                      color: isAssigned ? '#fff' : 'var(--text-muted)',
+                                                      cursor: 'pointer',
+                                                      transition: 'all 0.15s ease'
+                                                    }}
+                                                    title={isAssigned ? 'Click to remove skill' : 'Click to assign skill'}
+                                                  >
+                                                    {isAssigned ? <Check size={12} style={{ color: 'var(--accent-primary)' }} /> : <Plus size={12} />}
+                                                    <span>{skill.name}</span>
+                                                  </button>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
                                         </div>
                                       </td>
                                     </tr>
