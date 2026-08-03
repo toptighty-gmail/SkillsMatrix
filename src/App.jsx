@@ -2054,12 +2054,12 @@ function App() {
                                 {skill.vendor ? (
                                   <span className="badge" style={{ 
                                     fontSize: '0.75rem', 
-                                    background: 'rgba(139, 92, 246, 0.1)', 
-                                    color: 'var(--accent-primary)',
-                                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                                    background: 'rgba(96, 165, 250, 0.1)', 
+                                    color: '#60a5fa',
+                                    border: '1px solid rgba(96, 165, 250, 0.25)',
                                     padding: '0.1rem 0.4rem', 
                                     borderRadius: '4px',
-                                    fontWeight: 500,
+                                    fontWeight: 600,
                                     pointerEvents: 'none'
                                   }}>
                                     {skill.vendor}
