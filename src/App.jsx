@@ -402,15 +402,15 @@ function App() {
         .select('*');
       if (personTeamsError) throw personTeamsError;
 
-      // 7. Query team_skills junction (gracefully handle if missing)
+      // 7. Query team_skills junction (active rows where is_current is true)
       let fetchedTeamSkills = [];
       try {
         const { data: tsData, error: tsError } = await supabase
           .from('team_skills')
-          .select('*');
+          .select('*')
+          .eq('is_current', true);
         if (!tsError && tsData) {
-          // If is_current column exists, filter for active rows (is_current !== false); otherwise return all
-          fetchedTeamSkills = tsData.filter(row => row.is_current === undefined || row.is_current === true || row.is_current === null);
+          fetchedTeamSkills = tsData;
         }
       } catch (tsErr) {
         console.log('team_skills table query notice:', tsErr);
@@ -1216,34 +1216,30 @@ function App() {
 
     try {
       if (isAssigned) {
-        // Soft delete: update row setting is_required=false, is_current=false, valid_to=now
-        const nowIso = new Date().toISOString();
+        // Soft delete: update active row (is_current=true) setting is_required=false, is_current=false, valid_to=CURRENT_DATE
+        const todayDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         const { error } = await supabase
           .from('team_skills')
           .update({
             is_required: false,
             is_current: false,
-            valid_to: nowIso
+            valid_to: todayDate
           })
           .eq('team_id', teamId)
-          .eq('skill_id', skillId);
+          .eq('skill_id', skillId)
+          .eq('is_current', true);
 
         if (error) {
           console.error('Failed to soft-delete team skill:', error);
           throw error;
         }
 
-        // Update local React state to reflect active team skills only
-        setTeamSkills(teamSkills.map(ts => {
-          if (ts.team_id === teamId && ts.skill_id === skillId) {
-            return { ...ts, is_required: false, is_current: false, valid_to: nowIso };
-          }
-          return ts;
-        }).filter(ts => ts.is_current !== false && ts.is_required !== false));
-
+        // Update local React state to filter out unassigned skill
+        setTeamSkills(teamSkills.filter(ts => !(ts.team_id === teamId && ts.skill_id === skillId)));
         showToast(`Removed skill "${skillName}" from ${teamName}`);
       } else {
-        // Assign skill: insert new active row
+        // Assign skill: insert new active row with valid_from as YYYY-MM-DD
+        const todayDate = new Date().toISOString().split('T')[0];
         const { data, error } = await supabase
           .from('team_skills')
           .insert([{ 
@@ -1251,7 +1247,7 @@ function App() {
             skill_id: skillId,
             is_required: true,
             is_current: true,
-            valid_from: new Date().toISOString()
+            valid_from: todayDate
           }])
           .select();
 
