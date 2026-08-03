@@ -225,6 +225,7 @@ function App() {
   const [selectedTeamFilter, setSelectedTeamFilter] = useState('All');
   const [selectedDevFilter, setSelectedDevFilter] = useState('All');
   const [teamRedirectTarget, setTeamRedirectTarget] = useState(null); // 'matrix' or 'developers'
+  const [categoryRedirectTarget, setCategoryRedirectTarget] = useState(null); // 'skills'
   const [devListSortOrder, setDevListSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [skillsSortOrder, setSkillsSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [categoriesSortOrder, setCategoriesSortOrder] = useState('asc'); // 'asc' or 'desc'
@@ -870,6 +871,14 @@ function App() {
       setCategories([...categories, newCat]);
       setNewCategoryName('');
       setNewCategoryDesc('');
+      
+      // Auto-navigate back and set value based on redirect target
+      if (categoryRedirectTarget === 'skills') {
+        setActiveTab('skills');
+        setNewSkillCategoryId(String(newCat.id));
+      }
+      setCategoryRedirectTarget(null);
+      
       showToast(`Added category: ${newCategoryName} (Demo)`);
       setLoading(false);
       return;
@@ -886,9 +895,18 @@ function App() {
 
       if (error) throw error;
 
+      const addedCatId = data[0].id;
       setCategories([...categories, data[0]]);
       setNewCategoryName('');
       setNewCategoryDesc('');
+      
+      // Auto-navigate back and set value based on redirect target
+      if (categoryRedirectTarget === 'skills') {
+        setActiveTab('skills');
+        setNewSkillCategoryId(String(addedCatId));
+      }
+      setCategoryRedirectTarget(null);
+      
       showToast(`Successfully added category: ${newCategoryName}`);
     } catch (err) {
       console.error(err);
@@ -1954,13 +1972,23 @@ function App() {
                     className="form-select"
                     style={{ height: '42px', width: '100%' }}
                     value={newSkillCategoryId}
-                    onChange={(e) => setNewSkillCategoryId(e.target.value)}
+                    onChange={(e) => {
+                      if (e.target.value === 'ADD_CATEGORY') {
+                        setCategoryRedirectTarget('skills');
+                        setActiveTab('categories');
+                        setNewSkillCategoryId('');
+                      } else {
+                        setNewSkillCategoryId(e.target.value);
+                      }
+                    }}
                     required
                   >
                     <option value="" disabled>Select Category</option>
                     {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
+                    <option disabled>— Actions —</option>
+                    <option value="ADD_CATEGORY">+ Add New Category...</option>
                   </select>
                 </div>
                 <button type="submit" className="btn-primary" style={{ height: '42px', width: '100%' }} disabled={loading}>
