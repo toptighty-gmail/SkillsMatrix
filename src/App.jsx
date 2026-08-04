@@ -270,6 +270,7 @@ function App() {
   // Form states
   const [newDevName, setNewDevName] = useState('');
   const [newDevRole, setNewDevRole] = useState('');
+  const [newDevEmail, setNewDevEmail] = useState('');
   const [newSkillName, setNewSkillName] = useState('');
   const [newSkillVendor, setNewSkillVendor] = useState('');
   const [newSkillDescription, setNewSkillDescription] = useState('');
@@ -518,12 +519,14 @@ function App() {
         id: `dev-${Date.now()}`,
         name: newDevName,
         role: newDevRole,
+        email: newDevEmail,
         team: assignedTeamName,
         teamId: assignedTeamId
       };
       setDevelopers([...developers, newDev]);
       setNewDevName('');
       setNewDevRole('');
+      setNewDevEmail('');
       setNewDevTeamId('');
       
       // Auto-navigate back to Matrix and set filters
@@ -542,6 +545,7 @@ function App() {
         .insert([{ 
           full_name: newDevName, 
           role_title: newDevRole,
+          email: newDevEmail || null,
           manager_fullname: newDevManagerName || null,
           manager_company_login_id: newDevManagerCompanyLoginId || null,
           company_login_id: newDevCompanyLoginId || null
@@ -589,6 +593,7 @@ function App() {
       setDevelopers([...developers, newDevMapped]);
       setNewDevName('');
       setNewDevRole('');
+      setNewDevEmail('');
       setNewDevManagerName('');
       setNewDevManagerCompanyLoginId('');
       setNewDevCompanyLoginId('');
@@ -615,7 +620,7 @@ function App() {
       return;
     }
 
-    const headers = ['Full Name', 'Role', 'Team', 'Company Login ID', 'Manager Full Name', 'Manager Company Login ID'];
+    const headers = ['Full Name', 'Role', 'Email', 'Team', 'Company Login ID', 'Manager Full Name', 'Manager Company Login ID'];
     const csvRows = [headers.join(',')];
 
     developers.forEach(dev => {
@@ -623,6 +628,7 @@ function App() {
       const row = [
         escape(dev.name),
         escape(dev.role),
+        escape(dev.email),
         escape(dev.team === 'No Team' ? '' : dev.team),
         escape(dev.companyLoginId),
         escape(dev.managerName),
@@ -692,6 +698,7 @@ function App() {
 
         const nameIdx = findIdx(['fullname', 'name', 'developername', 'membername']);
         const roleIdx = findIdx(['role', 'title', 'roletitle']);
+        const emailIdx = findIdx(['email', 'emailaddress', 'mail']);
         const teamIdx = findIdx(['team', 'teamname']);
         const companyLoginIdx = findIdx(['companyloginid', 'companylogin', 'loginid', 'login']);
         const mgrNameIdx = findIdx(['managerfullname', 'managername', 'manager']);
@@ -710,6 +717,7 @@ function App() {
           if (!fullName) continue;
 
           const roleTitle = (roleIdx !== -1 && cols[roleIdx]) ? cols[roleIdx] : 'Software Engineer';
+          const email = (emailIdx !== -1 && cols[emailIdx]) ? cols[emailIdx] : null;
           const teamNameRaw = (teamIdx !== -1 && cols[teamIdx]) ? cols[teamIdx] : '';
           const companyLoginId = (companyLoginIdx !== -1 && cols[companyLoginIdx]) ? cols[companyLoginIdx] : null;
           const managerName = (mgrNameIdx !== -1 && cols[mgrNameIdx]) ? cols[mgrNameIdx] : null;
@@ -725,6 +733,7 @@ function App() {
               id: `dev-imp-${Date.now()}-${i}`,
               name: fullName,
               role: roleTitle,
+              email: email || '',
               team: matchedTeam ? matchedTeam.name : (teamNameRaw || 'No Team'),
               teamId: matchedTeam ? matchedTeam.id : null,
               companyLoginId,
@@ -739,6 +748,7 @@ function App() {
               .insert([{
                 full_name: fullName,
                 role_title: roleTitle,
+                email: email || null,
                 company_login_id: companyLoginId,
                 manager_fullname: managerName,
                 manager_company_login_id: managerLoginId
@@ -771,7 +781,7 @@ function App() {
               id: insertedPerson.id,
               name: insertedPerson.full_name,
               role: insertedPerson.role_title || roleTitle,
-              email: insertedPerson.email,
+              email: insertedPerson.email || email,
               team: assignedTeamName,
               teamId: assignedTeamId,
               managerName: insertedPerson.manager_fullname,
@@ -2164,6 +2174,16 @@ function App() {
                     value={newDevRole}
                     onChange={(e) => setNewDevRole(e.target.value)}
                     required
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '0.8rem' }}>Email</label>
+                  <input 
+                    type="email" 
+                    className="form-input" 
+                    placeholder="e.g. ellen@company.com (Optional)" 
+                    value={newDevEmail}
+                    onChange={(e) => setNewDevEmail(e.target.value)}
                   />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
