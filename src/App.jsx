@@ -260,6 +260,8 @@ function App() {
   const [selectedVendorFilter, setSelectedVendorFilter] = useState('All');
   const [skillSearchQuery, setSkillSearchQuery] = useState('');
   const [devListSortOrder, setDevListSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [devListTeamFilter, setDevListTeamFilter] = useState('All');
+  const [devListRoleFilter, setDevListRoleFilter] = useState('All');
   const [skillsSortOrder, setSkillsSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [categoriesSortOrder, setCategoriesSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [teamsSortOrder, setTeamsSortOrder] = useState('asc'); // 'asc' or 'desc'
@@ -2334,6 +2336,71 @@ function App() {
                 </button>
               </form>
               
+              {/* Team & Role Filters Toolbar */}
+              <div style={{
+                display: 'flex',
+                gap: '1rem',
+                marginBottom: '1.5rem',
+                flexWrap: 'wrap',
+                background: 'rgba(255, 255, 255, 0.02)',
+                padding: '1rem 1.25rem',
+                borderRadius: '12px',
+                border: '1px solid var(--border-color)',
+                alignItems: 'flex-end'
+              }}>
+                <div style={{ flex: '1', minWidth: '200px' }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Filter by Team
+                  </label>
+                  <select
+                    className="form-select"
+                    value={devListTeamFilter}
+                    onChange={(e) => setDevListTeamFilter(e.target.value)}
+                    style={{ height: '38px', padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+                  >
+                    <option value="All">All Teams</option>
+                    {[...teams].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((t) => (
+                      <option key={t.id} value={t.name}>{t.name}</option>
+                    ))}
+                    <option value="No Team">No Team</option>
+                  </select>
+                </div>
+
+                <div style={{ flex: '1', minWidth: '200px' }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Filter by Role
+                  </label>
+                  <select
+                    className="form-select"
+                    value={devListRoleFilter}
+                    onChange={(e) => setDevListRoleFilter(e.target.value)}
+                    style={{ height: '38px', padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+                  >
+                    <option value="All">All Roles</option>
+                    {Array.from(new Set(developers.map(d => d.role).filter(Boolean)))
+                      .sort((a, b) => a.localeCompare(b))
+                      .map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                  </select>
+                </div>
+
+                {(devListTeamFilter !== 'All' || devListRoleFilter !== 'All') && (
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setDevListTeamFilter('All');
+                      setDevListRoleFilter('All');
+                    }}
+                    style={{ height: '38px', padding: '0 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', width: 'auto', margin: 0, fontSize: '0.8rem' }}
+                  >
+                    <X size={14} />
+                    Reset Member Filters
+                  </button>
+                )}
+              </div>
+
               {developers.length === 0 ? (
                 <div className="empty-state">
                   <Users size={48} />
@@ -2368,6 +2435,11 @@ function App() {
                     </thead>
                     <tbody>
                       {[...developers]
+                        .filter((dev) => {
+                          const matchesTeam = devListTeamFilter === 'All' || dev.team === devListTeamFilter;
+                          const matchesRole = devListRoleFilter === 'All' || dev.role === devListRoleFilter;
+                          return matchesTeam && matchesRole;
+                        })
                         .sort((a, b) => {
                           const nameA = (a.name || '').toLowerCase();
                           const nameB = (b.name || '').toLowerCase();
