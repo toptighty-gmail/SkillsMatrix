@@ -649,8 +649,8 @@ function App() {
     showToast('Exported team members to CSV!');
   };
 
-  // Helper to parse CSV text lines accounting for quoted values
-  const parseCSVLine = (textLine) => {
+  // Helper to parse CSV text line supporting comma, semicolon, or tab delimiters and quotes
+  const parseCSVLine = (textLine, delimiter = ',') => {
     const result = [];
     let cur = '';
     let inQuotes = false;
@@ -663,14 +663,14 @@ function App() {
         } else {
           inQuotes = !inQuotes;
         }
-      } else if (char === ',' && !inQuotes) {
-        result.push(cur.trim());
+      } else if (char === delimiter && !inQuotes) {
+        result.push(cur.trim().replace(/^"|"$/g, ''));
         cur = '';
       } else {
         cur += char;
       }
     }
-    result.push(cur.trim());
+    result.push(cur.trim().replace(/^"|"$/g, ''));
     return result;
   };
 
@@ -684,35 +684,52 @@ function App() {
 
     reader.onload = async (evt) => {
       try {
-        const text = evt.target.result;
+        let text = evt.target.result || '';
+        // Strip UTF-8 BOM if present
+        if (text.charCodeAt(0) === 0xFEFF) {
+          text = text.slice(1);
+        }
+
         const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
 
         if (lines.length < 2) {
           throw new Error('CSV file must contain a header row and at least one data row.');
         }
 
-        const headerTokens = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+        // Auto-detect delimiter (comma, semicolon, or tab)
+        const headerLine = lines[0];
+        const commaCount = (headerLine.match(/,/g) || []).length;
+        const semiCount = (headerLine.match(/;/g) || []).length;
+        const tabCount = (headerLine.match(/\t/g) || []).length;
+
+        let delimiter = ',';
+        if (semiCount > commaCount && semiCount > tabCount) delimiter = ';';
+        if (tabCount > commaCount && tabCount > semiCount) delimiter = '\t';
+
+        const rawHeaders = parseCSVLine(headerLine, delimiter);
+        const headerTokens = rawHeaders.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
         
-        // Match header column indexes flexible to variations
+        // Flexible matching for header column indexes
         const findIdx = (keywords) => headerTokens.findIndex(h => keywords.some(k => h.includes(k)));
 
-        const nameIdx = findIdx(['fullname', 'name', 'developername', 'membername']);
-        const roleIdx = findIdx(['role', 'title', 'roletitle']);
+        const nameIdx = findIdx(['fullname', 'full', 'name', 'developername', 'membername', 'person']);
+        const roleIdx = findIdx(['role', 'title', 'position', 'job']);
         const emailIdx = findIdx(['email', 'emailaddress', 'mail']);
-        const teamIdx = findIdx(['team', 'teamname']);
-        const companyLoginIdx = findIdx(['companyloginid', 'companylogin', 'loginid', 'login']);
+        const teamIdx = findIdx(['team', 'teamname', 'group']);
+        const companyLoginIdx = findIdx(['companyloginid', 'companylogin', 'loginid', 'login', 'username', 'userid']);
         const mgrNameIdx = findIdx(['managerfullname', 'managername', 'manager']);
         const mgrLoginIdx = findIdx(['managercompanyloginid', 'managerlogin', 'managercompanylogin']);
 
         if (nameIdx === -1) {
-          throw new Error('CSV missing required "Full Name" column.');
+          throw new Error(`Could not find a name column in CSV headers: [${rawHeaders.join(', ')}]. Expected "Full Name" or "Name".`);
         }
 
         const todayStr = new Date().toISOString().split('T')[0];
         let importedCount = 0;
+        let lastError = null;
 
         for (let i = 1; i < lines.length; i++) {
-          const cols = parseCSVLine(lines[i]);
+          const cols = parseCSVLine(lines[i], delimiter);
           const fullName = cols[nameIdx];
           if (!fullName) continue;
 
@@ -756,7 +773,8 @@ function App() {
               .select();
 
             if (error) {
-              console.error(`Error importing row ${i}:`, error);
+              console.error(`Error importing row ${i} (${fullName}):`, error);
+              lastError = error;
               continue;
             }
 
@@ -792,7 +810,13 @@ function App() {
           }
         }
 
-        showToast(`Successfully imported ${importedCount} team members!`);
+        if (importedCount > 0) {
+          showToast(`Successfully imported ${importedCount} team member${importedCount === 1 ? '' : 's'}!`);
+        } else if (lastError) {
+          showToast(`Import failed: ${lastError.message}`);
+        } else {
+          showToast('Import complete: 0 rows found to import.');
+        }
       } catch (err) {
         console.error(err);
         showToast(`Import error: ${err.message}`);
