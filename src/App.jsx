@@ -2551,16 +2551,8 @@ function App() {
                             <td>{dev.role}</td>
                             <td>
                               <span 
-                                className="badge level-competent" 
-                                style={{ 
-                                  fontSize: '0.78rem', 
-                                  padding: '0.2rem 0.55rem', 
-                                  fontWeight: 500,
-                                  background: dev.team === 'No Team' ? 'rgba(148, 163, 184, 0.15)' : 'rgba(139, 92, 246, 0.2)',
-                                  color: dev.team === 'No Team' ? '#cbd5e1' : '#ddd6fe',
-                                  border: dev.team === 'No Team' ? '1px solid rgba(148, 163, 184, 0.3)' : '1px solid rgba(139, 92, 246, 0.4)',
-                                  pointerEvents: 'none' 
-                                }}
+                                className={`badge ${dev.team === 'No Team' ? 'no-team' : 'team-badge'}`}
+                                style={{ pointerEvents: 'none' }}
                               >
                                 {dev.team}
                               </span>
@@ -2880,16 +2872,7 @@ function App() {
                             <tr key={skill.id}>
                               <td>
                                 {skill.vendor ? (
-                                  <span className="badge" style={{ 
-                                    fontSize: '0.75rem', 
-                                    background: 'rgba(96, 165, 250, 0.1)', 
-                                    color: '#60a5fa',
-                                    border: '1px solid rgba(96, 165, 250, 0.25)',
-                                    padding: '0.1rem 0.4rem', 
-                                    borderRadius: '4px',
-                                    fontWeight: 600,
-                                    pointerEvents: 'none'
-                                  }}>
+                                  <span className="badge vendor-badge" style={{ pointerEvents: 'none' }}>
                                     {skill.vendor}
                                   </span>
                                 ) : (
@@ -2900,7 +2883,7 @@ function App() {
                                 <div style={{ fontWeight: 600 }}>{skill.name}</div>
                               </td>
                               <td>
-                                <span className="badge empty" style={{ fontSize: '0.75rem', padding: '0.1rem 0.4rem', border: '1px solid var(--border-color)', pointerEvents: 'none' }}>
+                                <span className="badge category-badge" style={{ pointerEvents: 'none' }}>
                                   {skill.category}
                                 </span>
                               </td>
@@ -3276,7 +3259,7 @@ function App() {
                                           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>None assigned</span>
                                         ) : (
                                           assignedSkills.slice(0, 3).map(sk => (
-                                            <span key={sk.id} className="badge level-competent" style={{ fontSize: '0.7rem', padding: '0.1rem 0.35rem' }}>
+                                            <span key={sk.id} className="badge category-badge" style={{ fontSize: '0.7rem', padding: '0.1rem 0.35rem' }}>
                                               {sk.name}
                                             </span>
                                           ))
