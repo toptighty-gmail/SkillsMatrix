@@ -1654,95 +1654,132 @@ function App() {
 
                   <div className="matrix-container">
                     <table className="matrix-table">
-                      <thead>
-                        <tr>
-                          <th 
-                            onClick={() => setMatrixSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')} 
-                            style={{ cursor: 'pointer', userSelect: 'none' }}
-                            className="sortable-header"
-                            title={`Sort by Team Member Name ${matrixSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <span>Team Member</span>
-                              {matrixSortOrder === 'asc' ? (
-                                <ArrowUp size={14} style={{ color: 'var(--accent-primary)' }} />
-                              ) : (
-                                <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
-                              )}
-                            </div>
-                          </th>
-                          {skills.map((skill) => (
-                            <th key={skill.id} title={`${skill.name} (${skill.category})`}>
-                              {skill.name}
-                              <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 400, opacity: 0.6 }}>{skill.category}</span>
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(() => {
-                          const filteredDevs = [...developers]
-                            .filter((dev) => {
-                              const matchesTeam = selectedTeamFilter === 'All' || dev.team === selectedTeamFilter;
-                              const matchesDev = selectedDevFilter === 'All' || String(dev.id) === String(selectedDevFilter);
-                              return matchesTeam && matchesDev;
-                            })
-                            .sort((a, b) => {
-                              const nameA = (a.name || '').toLowerCase();
-                              const nameB = (b.name || '').toLowerCase();
-                              return matrixSortOrder === 'asc'
-                                ? nameA.localeCompare(nameB)
-                                : nameB.localeCompare(nameA);
-                            });
+                      {(() => {
+                        // Determine skills to show in columns based on selected team filter
+                        const targetTeamObj = selectedTeamFilter !== 'All' && selectedTeamFilter !== 'No Team'
+                          ? teams.find(t => t.name === selectedTeamFilter)
+                          : null;
+                        
+                        const teamAssignedSkillIds = targetTeamObj
+                          ? teamSkills.filter(ts => ts.team_id === targetTeamObj.id && ts.is_current !== false && ts.is_required !== false).map(ts => ts.skill_id)
+                          : [];
 
-                          if (filteredDevs.length === 0) {
-                            return (
+                        const displayedSkills = targetTeamObj
+                          ? skills.filter(s => teamAssignedSkillIds.includes(s.id))
+                          : skills;
+
+                        const filteredDevs = [...developers]
+                          .filter((dev) => {
+                            const matchesTeam = selectedTeamFilter === 'All' || dev.team === selectedTeamFilter;
+                            const matchesDev = selectedDevFilter === 'All' || String(dev.id) === String(selectedDevFilter);
+                            return matchesTeam && matchesDev;
+                          })
+                          .sort((a, b) => {
+                            const nameA = (a.name || '').toLowerCase();
+                            const nameB = (b.name || '').toLowerCase();
+                            return matrixSortOrder === 'asc'
+                              ? nameA.localeCompare(nameB)
+                              : nameB.localeCompare(nameA);
+                          });
+
+                        return (
+                          <>
+                            <thead>
                               <tr>
-                                <td colSpan={skills.length + 1} style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-secondary)' }}>
-                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
-                                    <Users size={32} style={{ opacity: 0.5, color: 'var(--accent-primary)' }} />
-                                    <span style={{ fontSize: '0.95rem', fontWeight: 500 }}>No team members match the selected filters.</span>
-                                    <button 
-                                      className="btn-secondary" 
-                                      style={{ width: 'auto', padding: '0.4rem 1rem', marginTop: '0.5rem', fontSize: '0.85rem' }}
-                                      onClick={() => {
-                                        setSelectedTeamFilter('All');
-                                        setSelectedDevFilter('All');
-                                      }}
-                                    >
-                                      Clear Filters
-                                    </button>
+                                <th 
+                                  onClick={() => setMatrixSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')} 
+                                  style={{ cursor: 'pointer', userSelect: 'none' }}
+                                  className="sortable-header"
+                                  title={`Sort by Team Member Name ${matrixSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <span>Team Member</span>
+                                    {matrixSortOrder === 'asc' ? (
+                                      <ArrowUp size={14} style={{ color: 'var(--accent-primary)' }} />
+                                    ) : (
+                                      <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
+                                    )}
                                   </div>
-                                </td>
+                                </th>
+                                {displayedSkills.length === 0 ? (
+                                  <th style={{ fontStyle: 'italic', fontWeight: 400, color: 'var(--text-muted)' }}>
+                                    No skills assigned to team
+                                  </th>
+                                ) : (
+                                  displayedSkills.map((skill) => (
+                                    <th key={skill.id} title={`${skill.name} (${skill.category})`}>
+                                      {skill.name}
+                                      <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 400, opacity: 0.6 }}>{skill.category}</span>
+                                    </th>
+                                  ))
+                                )}
                               </tr>
-                            );
-                          }
-
-                          return filteredDevs.map((dev) => (
-                            <tr key={dev.id}>
-                              <td>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', width: '100%' }}>
-                                  <span className="dev-name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {dev.name}
-                                  </span>
-                                  <button 
-                                    className="info-btn"
-                                    onClick={() => setSelectedDevInfo(dev)}
-                                    title="View details"
-                                  >
-                                    <Info size={13} />
-                                  </button>
-                                </div>
-                              </td>
-                              {skills.map((skill) => (
-                                <td key={skill.id}>
-                                  {getProficiencyBadge(dev.id, skill.id)}
-                                </td>
-                              ))}
-                            </tr>
-                          ));
-                        })()}
-                      </tbody>
+                            </thead>
+                            <tbody>
+                              {filteredDevs.length === 0 ? (
+                                <tr>
+                                  <td colSpan={Math.max(displayedSkills.length, 1) + 1} style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-secondary)' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
+                                      <Users size={32} style={{ opacity: 0.5, color: 'var(--accent-primary)' }} />
+                                      <span style={{ fontSize: '0.95rem', fontWeight: 500 }}>No team members match the selected filters.</span>
+                                      <button 
+                                        className="btn-secondary" 
+                                        style={{ width: 'auto', padding: '0.4rem 1rem', marginTop: '0.5rem', fontSize: '0.85rem' }}
+                                        onClick={() => {
+                                          setSelectedTeamFilter('All');
+                                          setSelectedDevFilter('All');
+                                        }}
+                                      >
+                                        Clear Filters
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ) : displayedSkills.length === 0 ? (
+                                <tr>
+                                  <td colSpan={2} style={{ textAlign: 'center', padding: '2rem 1.5rem', color: 'var(--text-secondary)' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                                      <BookOpen size={28} style={{ opacity: 0.5, color: 'var(--accent-primary)' }} />
+                                      <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>No skills assigned to team "{selectedTeamFilter}".</span>
+                                      <button 
+                                        className="btn-secondary" 
+                                        style={{ width: 'auto', padding: '0.35rem 0.85rem', marginTop: '0.25rem', fontSize: '0.8rem' }}
+                                        onClick={() => setActiveTab('teams')}
+                                      >
+                                        Manage Team Skills
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ) : (
+                                filteredDevs.map((dev) => (
+                                  <tr key={dev.id}>
+                                    <td>
+                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', width: '100%' }}>
+                                        <span className="dev-name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                          {dev.name}
+                                        </span>
+                                        <button 
+                                          className="info-btn"
+                                          onClick={() => setSelectedDevInfo(dev)}
+                                          title="View details"
+                                        >
+                                          <Info size={13} />
+                                        </button>
+                                      </div>
+                                    </td>
+                                    {displayedSkills.map((skill) => (
+                                      <td key={skill.id}>
+                                        {getProficiencyBadge(dev.id, skill.id)}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </>
+                        );
+                      })()}
                     </table>
                   </div>
                 </>
