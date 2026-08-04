@@ -1858,13 +1858,26 @@ function App() {
                         className="form-select"
                         value={selectedTeamFilter}
                         onChange={(e) => {
-                          if (e.target.value === 'ADD_TEAM') {
+                          const newTeamVal = e.target.value;
+                          if (newTeamVal === 'ADD_TEAM') {
                             setTeamRedirectTarget('matrix');
                             setActiveTab('teams');
                             setSelectedTeamFilter('All');
+                            setSelectedSkillIds([]);
                           } else {
-                            setSelectedTeamFilter(e.target.value);
+                            setSelectedTeamFilter(newTeamVal);
                             setSelectedDevFilter('All');
+
+                            // Auto pre-check skill checkboxes assigned to this team
+                            const teamObj = teams.find(t => t.name === newTeamVal);
+                            if (teamObj) {
+                              const assignedSkillIds = teamSkills
+                                .filter(ts => ts.team_id === teamObj.id && ts.is_current !== false && ts.is_required !== false)
+                                .map(ts => String(ts.skill_id));
+                              setSelectedSkillIds(assignedSkillIds);
+                            } else {
+                              setSelectedSkillIds([]);
+                            }
                           }
                         }}
                         style={{ height: '42px', padding: '0.5rem 1rem' }}
