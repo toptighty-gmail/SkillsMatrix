@@ -1634,8 +1634,36 @@ function App() {
                         <option value="ADD_DEV">+ Add New Member...</option>
                       </select>
                     </div>
+
+                    <div style={{ flex: '1', minWidth: '220px' }}>
+                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Filter by Skill
+                      </label>
+                      <select
+                        className="form-select"
+                        value={selectedSkillFilter}
+                        onChange={(e) => {
+                          if (e.target.value === 'ADD_SKILL') {
+                            setActiveTab('skills');
+                            setSelectedSkillFilter('All');
+                          } else {
+                            setSelectedSkillFilter(e.target.value);
+                          }
+                        }}
+                        style={{ height: '42px', padding: '0.5rem 1rem' }}
+                      >
+                        <option value="All">All Skills</option>
+                        {skills
+                          .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                          .map((sk) => (
+                            <option key={sk.id} value={sk.id}>{sk.name}</option>
+                          ))}
+                        <option disabled>— Actions —</option>
+                        <option value="ADD_SKILL">+ Add New Skill...</option>
+                      </select>
+                    </div>
                     
-                    {(selectedTeamFilter !== 'All' || selectedDevFilter !== 'All') && (
+                    {(selectedTeamFilter !== 'All' || selectedDevFilter !== 'All' || selectedSkillFilter !== 'All') && (
                       <div style={{ display: 'flex' }}>
                         <button 
                           className="btn-secondary" 
@@ -1643,6 +1671,7 @@ function App() {
                           onClick={() => {
                             setSelectedTeamFilter('All');
                             setSelectedDevFilter('All');
+                            setSelectedSkillFilter('All');
                           }}
                         >
                           <X size={16} />
@@ -1655,7 +1684,7 @@ function App() {
                   <div className="matrix-container">
                     <table className="matrix-table">
                       {(() => {
-                        // Determine skills to show in columns based on selected team filter
+                        // Determine skills to show in columns based on selected team filter & selected skill filter
                         const targetTeamObj = selectedTeamFilter !== 'All' && selectedTeamFilter !== 'No Team'
                           ? teams.find(t => t.name === selectedTeamFilter)
                           : null;
@@ -1664,9 +1693,13 @@ function App() {
                           ? teamSkills.filter(ts => ts.team_id === targetTeamObj.id && ts.is_current !== false && ts.is_required !== false).map(ts => ts.skill_id)
                           : [];
 
-                        const displayedSkills = targetTeamObj
+                        let displayedSkills = targetTeamObj
                           ? skills.filter(s => teamAssignedSkillIds.includes(s.id))
                           : skills;
+
+                        if (selectedSkillFilter !== 'All') {
+                          displayedSkills = displayedSkills.filter(s => String(s.id) === String(selectedSkillFilter));
+                        }
 
                         const filteredDevs = [...developers]
                           .filter((dev) => {
