@@ -733,12 +733,12 @@ function App() {
           const fullName = cols[nameIdx];
           if (!fullName) continue;
 
-          const roleTitle = (roleIdx !== -1 && cols[roleIdx]) ? cols[roleIdx] : 'Software Engineer';
-          const email = (emailIdx !== -1 && cols[emailIdx]) ? cols[emailIdx] : null;
-          const teamNameRaw = (teamIdx !== -1 && cols[teamIdx]) ? cols[teamIdx] : '';
-          const companyLoginId = (companyLoginIdx !== -1 && cols[companyLoginIdx]) ? cols[companyLoginIdx] : null;
-          const managerName = (mgrNameIdx !== -1 && cols[mgrNameIdx]) ? cols[mgrNameIdx] : null;
-          const managerLoginId = (mgrLoginIdx !== -1 && cols[mgrLoginIdx]) ? cols[mgrLoginIdx] : null;
+          const roleTitle = (roleIdx !== -1 && cols[roleIdx] && cols[roleIdx].trim()) ? cols[roleIdx].trim() : 'Software Engineer';
+          const email = (emailIdx !== -1 && cols[emailIdx] && cols[emailIdx].trim()) ? cols[emailIdx].trim() : null;
+          const teamNameRaw = (teamIdx !== -1 && cols[teamIdx] && cols[teamIdx].trim()) ? cols[teamIdx].trim() : '';
+          const companyLoginId = (companyLoginIdx !== -1 && cols[companyLoginIdx] && cols[companyLoginIdx].trim()) ? cols[companyLoginIdx].trim() : null;
+          const managerName = (mgrNameIdx !== -1 && cols[mgrNameIdx] && cols[mgrNameIdx].trim()) ? cols[mgrNameIdx].trim() : null;
+          const managerLoginId = (mgrLoginIdx !== -1 && cols[mgrLoginIdx] && cols[mgrLoginIdx].trim()) ? cols[mgrLoginIdx].trim() : null;
 
           // Find team match if provided
           const matchedTeam = teamNameRaw 
@@ -760,16 +760,19 @@ function App() {
             setDevelopers(prev => [...prev, newDev]);
             importedCount++;
           } else {
+            // Build insert payload without undefined/empty string fields that might violate CHECK constraints
+            const insertPayload = {
+              full_name: fullName,
+              role_title: roleTitle
+            };
+            if (email) insertPayload.email = email;
+            if (companyLoginId) insertPayload.company_login_id = companyLoginId;
+            if (managerName) insertPayload.manager_fullname = managerName;
+            if (managerLoginId) insertPayload.manager_company_login_id = managerLoginId;
+
             const { data, error } = await supabase
               .from('person')
-              .insert([{
-                full_name: fullName,
-                role_title: roleTitle,
-                email: email || null,
-                company_login_id: companyLoginId,
-                manager_fullname: managerName,
-                manager_company_login_id: managerLoginId
-              }])
+              .insert([insertPayload])
               .select();
 
             if (error) {
