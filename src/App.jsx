@@ -977,7 +977,8 @@ function App() {
         team: teamName,
         teamId: newTeamId,
         managerName: editDevManagerName,
-        managerCompanyLoginId: editDevManagerCompanyLoginId
+        managerCompanyLoginId: editDevManagerCompanyLoginId,
+        companyLoginId: editDevCompanyLoginId
       } : d));
       setEditingDevId(null);
       showToast(`Successfully updated team member: ${editDevName}`);
