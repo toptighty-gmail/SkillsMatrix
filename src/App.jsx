@@ -564,6 +564,17 @@ function App() {
         error = retryRes.error;
       }
 
+      if (error && (error.message.includes('company_login_id') || error.message.includes('people_company_login_id_format_check'))) {
+        delete devPayload.company_login_id;
+        delete devPayload.manager_company_login_id;
+        const retryRes = await supabase
+          .from('person')
+          .insert([devPayload])
+          .select();
+        data = retryRes.data;
+        error = retryRes.error;
+      }
+
       if (error) throw error;
 
       const newRow = data[0];
@@ -790,6 +801,18 @@ function App() {
             // Fallback if role_title column fails or requires role FK / title
             if (error && (error.message.includes('role') || error.code === '23503' || error.code === '42703')) {
               delete insertPayload.role_title;
+              const retryRes = await supabase
+                .from('person')
+                .insert([insertPayload])
+                .select();
+              data = retryRes.data;
+              error = retryRes.error;
+            }
+
+            // Fallback if company_login_id format check constraint fails
+            if (error && (error.message.includes('company_login_id') || error.message.includes('people_company_login_id_format_check'))) {
+              delete insertPayload.company_login_id;
+              delete insertPayload.manager_company_login_id;
               const retryRes = await supabase
                 .from('person')
                 .insert([insertPayload])
