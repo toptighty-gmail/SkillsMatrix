@@ -257,6 +257,7 @@ function App() {
   const [selectedSkillIds, setSelectedSkillIds] = useState([]); // Array of skill IDs for multi-select
   const [isSkillDropdownOpen, setIsSkillDropdownOpen] = useState(false);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
+  const [selectedVendorFilter, setSelectedVendorFilter] = useState('All');
   const [skillSearchQuery, setSkillSearchQuery] = useState('');
   const [devListSortOrder, setDevListSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [skillsSortOrder, setSkillsSortOrder] = useState('asc'); // 'asc' or 'desc'
@@ -2613,6 +2614,71 @@ function App() {
                 </button>
               </form>
 
+              {/* Category & Vendor Filters Toolbar */}
+              <div style={{
+                display: 'flex',
+                gap: '1rem',
+                marginBottom: '1.5rem',
+                flexWrap: 'wrap',
+                background: 'rgba(255, 255, 255, 0.02)',
+                padding: '1rem 1.25rem',
+                borderRadius: '12px',
+                border: '1px solid var(--border-color)',
+                alignItems: 'flex-end'
+              }}>
+                <div style={{ flex: '1', minWidth: '200px' }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Filter by Category
+                  </label>
+                  <select
+                    className="form-select"
+                    value={selectedCategoryFilter}
+                    onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                    style={{ height: '38px', padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+                  >
+                    <option value="All">All Categories</option>
+                    {[...categories].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((c) => (
+                      <option key={c.id} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ flex: '1', minWidth: '200px' }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Filter by Vendor
+                  </label>
+                  <select
+                    className="form-select"
+                    value={selectedVendorFilter}
+                    onChange={(e) => setSelectedVendorFilter(e.target.value)}
+                    style={{ height: '38px', padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+                  >
+                    <option value="All">All Vendors</option>
+                    {Array.from(new Set(skills.map(s => s.vendor).filter(Boolean)))
+                      .sort((a, b) => a.localeCompare(b))
+                      .map((v) => (
+                        <option key={v} value={v}>{v}</option>
+                      ))}
+                    <option value="NO_VENDOR">No Vendor Specified</option>
+                  </select>
+                </div>
+
+                {(selectedCategoryFilter !== 'All' || selectedVendorFilter !== 'All') && (
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setSelectedCategoryFilter('All');
+                      setSelectedVendorFilter('All');
+                    }}
+                    style={{ height: '38px', padding: '0 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', width: 'auto', margin: 0, fontSize: '0.8rem' }}
+                  >
+                    <X size={14} />
+                    Reset Skill Filters
+                  </button>
+                )}
+              </div>
+
               {skills.length === 0 ? (
                 <div className="empty-state">
                   <BookOpen size={48} />
@@ -2646,6 +2712,15 @@ function App() {
                     </thead>
                     <tbody>
                       {[...skills]
+                        .filter((skill) => {
+                          const matchesCategory = selectedCategoryFilter === 'All' || skill.category === selectedCategoryFilter;
+                          const matchesVendor = selectedVendorFilter === 'All'
+                            ? true
+                            : selectedVendorFilter === 'NO_VENDOR'
+                            ? !skill.vendor
+                            : skill.vendor === selectedVendorFilter;
+                          return matchesCategory && matchesVendor;
+                        })
                         .sort((a, b) => {
                           const nameA = (a.name || '').toLowerCase();
                           const nameB = (b.name || '').toLowerCase();
