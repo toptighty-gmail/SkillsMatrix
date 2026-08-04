@@ -252,7 +252,8 @@ function App() {
   const [matrixSortOrder, setMatrixSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [selectedTeamFilter, setSelectedTeamFilter] = useState('All');
   const [selectedDevFilter, setSelectedDevFilter] = useState('All');
-  const [selectedSkillFilter, setSelectedSkillFilter] = useState('All');
+  const [selectedSkillIds, setSelectedSkillIds] = useState([]); // Array of skill IDs for multi-select
+  const [isSkillDropdownOpen, setIsSkillDropdownOpen] = useState(false);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
   const [skillSearchQuery, setSkillSearchQuery] = useState('');
   const [devListSortOrder, setDevListSortOrder] = useState('asc'); // 'asc' or 'desc'
@@ -1635,35 +1636,133 @@ function App() {
                       </select>
                     </div>
 
-                    <div style={{ flex: '1', minWidth: '220px' }}>
+                    <div style={{ flex: '1', minWidth: '220px', position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Filter by Skill
+                        Filter by Skill ({selectedSkillIds.length === 0 ? 'All' : `${selectedSkillIds.length} selected`})
                       </label>
-                      <select
+
+                      {/* Custom Multi-select Dropdown Button */}
+                      <button
+                        type="button"
                         className="form-select"
-                        value={selectedSkillFilter}
-                        onChange={(e) => {
-                          if (e.target.value === 'ADD_SKILL') {
-                            setActiveTab('skills');
-                            setSelectedSkillFilter('All');
-                          } else {
-                            setSelectedSkillFilter(e.target.value);
-                          }
+                        onClick={() => setIsSkillDropdownOpen(!isSkillDropdownOpen)}
+                        style={{
+                          height: '42px',
+                          padding: '0.5rem 1rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justify: 'space-between',
+                          width: '100%',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          background: 'rgba(15, 23, 42, 0.6)',
+                          borderColor: isSkillDropdownOpen ? 'var(--accent-primary)' : 'var(--border-color)'
                         }}
-                        style={{ height: '42px', padding: '0.5rem 1rem' }}
                       >
-                        <option value="All">All Skills</option>
-                        {skills
-                          .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-                          .map((sk) => (
-                            <option key={sk.id} value={sk.id}>{sk.name}</option>
-                          ))}
-                        <option disabled>— Actions —</option>
-                        <option value="ADD_SKILL">+ Add New Skill...</option>
-                      </select>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {selectedSkillIds.length === 0
+                            ? 'All Skills'
+                            : selectedSkillIds.length === 1
+                            ? skills.find(s => String(s.id) === String(selectedSkillIds[0]))?.name || '1 Skill'
+                            : `${selectedSkillIds.length} Skills Selected`}
+                        </span>
+                        <ChevronRight 
+                          size={16} 
+                          style={{ 
+                            transform: isSkillDropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease',
+                            color: 'var(--text-muted)'
+                          }} 
+                        />
+                      </button>
+
+                      {/* Dropdown Menu Overlay */}
+                      {isSkillDropdownOpen && (
+                        <>
+                          {/* Backdrop to close dropdown on click outside */}
+                          <div 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                            onClick={() => setIsSkillDropdownOpen(false)} 
+                          />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: 'calc(100% + 4px)',
+                              left: 0,
+                              right: 0,
+                              zIndex: 100,
+                              background: '#0f172a',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: '8px',
+                              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                              maxHeight: '260px',
+                              overflowY: 'auto',
+                              padding: '0.5rem'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setSelectedSkillIds([])}
+                              >
+                                Select All (Reset)
+                              </button>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setIsSkillDropdownOpen(false)}
+                              >
+                                Done
+                              </button>
+                            </div>
+
+                            {skills
+                              .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                              .map((sk) => {
+                                const isChecked = selectedSkillIds.includes(String(sk.id));
+                                return (
+                                  <label
+                                    key={sk.id}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '0.5rem',
+                                      padding: '0.4rem 0.5rem',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      fontSize: '0.85rem',
+                                      color: isChecked ? '#fff' : 'var(--text-secondary)',
+                                      background: isChecked ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                      transition: 'background 0.15s ease'
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={(e) => {
+                                        const skIdStr = String(sk.id);
+                                        if (e.target.checked) {
+                                          setSelectedSkillIds([...selectedSkillIds, skIdStr]);
+                                        } else {
+                                          setSelectedSkillIds(selectedSkillIds.filter(id => id !== skIdStr));
+                                        }
+                                      }}
+                                      style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                                    />
+                                    <span style={{ fontWeight: isChecked ? 600 : 400 }}>{sk.name}</span>
+                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                                      {sk.category}
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                          </div>
+                        </>
+                      )}
                     </div>
                     
-                    {(selectedTeamFilter !== 'All' || selectedDevFilter !== 'All' || selectedSkillFilter !== 'All') && (
+                    {(selectedTeamFilter !== 'All' || selectedDevFilter !== 'All' || selectedSkillIds.length > 0) && (
                       <div style={{ display: 'flex' }}>
                         <button 
                           className="btn-secondary" 
@@ -1671,7 +1770,7 @@ function App() {
                           onClick={() => {
                             setSelectedTeamFilter('All');
                             setSelectedDevFilter('All');
-                            setSelectedSkillFilter('All');
+                            setSelectedSkillIds([]);
                           }}
                         >
                           <X size={16} />
@@ -1684,7 +1783,7 @@ function App() {
                   <div className="matrix-container">
                     <table className="matrix-table">
                       {(() => {
-                        // Determine skills to show in columns based on selected team filter & selected skill filter
+                        // Determine skills to show in columns based on selected team filter & selected skill checkboxes
                         const targetTeamObj = selectedTeamFilter !== 'All' && selectedTeamFilter !== 'No Team'
                           ? teams.find(t => t.name === selectedTeamFilter)
                           : null;
@@ -1697,8 +1796,8 @@ function App() {
                           ? skills.filter(s => teamAssignedSkillIds.includes(s.id))
                           : skills;
 
-                        if (selectedSkillFilter !== 'All') {
-                          displayedSkills = displayedSkills.filter(s => String(s.id) === String(selectedSkillFilter));
+                        if (selectedSkillIds.length > 0) {
+                          displayedSkills = displayedSkills.filter(s => selectedSkillIds.includes(String(s.id)));
                         }
 
                         const filteredDevs = [...developers]
