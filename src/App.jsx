@@ -2543,14 +2543,25 @@ function App() {
                             <td>
                               <div style={{ fontWeight: 600 }}>{dev.name}</div>
                               {dev.email && (
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                <div style={{ fontSize: '0.78rem', color: '#a7f3d0', fontWeight: 500, marginTop: '0.15rem' }}>
                                   {dev.email}
                                 </div>
                               )}
                             </td>
                             <td>{dev.role}</td>
                             <td>
-                              <span className="badge empty" style={{ fontSize: '0.75rem', padding: '0.1rem 0.4rem', border: '1px solid var(--border-color)', pointerEvents: 'none' }}>
+                              <span 
+                                className="badge level-competent" 
+                                style={{ 
+                                  fontSize: '0.78rem', 
+                                  padding: '0.2rem 0.55rem', 
+                                  fontWeight: 500,
+                                  background: dev.team === 'No Team' ? 'rgba(148, 163, 184, 0.15)' : 'rgba(139, 92, 246, 0.2)',
+                                  color: dev.team === 'No Team' ? '#cbd5e1' : '#ddd6fe',
+                                  border: dev.team === 'No Team' ? '1px solid rgba(148, 163, 184, 0.3)' : '1px solid rgba(139, 92, 246, 0.4)',
+                                  pointerEvents: 'none' 
+                                }}
+                              >
                                 {dev.team}
                               </span>
                             </td>
