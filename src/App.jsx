@@ -3237,15 +3237,11 @@ function App() {
                                     </td>
                                     <td>
                                       <button 
-                                        className="badge empty" 
+                                        className={`badge ${memberCount > 0 ? 'team-badge' : 'no-team'}`} 
                                         style={{ 
-                                          fontSize: '0.75rem', 
-                                          padding: '0.1rem 0.4rem',
                                           cursor: 'pointer',
                                           userSelect: 'none',
-                                          border: expandedTeamId === team.id ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                                          background: expandedTeamId === team.id ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                                          color: expandedTeamId === team.id ? 'var(--text-primary)' : 'var(--text-muted)'
+                                          ...(expandedTeamId === team.id ? { outline: '2px solid var(--accent-primary)', outlineOffset: '1px' } : {})
                                         }}
                                         onClick={() => setExpandedTeamId(expandedTeamId === team.id ? null : team.id)}
                                         title="Click to view team details & manage skills"
