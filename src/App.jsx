@@ -540,17 +540,29 @@ function App() {
     }
 
     try {
-      const { data, error } = await supabase
+      const devPayload = {
+        full_name: newDevName
+      };
+      if (newDevRole) devPayload.role_title = newDevRole;
+      if (newDevEmail) devPayload.email = newDevEmail;
+      if (newDevManagerName) devPayload.manager_fullname = newDevManagerName;
+      if (newDevManagerCompanyLoginId) devPayload.manager_company_login_id = newDevManagerCompanyLoginId;
+      if (newDevCompanyLoginId) devPayload.company_login_id = newDevCompanyLoginId;
+
+      let { data, error } = await supabase
         .from('person')
-        .insert([{ 
-          full_name: newDevName, 
-          role_title: newDevRole,
-          email: newDevEmail || null,
-          manager_fullname: newDevManagerName || null,
-          manager_company_login_id: newDevManagerCompanyLoginId || null,
-          company_login_id: newDevCompanyLoginId || null
-        }])
+        .insert([devPayload])
         .select();
+
+      if (error && (error.message.includes('role') || error.code === '23503' || error.code === '42703')) {
+        delete devPayload.role_title;
+        const retryRes = await supabase
+          .from('person')
+          .insert([devPayload])
+          .select();
+        data = retryRes.data;
+        error = retryRes.error;
+      }
 
       if (error) throw error;
 
@@ -760,20 +772,31 @@ function App() {
             setDevelopers(prev => [...prev, newDev]);
             importedCount++;
           } else {
-            // Build insert payload without undefined/empty string fields that might violate CHECK constraints
+            // Build insert payload without undefined/empty string fields
             const insertPayload = {
-              full_name: fullName,
-              role_title: roleTitle
+              full_name: fullName
             };
+            if (roleTitle) insertPayload.role_title = roleTitle;
             if (email) insertPayload.email = email;
             if (companyLoginId) insertPayload.company_login_id = companyLoginId;
             if (managerName) insertPayload.manager_fullname = managerName;
             if (managerLoginId) insertPayload.manager_company_login_id = managerLoginId;
 
-            const { data, error } = await supabase
+            let { data, error } = await supabase
               .from('person')
               .insert([insertPayload])
               .select();
+
+            // Fallback if role_title column fails or requires role FK / title
+            if (error && (error.message.includes('role') || error.code === '23503' || error.code === '42703')) {
+              delete insertPayload.role_title;
+              const retryRes = await supabase
+                .from('person')
+                .insert([insertPayload])
+                .select();
+              data = retryRes.data;
+              error = retryRes.error;
+            }
 
             if (error) {
               console.error(`Error importing row ${i} (${fullName}):`, error);
