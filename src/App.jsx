@@ -21,7 +21,9 @@ import {
   X,
   ArrowUp,
   ArrowDown,
-  Info
+  Info,
+  Download,
+  Upload
 } from 'lucide-react';
 
 // Predefined mock data for Demo Mode
@@ -604,6 +606,193 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Export Team Members to CSV
+  const handleExportDevelopers = () => {
+    if (developers.length === 0) {
+      showToast('No team members to export');
+      return;
+    }
+
+    const headers = ['Full Name', 'Role', 'Team', 'Company Login ID', 'Manager Full Name', 'Manager Company Login ID'];
+    const csvRows = [headers.join(',')];
+
+    developers.forEach(dev => {
+      const escape = (val) => `"${(val || '').toString().replace(/"/g, '""')}"`;
+      const row = [
+        escape(dev.name),
+        escape(dev.role),
+        escape(dev.team === 'No Team' ? '' : dev.team),
+        escape(dev.companyLoginId),
+        escape(dev.managerName),
+        escape(dev.managerCompanyLoginId)
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `team_members_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Exported team members to CSV!');
+  };
+
+  // Helper to parse CSV text lines accounting for quoted values
+  const parseCSVLine = (textLine) => {
+    const result = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < textLine.length; i++) {
+      const char = textLine[i];
+      if (char === '"') {
+        if (inQuotes && textLine[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(cur.trim());
+        cur = '';
+      } else {
+        cur += char;
+      }
+    }
+    result.push(cur.trim());
+    return result;
+  };
+
+  // Import Team Members from CSV
+  const handleImportDevelopers = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    setLoading(true);
+    const reader = new FileReader();
+
+    reader.onload = async (evt) => {
+      try {
+        const text = evt.target.result;
+        const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
+
+        if (lines.length < 2) {
+          throw new Error('CSV file must contain a header row and at least one data row.');
+        }
+
+        const headerTokens = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+        
+        // Match header column indexes flexible to variations
+        const findIdx = (keywords) => headerTokens.findIndex(h => keywords.some(k => h.includes(k)));
+
+        const nameIdx = findIdx(['fullname', 'name', 'developername', 'membername']);
+        const roleIdx = findIdx(['role', 'title', 'roletitle']);
+        const teamIdx = findIdx(['team', 'teamname']);
+        const companyLoginIdx = findIdx(['companyloginid', 'companylogin', 'loginid', 'login']);
+        const mgrNameIdx = findIdx(['managerfullname', 'managername', 'manager']);
+        const mgrLoginIdx = findIdx(['managercompanyloginid', 'managerlogin', 'managercompanylogin']);
+
+        if (nameIdx === -1) {
+          throw new Error('CSV missing required "Full Name" column.');
+        }
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        let importedCount = 0;
+
+        for (let i = 1; i < lines.length; i++) {
+          const cols = parseCSVLine(lines[i]);
+          const fullName = cols[nameIdx];
+          if (!fullName) continue;
+
+          const roleTitle = (roleIdx !== -1 && cols[roleIdx]) ? cols[roleIdx] : 'Software Engineer';
+          const teamNameRaw = (teamIdx !== -1 && cols[teamIdx]) ? cols[teamIdx] : '';
+          const companyLoginId = (companyLoginIdx !== -1 && cols[companyLoginIdx]) ? cols[companyLoginIdx] : null;
+          const managerName = (mgrNameIdx !== -1 && cols[mgrNameIdx]) ? cols[mgrNameIdx] : null;
+          const managerLoginId = (mgrLoginIdx !== -1 && cols[mgrLoginIdx]) ? cols[mgrLoginIdx] : null;
+
+          // Find team match if provided
+          const matchedTeam = teamNameRaw 
+            ? teams.find(t => t.name.toLowerCase() === teamNameRaw.toLowerCase()) 
+            : null;
+
+          if (useDemoMode) {
+            const newDev = {
+              id: `dev-imp-${Date.now()}-${i}`,
+              name: fullName,
+              role: roleTitle,
+              team: matchedTeam ? matchedTeam.name : (teamNameRaw || 'No Team'),
+              teamId: matchedTeam ? matchedTeam.id : null,
+              companyLoginId,
+              managerName,
+              managerCompanyLoginId: managerLoginId
+            };
+            setDevelopers(prev => [...prev, newDev]);
+            importedCount++;
+          } else {
+            const { data, error } = await supabase
+              .from('person')
+              .insert([{
+                full_name: fullName,
+                role_title: roleTitle,
+                company_login_id: companyLoginId,
+                manager_fullname: managerName,
+                manager_company_login_id: managerLoginId
+              }])
+              .select();
+
+            if (error) {
+              console.error(`Error importing row ${i}:`, error);
+              continue;
+            }
+
+            const insertedPerson = data[0];
+            let assignedTeamName = 'No Team';
+            let assignedTeamId = null;
+
+            if (matchedTeam) {
+              await supabase
+                .from('person_teams')
+                .insert([{
+                  person_id: insertedPerson.id,
+                  team_id: matchedTeam.id,
+                  is_current: true,
+                  valid_from: todayStr
+                }]);
+              assignedTeamName = matchedTeam.name;
+              assignedTeamId = matchedTeam.id;
+            }
+
+            setDevelopers(prev => [...prev, {
+              id: insertedPerson.id,
+              name: insertedPerson.full_name,
+              role: insertedPerson.role_title || roleTitle,
+              email: insertedPerson.email,
+              team: assignedTeamName,
+              teamId: assignedTeamId,
+              managerName: insertedPerson.manager_fullname,
+              managerCompanyLoginId: insertedPerson.manager_company_login_id,
+              companyLoginId: insertedPerson.company_login_id
+            }]);
+            importedCount++;
+          }
+        }
+
+        showToast(`Successfully imported ${importedCount} team members!`);
+      } catch (err) {
+        console.error(err);
+        showToast(`Import error: ${err.message}`);
+      } finally {
+        setLoading(false);
+        e.target.value = ''; // Reset file input
+      }
+    };
+
+    reader.readAsText(file);
   };
 
   // CRUD: Update a Developer (Person)
@@ -1922,7 +2111,36 @@ function App() {
           {/* Tab 2: Team Members List */}
           {activeTab === 'developers' && (
             <div className="glass-panel" style={{ padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Team Members List</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Team Members List</h3>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button 
+                    type="button" 
+                    className="btn-secondary" 
+                    onClick={handleExportDevelopers} 
+                    style={{ height: '38px', padding: '0 0.85rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', width: 'auto' }}
+                    title="Export team members list to CSV file"
+                  >
+                    <Download size={15} />
+                    Export CSV
+                  </button>
+                  <label 
+                    className="btn-secondary" 
+                    style={{ height: '38px', padding: '0 0.85rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', width: 'auto', cursor: 'pointer', margin: 0 }}
+                    title="Import team members list from CSV file"
+                  >
+                    <Upload size={15} />
+                    Import CSV
+                    <input 
+                      type="file" 
+                      accept=".csv" 
+                      onChange={handleImportDevelopers} 
+                      style={{ display: 'none' }} 
+                      disabled={loading}
+                    />
+                  </label>
+                </div>
+              </div>
               
               {/* Add Team Member Form */}
               <form onSubmit={handleAddDeveloper} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
