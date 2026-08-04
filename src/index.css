@@ -379,16 +379,10 @@ h1, h2, h3, h4, h5, h6 {
   filter: brightness(1.1);
 }
 
-.badge.team-badge, .badge.category-badge {
+.badge.team-badge, .badge.category-badge, .badge.vendor-badge {
   background: rgba(139, 92, 246, 0.2);
   color: #ddd6fe;
   border: 1px solid rgba(139, 92, 246, 0.4);
-}
-
-.badge.vendor-badge {
-  background: rgba(59, 130, 246, 0.2);
-  color: #bfdbfe;
-  border: 1px solid rgba(59, 130, 246, 0.4);
 }
 
 .badge.no-team {
