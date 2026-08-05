@@ -252,8 +252,10 @@ function App() {
   // Sorting and Filter states
   const [activeTab, setActiveTab] = useState('matrix'); // matrix, developers, skills
   const [matrixSortOrder, setMatrixSortOrder] = useState('asc'); // 'asc' or 'desc'
-  const [selectedTeamFilter, setSelectedTeamFilter] = useState('All');
-  const [selectedDevFilter, setSelectedDevFilter] = useState('All');
+  const [selectedTeamNames, setSelectedTeamNames] = useState([]); // Array of team names e.g. ['BI Development'], empty = All
+  const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
+  const [selectedDevIds, setSelectedDevIds] = useState([]); // Array of dev IDs e.g. ['dev-1'], empty = All
+  const [isDevDropdownOpen, setIsDevDropdownOpen] = useState(false);
   const [selectedSkillIds, setSelectedSkillIds] = useState([]); // Array of skill IDs for multi-select
   const [isSkillDropdownOpen, setIsSkillDropdownOpen] = useState(false);
   const [selectedLevelFilters, setSelectedLevelFilters] = useState([]); // Array of numbers e.g. [4, 5], empty or 6 items = All
@@ -629,8 +631,8 @@ function App() {
       
       // Auto-navigate back to Matrix and set filters
       setActiveTab('matrix');
-      setSelectedTeamFilter(assignedTeamName);
-      setSelectedDevFilter(newDevMapped.id);
+      setSelectedTeamNames([assignedTeamName]);
+      setSelectedDevIds([newDevMapped.id]);
       
       showToast(`Successfully added team member: ${newDevName}`);
     } catch (err) {
@@ -1339,8 +1341,8 @@ function App() {
         setNewDevTeamId(String(newTeam.id));
       } else {
         setActiveTab('matrix');
-        setSelectedTeamFilter(newTeam.name);
-        setSelectedDevFilter('All');
+        setSelectedTeamNames([newTeam.name]);
+        setSelectedDevIds([]);
       }
       setTeamRedirectTarget(null);
       
@@ -1372,8 +1374,8 @@ function App() {
         setNewDevTeamId(String(addedTeamId));
       } else {
         setActiveTab('matrix');
-        setSelectedTeamFilter(addedTeamName);
-        setSelectedDevFilter('All');
+        setSelectedTeamNames([addedTeamName]);
+        setSelectedDevIds([]);
       }
       setTeamRedirectTarget(null);
       
@@ -1440,9 +1442,7 @@ function App() {
     if (useDemoMode) {
       setTeams(teams.filter(t => t.id !== teamId));
       setDevelopers(developers.map(d => d.teamId === teamId ? { ...d, team: 'No Team', teamId: null } : d));
-      if (selectedTeamFilter === name) {
-        setSelectedTeamFilter('All');
-      }
+      setSelectedTeamNames(prev => prev.filter(n => n !== name));
       showToast(`Removed team ${name} (Demo)`);
       setLoading(false);
       return;
@@ -1458,9 +1458,7 @@ function App() {
 
       setTeams(teams.filter(t => t.id !== teamId));
       setDevelopers(developers.map(d => d.teamId === teamId ? { ...d, team: 'No Team', teamId: null } : d));
-      if (selectedTeamFilter === name) {
-        setSelectedTeamFilter('All');
-      }
+      setSelectedTeamNames(prev => prev.filter(n => n !== name));
       showToast(`Successfully removed team: ${name}`);
     } catch (err) {
       console.error(err);
@@ -1856,83 +1854,295 @@ function App() {
                     border: '1px solid var(--border-color)',
                     alignItems: 'flex-end'
                   }}>
-                    <div style={{ flex: '1', minWidth: '220px' }}>
+                    {/* 1. Filter by Team (Multi-select) */}
+                    <div style={{ flex: '1', minWidth: '220px', position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Filter by Team
+                        Filter by Team ({selectedTeamNames.length === 0 ? 'All' : `${selectedTeamNames.length} selected`})
                       </label>
-                      <select
+                      <button
+                        type="button"
                         className="form-select"
-                        value={selectedTeamFilter}
-                        onChange={(e) => {
-                          const newTeamVal = e.target.value;
-                          if (newTeamVal === 'ADD_TEAM') {
-                            setTeamRedirectTarget('matrix');
-                            setActiveTab('teams');
-                            setSelectedTeamFilter('All');
-                            setSelectedSkillIds([]);
-                          } else {
-                            setSelectedTeamFilter(newTeamVal);
-                            setSelectedDevFilter('All');
-
-                            // Auto pre-check skill checkboxes assigned to this team
-                            const teamObj = teams.find(t => t.name === newTeamVal);
-                            if (teamObj) {
-                              const assignedSkillIds = teamSkills
-                                .filter(ts => ts.team_id === teamObj.id && ts.is_current !== false && ts.is_required !== false)
-                                .map(ts => String(ts.skill_id));
-                              setSelectedSkillIds(assignedSkillIds);
-                            } else {
-                              setSelectedSkillIds([]);
-                            }
-                          }
+                        onClick={() => setIsTeamDropdownOpen(!isTeamDropdownOpen)}
+                        style={{
+                          height: '42px',
+                          padding: '0.5rem 1rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justify: 'space-between',
+                          width: '100%',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          background: 'rgba(15, 23, 42, 0.6)',
+                          borderColor: isTeamDropdownOpen ? 'var(--accent-primary)' : 'var(--border-color)'
                         }}
-                        style={{ height: '42px', padding: '0.5rem 1rem' }}
                       >
-                        <option value="All">All Teams</option>
-                        {teams.map((t) => (
-                          <option key={t.id} value={t.name}>{t.name}</option>
-                        ))}
-                        <option value="No Team">No Team</option>
-                        <option disabled>— Actions —</option>
-                        <option value="ADD_TEAM">+ Add New Team...</option>
-                      </select>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {selectedTeamNames.length === 0
+                            ? 'All Teams'
+                            : selectedTeamNames.length === 1
+                            ? selectedTeamNames[0]
+                            : `${selectedTeamNames.length} Teams Selected`}
+                        </span>
+                        <ChevronRight 
+                          size={16} 
+                          style={{ 
+                            transform: isTeamDropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease',
+                            color: 'var(--text-muted)'
+                          }} 
+                        />
+                      </button>
+
+                      {isTeamDropdownOpen && (
+                        <>
+                          <div 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                            onClick={() => setIsTeamDropdownOpen(false)} 
+                          />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: 'calc(100% + 4px)',
+                              left: 0,
+                              right: 0,
+                              zIndex: 100,
+                              background: '#0f172a',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: '8px',
+                              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                              maxHeight: '280px',
+                              overflowY: 'auto',
+                              padding: '0.5rem'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setSelectedTeamNames([])}
+                              >
+                                Select All (Reset)
+                              </button>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setIsTeamDropdownOpen(false)}
+                              >
+                                Done
+                              </button>
+                            </div>
+
+                            {['No Team', ...teams.map(t => t.name)].map((tName) => {
+                              const isChecked = selectedTeamNames.length === 0 || selectedTeamNames.includes(tName);
+                              return (
+                                <label
+                                  key={tName}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.45rem 0.5rem',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    color: isChecked ? '#fff' : 'var(--text-secondary)',
+                                    background: isChecked ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                    transition: 'background 0.15s ease'
+                                  }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => {
+                                      const allTeamNames = ['No Team', ...teams.map(t => t.name)];
+                                      if (selectedTeamNames.length === 0) {
+                                        setSelectedTeamNames([tName]);
+                                      } else if (selectedTeamNames.includes(tName)) {
+                                        const next = selectedTeamNames.filter(n => n !== tName);
+                                        setSelectedTeamNames(next.length === 0 ? [] : next);
+                                      } else {
+                                        const next = [...selectedTeamNames, tName];
+                                        setSelectedTeamNames(next.length === allTeamNames.length ? [] : next);
+                                      }
+                                    }}
+                                    style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                                  />
+                                  <span style={{ fontWeight: isChecked ? 600 : 400 }}>{tName}</span>
+                                </label>
+                              );
+                            })}
+
+                            <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', marginTop: '0.4rem', paddingTop: '0.4rem' }}>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.8rem', cursor: 'pointer', padding: '0.25rem 0.5rem', width: '100%', textAlign: 'left', fontWeight: 500 }}
+                                onClick={() => {
+                                  setIsTeamDropdownOpen(false);
+                                  setTeamRedirectTarget('matrix');
+                                  setActiveTab('teams');
+                                }}
+                              >
+                                + Add New Team...
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
 
-                    <div style={{ flex: '1', minWidth: '220px' }}>
+                    {/* 2. Filter by Team Member (Multi-select) */}
+                    <div style={{ flex: '1', minWidth: '220px', position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Filter by Team Member
+                        Filter by Team Member ({selectedDevIds.length === 0 ? 'All' : `${selectedDevIds.length} selected`})
                       </label>
-                      <select
+                      <button
+                        type="button"
                         className="form-select"
-                        value={selectedDevFilter}
-                        onChange={(e) => {
-                          if (e.target.value === 'ADD_DEV') {
-                            setActiveTab('developers');
-                            setSelectedDevFilter('All');
-                          } else {
-                            setSelectedDevFilter(e.target.value);
-                          }
+                        onClick={() => setIsDevDropdownOpen(!isDevDropdownOpen)}
+                        style={{
+                          height: '42px',
+                          padding: '0.5rem 1rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justify: 'space-between',
+                          width: '100%',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          background: 'rgba(15, 23, 42, 0.6)',
+                          borderColor: isDevDropdownOpen ? 'var(--accent-primary)' : 'var(--border-color)'
                         }}
-                        style={{ height: '42px', padding: '0.5rem 1rem' }}
                       >
-                        <option value="All">All Members</option>
-                        {developers
-                          .filter(dev => selectedTeamFilter === 'All' || dev.team === selectedTeamFilter)
-                          .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-                          .map((dev) => (
-                            <option key={dev.id} value={dev.id}>{dev.name}</option>
-                          ))}
-                        <option disabled>— Actions —</option>
-                        <option value="ADD_DEV">+ Add New Member...</option>
-                      </select>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {selectedDevIds.length === 0
+                            ? 'All Members'
+                            : selectedDevIds.length === 1
+                            ? developers.find(d => String(d.id) === String(selectedDevIds[0]))?.name || '1 Member'
+                            : `${selectedDevIds.length} Members Selected`}
+                        </span>
+                        <ChevronRight 
+                          size={16} 
+                          style={{ 
+                            transform: isDevDropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease',
+                            color: 'var(--text-muted)'
+                          }} 
+                        />
+                      </button>
+
+                      {isDevDropdownOpen && (
+                        <>
+                          <div 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                            onClick={() => setIsDevDropdownOpen(false)} 
+                          />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: 'calc(100% + 4px)',
+                              left: 0,
+                              right: 0,
+                              zIndex: 100,
+                              background: '#0f172a',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: '8px',
+                              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                              maxHeight: '280px',
+                              overflowY: 'auto',
+                              padding: '0.5rem'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setSelectedDevIds([])}
+                              >
+                                Select All (Reset)
+                              </button>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setIsDevDropdownOpen(false)}
+                              >
+                                Done
+                              </button>
+                            </div>
+
+                            {(() => {
+                              const availDevs = developers
+                                .filter(dev => selectedTeamNames.length === 0 || selectedTeamNames.includes(dev.team))
+                                .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+                              return (
+                                <>
+                                  {availDevs.map((dev) => {
+                                    const devIdStr = String(dev.id);
+                                    const isChecked = selectedDevIds.length === 0 || selectedDevIds.includes(devIdStr);
+                                    return (
+                                      <label
+                                        key={dev.id}
+                                        style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '0.5rem',
+                                          padding: '0.45rem 0.5rem',
+                                          borderRadius: '4px',
+                                          cursor: 'pointer',
+                                          fontSize: '0.85rem',
+                                          color: isChecked ? '#fff' : 'var(--text-secondary)',
+                                          background: isChecked ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                          transition: 'background 0.15s ease'
+                                        }}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={isChecked}
+                                          onChange={() => {
+                                            if (selectedDevIds.length === 0) {
+                                              setSelectedDevIds([devIdStr]);
+                                            } else if (selectedDevIds.includes(devIdStr)) {
+                                              const next = selectedDevIds.filter(id => id !== devIdStr);
+                                              setSelectedDevIds(next.length === 0 ? [] : next);
+                                            } else {
+                                              const next = [...selectedDevIds, devIdStr];
+                                              setSelectedDevIds(next.length === availDevs.length ? [] : next);
+                                            }
+                                          }}
+                                          style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                                        />
+                                        <span style={{ fontWeight: isChecked ? 600 : 400 }}>{dev.name}</span>
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                                          {dev.team}
+                                        </span>
+                                      </label>
+                                    );
+                                  })}
+                                </>
+                              );
+                            })()}
+
+                            <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', marginTop: '0.4rem', paddingTop: '0.4rem' }}>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.8rem', cursor: 'pointer', padding: '0.25rem 0.5rem', width: '100%', textAlign: 'left', fontWeight: 500 }}
+                                onClick={() => {
+                                  setIsDevDropdownOpen(false);
+                                  setActiveTab('developers');
+                                }}
+                              >
+                                + Add New Member...
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
 
+                    {/* 3. Filter by Skill (Multi-select) */}
                     <div style={{ flex: '1', minWidth: '220px', position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Filter by Skill ({selectedSkillIds.length === 0 ? 'All' : `${selectedSkillIds.length} selected`})
                       </label>
-
-                      {/* Custom Multi-select Dropdown Button */}
                       <button
                         type="button"
                         className="form-select"
@@ -1967,10 +2177,8 @@ function App() {
                         />
                       </button>
 
-                      {/* Dropdown Menu Overlay */}
                       {isSkillDropdownOpen && (
                         <>
-                          {/* Backdrop to close dropdown on click outside */}
                           <div 
                             style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
                             onClick={() => setIsSkillDropdownOpen(false)} 
@@ -1986,7 +2194,7 @@ function App() {
                               border: '1px solid var(--border-color)',
                               borderRadius: '8px',
                               boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
-                              maxHeight: '260px',
+                              maxHeight: '280px',
                               overflowY: 'auto',
                               padding: '0.5rem'
                             }}
@@ -2011,7 +2219,8 @@ function App() {
                             {skills
                               .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
                               .map((sk) => {
-                                const isChecked = selectedSkillIds.includes(String(sk.id));
+                                const skIdStr = String(sk.id);
+                                const isChecked = selectedSkillIds.length === 0 || selectedSkillIds.includes(skIdStr);
                                 return (
                                   <label
                                     key={sk.id}
@@ -2019,7 +2228,7 @@ function App() {
                                       display: 'flex',
                                       alignItems: 'center',
                                       gap: '0.5rem',
-                                      padding: '0.4rem 0.5rem',
+                                      padding: '0.45rem 0.5rem',
                                       borderRadius: '4px',
                                       cursor: 'pointer',
                                       fontSize: '0.85rem',
@@ -2031,12 +2240,15 @@ function App() {
                                     <input
                                       type="checkbox"
                                       checked={isChecked}
-                                      onChange={(e) => {
-                                        const skIdStr = String(sk.id);
-                                        if (e.target.checked) {
-                                          setSelectedSkillIds([...selectedSkillIds, skIdStr]);
+                                      onChange={() => {
+                                        if (selectedSkillIds.length === 0) {
+                                          setSelectedSkillIds([skIdStr]);
+                                        } else if (selectedSkillIds.includes(skIdStr)) {
+                                          const next = selectedSkillIds.filter(id => id !== skIdStr);
+                                          setSelectedSkillIds(next.length === 0 ? [] : next);
                                         } else {
-                                          setSelectedSkillIds(selectedSkillIds.filter(id => id !== skIdStr));
+                                          const next = [...selectedSkillIds, skIdStr];
+                                          setSelectedSkillIds(next.length === skills.length ? [] : next);
                                         }
                                       }}
                                       style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
@@ -2053,12 +2265,11 @@ function App() {
                       )}
                     </div>
 
+                    {/* 4. Filter by Competency Level (Multi-select) */}
                     <div style={{ flex: '1', minWidth: '220px', position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Filter by Competency Level ({selectedLevelFilters.length === 0 || selectedLevelFilters.length === 6 ? 'All' : `${selectedLevelFilters.length} selected`})
                       </label>
-
-                      {/* Custom Multi-select Dropdown Button */}
                       <button
                         type="button"
                         className="form-select"
@@ -2100,10 +2311,8 @@ function App() {
                         />
                       </button>
 
-                      {/* Dropdown Menu Overlay */}
                       {isLevelDropdownOpen && (
                         <>
-                          {/* Backdrop to close dropdown on click outside */}
                           <div 
                             style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
                             onClick={() => setIsLevelDropdownOpen(false)} 
@@ -2203,14 +2412,14 @@ function App() {
                       )}
                     </div>
                     
-                    {(selectedTeamFilter !== 'All' || selectedDevFilter !== 'All' || selectedSkillIds.length > 0 || (selectedLevelFilters.length > 0 && selectedLevelFilters.length < 6)) && (
+                    {(selectedTeamNames.length > 0 || selectedDevIds.length > 0 || selectedSkillIds.length > 0 || (selectedLevelFilters.length > 0 && selectedLevelFilters.length < 6)) && (
                       <div style={{ display: 'flex' }}>
                         <button 
                           className="btn-secondary" 
                           style={{ height: '42px', padding: '0 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', width: 'auto', margin: 0 }}
                           onClick={() => {
-                            setSelectedTeamFilter('All');
-                            setSelectedDevFilter('All');
+                            setSelectedTeamNames([]);
+                            setSelectedDevIds([]);
                             setSelectedSkillIds([]);
                             setSelectedLevelFilters([]);
                           }}
@@ -2226,17 +2435,17 @@ function App() {
                     <table className="matrix-table">
                       {(() => {
                         // Determine skills to show in columns based on selected team filter & selected skill checkboxes
-                        const targetTeamObj = selectedTeamFilter !== 'All' && selectedTeamFilter !== 'No Team'
-                          ? teams.find(t => t.name === selectedTeamFilter)
-                          : null;
-                        
-                        const teamAssignedSkillIds = targetTeamObj
-                          ? teamSkills.filter(ts => ts.team_id === targetTeamObj.id && ts.is_current !== false && ts.is_required !== false).map(ts => ts.skill_id)
-                          : [];
+                        let displayedSkills = skills;
 
-                        let displayedSkills = targetTeamObj
-                          ? skills.filter(s => teamAssignedSkillIds.includes(s.id))
-                          : skills;
+                        if (selectedTeamNames.length > 0) {
+                          const matchedTeams = teams.filter(t => selectedTeamNames.includes(t.name));
+                          const matchedTeamIds = matchedTeams.map(t => t.id);
+                          const teamAssignedSkillIds = teamSkills
+                            .filter(ts => matchedTeamIds.includes(ts.team_id) && ts.is_current !== false && ts.is_required !== false)
+                            .map(ts => ts.skill_id);
+
+                          displayedSkills = skills.filter(s => teamAssignedSkillIds.includes(s.id));
+                        }
 
                         if (selectedSkillIds.length > 0) {
                           displayedSkills = displayedSkills.filter(s => selectedSkillIds.includes(String(s.id)));
@@ -2246,8 +2455,8 @@ function App() {
 
                         const filteredDevs = [...developers]
                           .filter((dev) => {
-                            const matchesTeam = selectedTeamFilter === 'All' || dev.team === selectedTeamFilter;
-                            const matchesDev = selectedDevFilter === 'All' || String(dev.id) === String(selectedDevFilter);
+                            const matchesTeam = selectedTeamNames.length === 0 || selectedTeamNames.includes(dev.team);
+                            const matchesDev = selectedDevIds.length === 0 || selectedDevIds.includes(String(dev.id));
 
                             let matchesLevel = true;
                             if (selectedLevelFilters.length > 0 && selectedLevelFilters.length < 6) {
@@ -2317,8 +2526,8 @@ function App() {
                                         className="btn-secondary" 
                                         style={{ width: 'auto', padding: '0.4rem 1rem', marginTop: '0.5rem', fontSize: '0.85rem' }}
                                         onClick={() => {
-                                          setSelectedTeamFilter('All');
-                                          setSelectedDevFilter('All');
+                                          setSelectedTeamNames([]);
+                                          setSelectedDevIds([]);
                                           setSelectedSkillIds([]);
                                           setSelectedLevelFilters([]);
                                         }}
@@ -2333,7 +2542,7 @@ function App() {
                                   <td colSpan={2} style={{ textAlign: 'center', padding: '2rem 1.5rem', color: 'var(--text-secondary)' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
                                       <BookOpen size={28} style={{ opacity: 0.5, color: 'var(--accent-primary)' }} />
-                                      <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>No skills assigned to team "{selectedTeamFilter}".</span>
+                                      <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>No skills assigned to selected teams.</span>
                                       <button 
                                         className="btn-secondary" 
                                         style={{ width: 'auto', padding: '0.35rem 0.85rem', marginTop: '0.25rem', fontSize: '0.8rem' }}
