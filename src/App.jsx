@@ -260,12 +260,16 @@ function App() {
   const [isSkillDropdownOpen, setIsSkillDropdownOpen] = useState(false);
   const [selectedLevelFilters, setSelectedLevelFilters] = useState([]); // Array of numbers e.g. [4, 5], empty or 6 items = All
   const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
-  const [selectedVendorFilter, setSelectedVendorFilter] = useState('All');
+  const [selectedCategoryNames, setSelectedCategoryNames] = useState([]); // Array of category names, empty = All
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [selectedVendorNames, setSelectedVendorNames] = useState([]); // Array of vendor names, empty = All
+  const [isVendorDropdownOpen, setIsVendorDropdownOpen] = useState(false);
   const [skillSearchQuery, setSkillSearchQuery] = useState('');
   const [devListSortOrder, setDevListSortOrder] = useState('asc'); // 'asc' or 'desc'
-  const [devListTeamFilter, setDevListTeamFilter] = useState('All');
-  const [devListRoleFilter, setDevListRoleFilter] = useState('All');
+  const [selectedDevListTeamNames, setSelectedDevListTeamNames] = useState([]); // Array of team names, empty = All
+  const [isDevListTeamDropdownOpen, setIsDevListTeamDropdownOpen] = useState(false);
+  const [selectedDevListRoleNames, setSelectedDevListRoleNames] = useState([]); // Array of role titles, empty = All
+  const [isDevListRoleDropdownOpen, setIsDevListRoleDropdownOpen] = useState(false);
   const [skillsSortOrder, setSkillsSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [categoriesSortOrder, setCategoriesSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [teamsSortOrder, setTeamsSortOrder] = useState('asc'); // 'asc' or 'desc'
@@ -2729,50 +2733,261 @@ function App() {
                 border: '1px solid var(--border-color)',
                 alignItems: 'flex-end'
               }}>
-                <div style={{ flex: '1', minWidth: '200px' }}>
+                {/* 1. Filter by Team */}
+                <div style={{ flex: '1', minWidth: '200px', position: 'relative' }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Filter by Team
+                    Filter by Team ({selectedDevListTeamNames.length === 0 ? 'All' : `${selectedDevListTeamNames.length} selected`})
                   </label>
-                  <select
+                  <button
+                    type="button"
                     className="form-select"
-                    value={devListTeamFilter}
-                    onChange={(e) => setDevListTeamFilter(e.target.value)}
-                    style={{ height: '38px', padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+                    onClick={() => setIsDevListTeamDropdownOpen(!isDevListTeamDropdownOpen)}
+                    style={{
+                      height: '38px',
+                      padding: '0.4rem 0.85rem',
+                      fontSize: '0.85rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justify: 'space-between',
+                      width: '100%',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      borderColor: isDevListTeamDropdownOpen ? 'var(--accent-primary)' : 'var(--border-color)'
+                    }}
                   >
-                    <option value="All">All Teams</option>
-                    {[...teams].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((t) => (
-                      <option key={t.id} value={t.name}>{t.name}</option>
-                    ))}
-                    <option value="No Team">No Team</option>
-                  </select>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {selectedDevListTeamNames.length === 0
+                        ? 'All Teams'
+                        : selectedDevListTeamNames.length === 1
+                        ? selectedDevListTeamNames[0]
+                        : `${selectedDevListTeamNames.length} Teams Selected`}
+                    </span>
+                    <ChevronRight 
+                      size={16} 
+                      style={{ 
+                        transform: isDevListTeamDropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease',
+                        color: 'var(--text-muted)'
+                      }} 
+                    />
+                  </button>
+
+                  {isDevListTeamDropdownOpen && (
+                    <>
+                      <div 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                        onClick={() => setIsDevListTeamDropdownOpen(false)} 
+                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 'calc(100% + 4px)',
+                          left: 0,
+                          right: 0,
+                          zIndex: 100,
+                          background: '#0f172a',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                          maxHeight: '260px',
+                          overflowY: 'auto',
+                          padding: '0.5rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                            onClick={() => setSelectedDevListTeamNames([])}
+                          >
+                            Select All (Reset)
+                          </button>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                            onClick={() => setIsDevListTeamDropdownOpen(false)}
+                          >
+                            Done
+                          </button>
+                        </div>
+
+                        {['No Team', ...teams.map(t => t.name)].map((tName) => {
+                          const isChecked = selectedDevListTeamNames.length === 0 || selectedDevListTeamNames.includes(tName);
+                          return (
+                            <label
+                              key={tName}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.45rem 0.5rem',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                color: isChecked ? '#fff' : 'var(--text-secondary)',
+                                background: isChecked ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                transition: 'background 0.15s ease'
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => {
+                                  const allNames = ['No Team', ...teams.map(t => t.name)];
+                                  if (selectedDevListTeamNames.length === 0) {
+                                    setSelectedDevListTeamNames([tName]);
+                                  } else if (selectedDevListTeamNames.includes(tName)) {
+                                    const next = selectedDevListTeamNames.filter(n => n !== tName);
+                                    setSelectedDevListTeamNames(next.length === 0 ? [] : next);
+                                  } else {
+                                    const next = [...selectedDevListTeamNames, tName];
+                                    setSelectedDevListTeamNames(next.length === allNames.length ? [] : next);
+                                  }
+                                }}
+                                style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                              />
+                              <span style={{ fontWeight: isChecked ? 600 : 400 }}>{tName}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                <div style={{ flex: '1', minWidth: '200px' }}>
+                {/* 2. Filter by Role */}
+                <div style={{ flex: '1', minWidth: '200px', position: 'relative' }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Filter by Role
+                    Filter by Role ({selectedDevListRoleNames.length === 0 ? 'All' : `${selectedDevListRoleNames.length} selected`})
                   </label>
-                  <select
+                  <button
+                    type="button"
                     className="form-select"
-                    value={devListRoleFilter}
-                    onChange={(e) => setDevListRoleFilter(e.target.value)}
-                    style={{ height: '38px', padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+                    onClick={() => setIsDevListRoleDropdownOpen(!isDevListRoleDropdownOpen)}
+                    style={{
+                      height: '38px',
+                      padding: '0.4rem 0.85rem',
+                      fontSize: '0.85rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justify: 'space-between',
+                      width: '100%',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      borderColor: isDevListRoleDropdownOpen ? 'var(--accent-primary)' : 'var(--border-color)'
+                    }}
                   >
-                    <option value="All">All Roles</option>
-                    {Array.from(new Set(developers.map(d => d.role).filter(Boolean)))
-                      .sort((a, b) => a.localeCompare(b))
-                      .map((r) => (
-                        <option key={r} value={r}>{r}</option>
-                      ))}
-                  </select>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {selectedDevListRoleNames.length === 0
+                        ? 'All Roles'
+                        : selectedDevListRoleNames.length === 1
+                        ? selectedDevListRoleNames[0]
+                        : `${selectedDevListRoleNames.length} Roles Selected`}
+                    </span>
+                    <ChevronRight 
+                      size={16} 
+                      style={{ 
+                        transform: isDevListRoleDropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease',
+                        color: 'var(--text-muted)'
+                      }} 
+                    />
+                  </button>
+
+                  {isDevListRoleDropdownOpen && (
+                    <>
+                      <div 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                        onClick={() => setIsDevListRoleDropdownOpen(false)} 
+                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 'calc(100% + 4px)',
+                          left: 0,
+                          right: 0,
+                          zIndex: 100,
+                          background: '#0f172a',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                          maxHeight: '260px',
+                          overflowY: 'auto',
+                          padding: '0.5rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                            onClick={() => setSelectedDevListRoleNames([])}
+                          >
+                            Select All (Reset)
+                          </button>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                            onClick={() => setIsDevListRoleDropdownOpen(false)}
+                          >
+                            Done
+                          </button>
+                        </div>
+
+                        {(() => {
+                          const allRoles = Array.from(new Set(developers.map(d => d.role).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+                          return allRoles.map((r) => {
+                            const isChecked = selectedDevListRoleNames.length === 0 || selectedDevListRoleNames.includes(r);
+                            return (
+                              <label
+                                key={r}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.5rem',
+                                  padding: '0.45rem 0.5rem',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem',
+                                  color: isChecked ? '#fff' : 'var(--text-secondary)',
+                                  background: isChecked ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                  transition: 'background 0.15s ease'
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    if (selectedDevListRoleNames.length === 0) {
+                                      setSelectedDevListRoleNames([r]);
+                                    } else if (selectedDevListRoleNames.includes(r)) {
+                                      const next = selectedDevListRoleNames.filter(name => name !== r);
+                                      setSelectedDevListRoleNames(next.length === 0 ? [] : next);
+                                    } else {
+                                      const next = [...selectedDevListRoleNames, r];
+                                      setSelectedDevListRoleNames(next.length === allRoles.length ? [] : next);
+                                    }
+                                  }}
+                                  style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                                />
+                                <span style={{ fontWeight: isChecked ? 600 : 400 }}>{r}</span>
+                              </label>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                {(devListTeamFilter !== 'All' || devListRoleFilter !== 'All') && (
+                {(selectedDevListTeamNames.length > 0 || selectedDevListRoleNames.length > 0) && (
                   <button
                     type="button"
                     className="btn-secondary"
                     onClick={() => {
-                      setDevListTeamFilter('All');
-                      setDevListRoleFilter('All');
+                      setSelectedDevListTeamNames([]);
+                      setSelectedDevListRoleNames([]);
                     }}
                     style={{ height: '38px', padding: '0 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', width: 'auto', margin: 0, fontSize: '0.8rem' }}
                   >
@@ -2817,8 +3032,8 @@ function App() {
                     <tbody>
                       {[...developers]
                         .filter((dev) => {
-                          const matchesTeam = devListTeamFilter === 'All' || dev.team === devListTeamFilter;
-                          const matchesRole = devListRoleFilter === 'All' || dev.role === devListRoleFilter;
+                          const matchesTeam = selectedDevListTeamNames.length === 0 || selectedDevListTeamNames.includes(dev.team);
+                          const matchesRole = selectedDevListRoleNames.length === 0 || selectedDevListRoleNames.includes(dev.role);
                           return matchesTeam && matchesRole;
                         })
                         .sort((a, b) => {
@@ -3083,50 +3298,279 @@ function App() {
                 border: '1px solid var(--border-color)',
                 alignItems: 'flex-end'
               }}>
-                <div style={{ flex: '1', minWidth: '200px' }}>
+                {/* 1. Filter by Category */}
+                <div style={{ flex: '1', minWidth: '200px', position: 'relative' }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Filter by Category
+                    Filter by Category ({selectedCategoryNames.length === 0 ? 'All' : `${selectedCategoryNames.length} selected`})
                   </label>
-                  <select
+                  <button
+                    type="button"
                     className="form-select"
-                    value={selectedCategoryFilter}
-                    onChange={(e) => setSelectedCategoryFilter(e.target.value)}
-                    style={{ height: '38px', padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+                    onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                    style={{
+                      height: '38px',
+                      padding: '0.4rem 0.85rem',
+                      fontSize: '0.85rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justify: 'space-between',
+                      width: '100%',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      borderColor: isCategoryDropdownOpen ? 'var(--accent-primary)' : 'var(--border-color)'
+                    }}
                   >
-                    <option value="All">All Categories</option>
-                    {[...categories].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((c) => (
-                      <option key={c.id} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {selectedCategoryNames.length === 0
+                        ? 'All Categories'
+                        : selectedCategoryNames.length === 1
+                        ? selectedCategoryNames[0]
+                        : `${selectedCategoryNames.length} Categories Selected`}
+                    </span>
+                    <ChevronRight 
+                      size={16} 
+                      style={{ 
+                        transform: isCategoryDropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease',
+                        color: 'var(--text-muted)'
+                      }} 
+                    />
+                  </button>
+
+                  {isCategoryDropdownOpen && (
+                    <>
+                      <div 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                        onClick={() => setIsCategoryDropdownOpen(false)} 
+                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 'calc(100% + 4px)',
+                          left: 0,
+                          right: 0,
+                          zIndex: 100,
+                          background: '#0f172a',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                          maxHeight: '260px',
+                          overflowY: 'auto',
+                          padding: '0.5rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                            onClick={() => setSelectedCategoryNames([])}
+                          >
+                            Select All (Reset)
+                          </button>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                            onClick={() => setIsCategoryDropdownOpen(false)}
+                          >
+                            Done
+                          </button>
+                        </div>
+
+                        {[...categories].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((cat) => {
+                          const cName = cat.name;
+                          const isChecked = selectedCategoryNames.length === 0 || selectedCategoryNames.includes(cName);
+                          return (
+                            <label
+                              key={cat.id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.45rem 0.5rem',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                color: isChecked ? '#fff' : 'var(--text-secondary)',
+                                background: isChecked ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                transition: 'background 0.15s ease'
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => {
+                                  if (selectedCategoryNames.length === 0) {
+                                    setSelectedCategoryNames([cName]);
+                                  } else if (selectedCategoryNames.includes(cName)) {
+                                    const next = selectedCategoryNames.filter(n => n !== cName);
+                                    setSelectedCategoryNames(next.length === 0 ? [] : next);
+                                  } else {
+                                    const next = [...selectedCategoryNames, cName];
+                                    setSelectedCategoryNames(next.length === categories.length ? [] : next);
+                                  }
+                                }}
+                                style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                              />
+                              <span style={{ fontWeight: isChecked ? 600 : 400 }}>{cName}</span>
+                            </label>
+                          );
+                        })}
+
+                        <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', marginTop: '0.4rem', paddingTop: '0.4rem' }}>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.8rem', cursor: 'pointer', padding: '0.25rem 0.5rem', width: '100%', textAlign: 'left', fontWeight: 500 }}
+                            onClick={() => {
+                              setIsCategoryDropdownOpen(false);
+                              setCategoryRedirectTarget('skills');
+                              setActiveTab('categories');
+                            }}
+                          >
+                            + Add New Category...
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                <div style={{ flex: '1', minWidth: '200px' }}>
+                {/* 2. Filter by Vendor */}
+                <div style={{ flex: '1', minWidth: '200px', position: 'relative' }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Filter by Vendor
+                    Filter by Vendor ({selectedVendorNames.length === 0 ? 'All' : `${selectedVendorNames.length} selected`})
                   </label>
-                  <select
+                  <button
+                    type="button"
                     className="form-select"
-                    value={selectedVendorFilter}
-                    onChange={(e) => setSelectedVendorFilter(e.target.value)}
-                    style={{ height: '38px', padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+                    onClick={() => setIsVendorDropdownOpen(!isVendorDropdownOpen)}
+                    style={{
+                      height: '38px',
+                      padding: '0.4rem 0.85rem',
+                      fontSize: '0.85rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justify: 'space-between',
+                      width: '100%',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      borderColor: isVendorDropdownOpen ? 'var(--accent-primary)' : 'var(--border-color)'
+                    }}
                   >
-                    <option value="All">All Vendors</option>
-                    {Array.from(new Set(skills.map(s => s.vendor).filter(Boolean)))
-                      .sort((a, b) => a.localeCompare(b))
-                      .map((v) => (
-                        <option key={v} value={v}>{v}</option>
-                      ))}
-                    <option value="NO_VENDOR">No Vendor Specified</option>
-                  </select>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {selectedVendorNames.length === 0
+                        ? 'All Vendors'
+                        : selectedVendorNames.length === 1
+                        ? (selectedVendorNames[0] === 'NO_VENDOR' ? 'No Vendor Specified' : selectedVendorNames[0])
+                        : `${selectedVendorNames.length} Vendors Selected`}
+                    </span>
+                    <ChevronRight 
+                      size={16} 
+                      style={{ 
+                        transform: isVendorDropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease',
+                        color: 'var(--text-muted)'
+                      }} 
+                    />
+                  </button>
+
+                  {isVendorDropdownOpen && (
+                    <>
+                      <div 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                        onClick={() => setIsVendorDropdownOpen(false)} 
+                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 'calc(100% + 4px)',
+                          left: 0,
+                          right: 0,
+                          zIndex: 100,
+                          background: '#0f172a',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                          maxHeight: '260px',
+                          overflowY: 'auto',
+                          padding: '0.5rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                            onClick={() => setSelectedVendorNames([])}
+                          >
+                            Select All (Reset)
+                          </button>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                            onClick={() => setIsVendorDropdownOpen(false)}
+                          >
+                            Done
+                          </button>
+                        </div>
+
+                        {(() => {
+                          const vendorList = [
+                            ...Array.from(new Set(skills.map(s => s.vendor).filter(Boolean))).sort((a, b) => a.localeCompare(b)),
+                            'NO_VENDOR'
+                          ];
+                          return vendorList.map((v) => {
+                            const isChecked = selectedVendorNames.length === 0 || selectedVendorNames.includes(v);
+                            const displayLabel = v === 'NO_VENDOR' ? 'No Vendor Specified' : v;
+                            return (
+                              <label
+                                key={v}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.5rem',
+                                  padding: '0.45rem 0.5rem',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem',
+                                  color: isChecked ? '#fff' : 'var(--text-secondary)',
+                                  background: isChecked ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                  transition: 'background 0.15s ease'
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    if (selectedVendorNames.length === 0) {
+                                      setSelectedVendorNames([v]);
+                                    } else if (selectedVendorNames.includes(v)) {
+                                      const next = selectedVendorNames.filter(name => name !== v);
+                                      setSelectedVendorNames(next.length === 0 ? [] : next);
+                                    } else {
+                                      const next = [...selectedVendorNames, v];
+                                      setSelectedVendorNames(next.length === vendorList.length ? [] : next);
+                                    }
+                                  }}
+                                  style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                                />
+                                <span style={{ fontWeight: isChecked ? 600 : 400 }}>{displayLabel}</span>
+                              </label>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                {(selectedCategoryFilter !== 'All' || selectedVendorFilter !== 'All') && (
+                {(selectedCategoryNames.length > 0 || selectedVendorNames.length > 0) && (
                   <button
                     type="button"
                     className="btn-secondary"
                     onClick={() => {
-                      setSelectedCategoryFilter('All');
-                      setSelectedVendorFilter('All');
+                      setSelectedCategoryNames([]);
+                      setSelectedVendorNames([]);
                     }}
                     style={{ height: '38px', padding: '0 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', width: 'auto', margin: 0, fontSize: '0.8rem' }}
                   >
@@ -3170,12 +3614,10 @@ function App() {
                     <tbody>
                       {[...skills]
                         .filter((skill) => {
-                          const matchesCategory = selectedCategoryFilter === 'All' || skill.category === selectedCategoryFilter;
-                          const matchesVendor = selectedVendorFilter === 'All'
+                          const matchesCategory = selectedCategoryNames.length === 0 || selectedCategoryNames.includes(skill.category);
+                          const matchesVendor = selectedVendorNames.length === 0
                             ? true
-                            : selectedVendorFilter === 'NO_VENDOR'
-                            ? !skill.vendor
-                            : skill.vendor === selectedVendorFilter;
+                            : selectedVendorNames.some(v => v === 'NO_VENDOR' ? !skill.vendor : skill.vendor === v);
                           return matchesCategory && matchesVendor;
                         })
                         .sort((a, b) => {
