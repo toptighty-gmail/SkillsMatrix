@@ -273,6 +273,11 @@ function App() {
   const [skillsSortOrder, setSkillsSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [categoriesSortOrder, setCategoriesSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [teamsSortOrder, setTeamsSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [showInlineAddSkillTeamId, setShowInlineAddSkillTeamId] = useState(null);
+  const [inlineSkillName, setInlineSkillName] = useState('');
+  const [inlineSkillVendor, setInlineSkillVendor] = useState('');
+  const [inlineSkillDescription, setInlineSkillDescription] = useState('');
+  const [inlineSkillCategoryId, setInlineSkillCategoryId] = useState('');
   const [selectedDevInfo, setSelectedDevInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -1544,6 +1549,101 @@ function App() {
     } catch (err) {
       console.error(err);
       showToast(`Error updating team skill: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // CRUD: Create a new skill on the fly and auto-assign it to a team
+  const handleCreateAndAssignSkill = async (e, teamId) => {
+    e.preventDefault();
+    if (!inlineSkillName || !inlineSkillName.trim()) return;
+
+    const targetTeam = teams.find(t => t.id === teamId);
+    const teamName = targetTeam ? targetTeam.name : 'Team';
+    const catId = inlineSkillCategoryId || (categories[0] ? categories[0].id : null);
+    const catObj = categories.find(c => String(c.id) === String(catId));
+    const catName = catObj ? catObj.name : 'Uncategorized';
+
+    setLoading(true);
+
+    if (useDemoMode) {
+      const newSkillId = `skill-fly-${Date.now()}`;
+      const newSkill = {
+        id: newSkillId,
+        name: inlineSkillName.trim(),
+        category: catName,
+        category_id: catId,
+        vendor: inlineSkillVendor.trim() || null,
+        description: inlineSkillDescription.trim() || null
+      };
+
+      setSkills(prev => [...prev, newSkill]);
+
+      const newTS = { id: `ts-fly-${Date.now()}`, team_id: teamId, skill_id: newSkillId, is_required: true, is_current: true };
+      setTeamSkills(prev => [...prev, newTS]);
+
+      setInlineSkillName('');
+      setInlineSkillVendor('');
+      setInlineSkillDescription('');
+      setInlineSkillCategoryId('');
+      setShowInlineAddSkillTeamId(null);
+
+      showToast(`Created skill "${newSkill.name}" and assigned to ${teamName} (Demo)`);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // 1. Insert new skill in skills table
+      const { data: skillData, error: skillError } = await supabase
+        .from('skills')
+        .insert([{
+          name: inlineSkillName.trim(),
+          category_id: catId,
+          vendor: inlineSkillVendor.trim() || null,
+          description: inlineSkillDescription.trim() || null
+        }])
+        .select();
+
+      if (skillError) throw skillError;
+
+      const createdSkill = skillData[0];
+      const newSkillMapped = {
+        ...createdSkill,
+        category: catName
+      };
+
+      setSkills(prev => [...prev, newSkillMapped]);
+
+      // 2. Assign newly created skill to team in team_skills table
+      const todayDate = new Date().toISOString().split('T')[0];
+      const { data: tsData, error: tsError } = await supabase
+        .from('team_skills')
+        .insert([{
+          team_id: teamId,
+          skill_id: createdSkill.id,
+          is_required: true,
+          is_current: true,
+          valid_from: todayDate
+        }])
+        .select();
+
+      if (tsError) throw tsError;
+
+      const insertedTS = tsData && tsData[0] ? tsData[0] : { team_id: teamId, skill_id: createdSkill.id, is_required: true, is_current: true };
+      setTeamSkills(prev => [...prev, insertedTS]);
+
+      setInlineSkillName('');
+      setInlineSkillVendor('');
+      setInlineSkillDescription('');
+      setInlineSkillCategoryId('');
+      setShowInlineAddSkillTeamId(null);
+
+      showToast(`Successfully created "${newSkillMapped.name}" and assigned to ${teamName}`);
+    } catch (err) {
+      console.error(err);
+      showToast(`Error creating skill on the fly: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -4170,10 +4270,113 @@ function App() {
                                             flexDirection: 'column',
                                             gap: '0.5rem'
                                           }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.25rem' }}>
-                                              <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Assigned Team Skills</h5>
-                                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({assignedSkills.length})</span>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.4rem' }}>
+                                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, margin: 0 }}>Assigned Team Skills</h5>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({assignedSkills.length})</span>
+                                              </div>
+                                              <button
+                                                type="button"
+                                                className="btn-secondary"
+                                                onClick={() => {
+                                                  if (showInlineAddSkillTeamId === team.id) {
+                                                    setShowInlineAddSkillTeamId(null);
+                                                  } else {
+                                                    setShowInlineAddSkillTeamId(team.id);
+                                                    if (categories.length > 0 && !inlineSkillCategoryId) {
+                                                      setInlineSkillCategoryId(categories[0].id);
+                                                    }
+                                                  }
+                                                }}
+                                                style={{ height: '24px', padding: '0 0.5rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.25rem', width: 'auto', margin: 0, borderColor: 'rgba(139, 92, 246, 0.3)', color: 'var(--accent-primary)' }}
+                                                title="Create a brand new skill and automatically assign it to this team"
+                                              >
+                                                <Plus size={12} />
+                                                Add Skill on the fly
+                                              </button>
                                             </div>
+
+                                            {showInlineAddSkillTeamId === team.id && (
+                                              <form 
+                                                onSubmit={(e) => handleCreateAndAssignSkill(e, team.id)} 
+                                                style={{ 
+                                                  background: 'rgba(15, 23, 42, 0.6)', 
+                                                  border: '1px solid var(--accent-primary)', 
+                                                  borderRadius: '6px', 
+                                                  padding: '0.75rem', 
+                                                  marginTop: '0.25rem', 
+                                                  marginBottom: '0.5rem',
+                                                  display: 'flex',
+                                                  flexDirection: 'column',
+                                                  gap: '0.5rem'
+                                                }}
+                                              >
+                                                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                  <BookOpen size={13} />
+                                                  Create & Auto-Assign to {team.name}:
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                                                  <input
+                                                    type="text"
+                                                    className="form-input compact-input"
+                                                    placeholder="Skill Name (e.g. Crystal Reports)"
+                                                    value={inlineSkillName}
+                                                    onChange={(e) => setInlineSkillName(e.target.value)}
+                                                    style={{ fontSize: '0.78rem', height: '30px' }}
+                                                    required
+                                                  />
+                                                  <select
+                                                    className="form-input compact-input"
+                                                    value={inlineSkillCategoryId}
+                                                    onChange={(e) => setInlineSkillCategoryId(e.target.value)}
+                                                    style={{ fontSize: '0.78rem', height: '30px' }}
+                                                    required
+                                                  >
+                                                    <option value="" disabled>Select Category</option>
+                                                    {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
+                                                      <option key={c.id} value={c.id}>{c.name}</option>
+                                                    ))}
+                                                  </select>
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                                                  <input
+                                                    type="text"
+                                                    className="form-input compact-input"
+                                                    placeholder="Vendor (e.g. SAP - Optional)"
+                                                    value={inlineSkillVendor}
+                                                    onChange={(e) => setInlineSkillVendor(e.target.value)}
+                                                    style={{ fontSize: '0.78rem', height: '30px' }}
+                                                  />
+                                                  <input
+                                                    type="text"
+                                                    className="form-input compact-input"
+                                                    placeholder="Description (Optional)"
+                                                    value={inlineSkillDescription}
+                                                    onChange={(e) => setInlineSkillDescription(e.target.value)}
+                                                    style={{ fontSize: '0.78rem', height: '30px' }}
+                                                  />
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', marginTop: '0.2rem' }}>
+                                                  <button
+                                                    type="button"
+                                                    className="btn-secondary"
+                                                    onClick={() => setShowInlineAddSkillTeamId(null)}
+                                                    style={{ height: '26px', padding: '0 0.6rem', fontSize: '0.75rem', width: 'auto' }}
+                                                  >
+                                                    Cancel
+                                                  </button>
+                                                  <button
+                                                    type="submit"
+                                                    className="btn-primary"
+                                                    disabled={loading}
+                                                    style={{ height: '26px', padding: '0 0.75rem', fontSize: '0.75rem', width: 'auto' }}
+                                                  >
+                                                    <Plus size={12} />
+                                                    Create & Assign
+                                                  </button>
+                                                </div>
+                                              </form>
+                                            )}
 
                                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
                                               Click skills to assign or remove them from <strong>{team.name}</strong>:
