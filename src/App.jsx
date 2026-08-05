@@ -256,6 +256,8 @@ function App() {
   const [selectedDevFilter, setSelectedDevFilter] = useState('All');
   const [selectedSkillIds, setSelectedSkillIds] = useState([]); // Array of skill IDs for multi-select
   const [isSkillDropdownOpen, setIsSkillDropdownOpen] = useState(false);
+  const [selectedLevelFilters, setSelectedLevelFilters] = useState([]); // Array of numbers e.g. [4, 5], empty or 6 items = All
+  const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
   const [selectedVendorFilter, setSelectedVendorFilter] = useState('All');
   const [skillSearchQuery, setSkillSearchQuery] = useState('');
@@ -2050,8 +2052,158 @@ function App() {
                         </>
                       )}
                     </div>
+
+                    <div style={{ flex: '1', minWidth: '220px', position: 'relative' }}>
+                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Filter by Competency Level ({selectedLevelFilters.length === 0 || selectedLevelFilters.length === 6 ? 'All' : `${selectedLevelFilters.length} selected`})
+                      </label>
+
+                      {/* Custom Multi-select Dropdown Button */}
+                      <button
+                        type="button"
+                        className="form-select"
+                        onClick={() => setIsLevelDropdownOpen(!isLevelDropdownOpen)}
+                        style={{
+                          height: '42px',
+                          padding: '0.5rem 1rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justify: 'space-between',
+                          width: '100%',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          background: 'rgba(15, 23, 42, 0.6)',
+                          borderColor: isLevelDropdownOpen ? 'var(--accent-primary)' : 'var(--border-color)'
+                        }}
+                      >
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {selectedLevelFilters.length === 0 || selectedLevelFilters.length === 6
+                            ? 'All Levels'
+                            : selectedLevelFilters.length === 1
+                            ? [
+                                { level: 0, label: '0 – None' },
+                                { level: 1, label: '1 – Basic' },
+                                { level: 2, label: '2 – Emerging' },
+                                { level: 3, label: '3 – Competent' },
+                                { level: 4, label: '4 – Strong' },
+                                { level: 5, label: '5 – Expert' }
+                              ].find(o => o.level === selectedLevelFilters[0])?.label || '1 Level'
+                            : `${selectedLevelFilters.length} Levels Selected`}
+                        </span>
+                        <ChevronRight 
+                          size={16} 
+                          style={{ 
+                            transform: isLevelDropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease',
+                            color: 'var(--text-muted)'
+                          }} 
+                        />
+                      </button>
+
+                      {/* Dropdown Menu Overlay */}
+                      {isLevelDropdownOpen && (
+                        <>
+                          {/* Backdrop to close dropdown on click outside */}
+                          <div 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                            onClick={() => setIsLevelDropdownOpen(false)} 
+                          />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: 'calc(100% + 4px)',
+                              left: 0,
+                              right: 0,
+                              zIndex: 100,
+                              background: '#0f172a',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: '8px',
+                              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                              maxHeight: '280px',
+                              overflowY: 'auto',
+                              padding: '0.5rem'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setSelectedLevelFilters([])}
+                              >
+                                Select All (Reset)
+                              </button>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setIsLevelDropdownOpen(false)}
+                              >
+                                Done
+                              </button>
+                            </div>
+
+                            {[
+                              { level: 0, label: '0 – None', desc: '0 Stars', color: 'var(--text-muted)' },
+                              { level: 1, label: '1 – Basic', desc: '1 Star', color: 'var(--color-basic)' },
+                              { level: 2, label: '2 – Emerging', desc: '2 Stars', color: 'var(--color-emerging)' },
+                              { level: 3, label: '3 – Competent', desc: '3 Stars', color: 'var(--color-competent)' },
+                              { level: 4, label: '4 – Strong', desc: '4 Stars', color: 'var(--color-strong)' },
+                              { level: 5, label: '5 – Expert', desc: '5 Stars', color: 'var(--color-expert)' }
+                            ].map((lvlObj) => {
+                              const isChecked = selectedLevelFilters.length === 0 || selectedLevelFilters.includes(lvlObj.level);
+                              return (
+                                <label
+                                  key={lvlObj.level}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.45rem 0.5rem',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    color: isChecked ? '#fff' : 'var(--text-secondary)',
+                                    background: isChecked ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                    transition: 'background 0.15s ease'
+                                  }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => {
+                                      if (selectedLevelFilters.length === 0) {
+                                        setSelectedLevelFilters([lvlObj.level]);
+                                      } else if (selectedLevelFilters.includes(lvlObj.level)) {
+                                        const next = selectedLevelFilters.filter(l => l !== lvlObj.level);
+                                        setSelectedLevelFilters(next.length === 0 ? [] : next);
+                                      } else {
+                                        const next = [...selectedLevelFilters, lvlObj.level];
+                                        setSelectedLevelFilters(next.length === 6 ? [] : next);
+                                      }
+                                    }}
+                                    style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                                  />
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', width: '100%' }}>
+                                    <span style={{ fontWeight: isChecked ? 600 : 400 }}>{lvlObj.label}</span>
+                                    <span style={{ fontSize: '0.75rem', color: lvlObj.color, marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                      {lvlObj.level > 0 ? (
+                                        <>
+                                          <Star size={12} fill={lvlObj.color} color={lvlObj.color} />
+                                          <span>{lvlObj.level}</span>
+                                        </>
+                                      ) : (
+                                        <span>None</span>
+                                      )}
+                                    </span>
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </>
+                      )}
+                    </div>
                     
-                    {(selectedTeamFilter !== 'All' || selectedDevFilter !== 'All' || selectedSkillIds.length > 0) && (
+                    {(selectedTeamFilter !== 'All' || selectedDevFilter !== 'All' || selectedSkillIds.length > 0 || (selectedLevelFilters.length > 0 && selectedLevelFilters.length < 6)) && (
                       <div style={{ display: 'flex' }}>
                         <button 
                           className="btn-secondary" 
@@ -2060,6 +2212,7 @@ function App() {
                             setSelectedTeamFilter('All');
                             setSelectedDevFilter('All');
                             setSelectedSkillIds([]);
+                            setSelectedLevelFilters([]);
                           }}
                         >
                           <X size={16} />
@@ -2089,11 +2242,28 @@ function App() {
                           displayedSkills = displayedSkills.filter(s => selectedSkillIds.includes(String(s.id)));
                         }
 
+                        const levelsList = ['None', 'Basic', 'Emerging', 'Competent', 'Strong', 'Expert'];
+
                         const filteredDevs = [...developers]
                           .filter((dev) => {
                             const matchesTeam = selectedTeamFilter === 'All' || dev.team === selectedTeamFilter;
                             const matchesDev = selectedDevFilter === 'All' || String(dev.id) === String(selectedDevFilter);
-                            return matchesTeam && matchesDev;
+
+                            let matchesLevel = true;
+                            if (selectedLevelFilters.length > 0 && selectedLevelFilters.length < 6) {
+                              if (displayedSkills.length === 0) {
+                                matchesLevel = false;
+                              } else {
+                                matchesLevel = displayedSkills.some((skill) => {
+                                  const record = developerSkills.find(ds => ds.developer_id === dev.id && ds.skill_id === skill.id);
+                                  const devLevelName = record ? record.level : 'None';
+                                  const devLevelNum = levelsList.indexOf(devLevelName);
+                                  return selectedLevelFilters.includes(devLevelNum);
+                                });
+                              }
+                            }
+
+                            return matchesTeam && matchesDev && matchesLevel;
                           })
                           .sort((a, b) => {
                             const nameA = (a.name || '').toLowerCase();
@@ -2149,6 +2319,8 @@ function App() {
                                         onClick={() => {
                                           setSelectedTeamFilter('All');
                                           setSelectedDevFilter('All');
+                                          setSelectedSkillIds([]);
+                                          setSelectedLevelFilters([]);
                                         }}
                                       >
                                         Clear Filters
