@@ -674,11 +674,11 @@ button, select, input, label, .badge, .tab-btn {
 }
 
 .filter-dropdown-panel {
-  z-index: 9999 !important;
+  z-index: 99999 !important;
 }
 
-@media (max-width: 640px) {
-  /* Mobile Bottom Sheet Drawer for Multi-Select Dropdowns */
+@media (max-width: 900px) {
+  /* Mobile & Tablet Bottom Sheet Drawer for Multi-Select Dropdowns */
   .filter-dropdown-panel {
     position: fixed !important;
     top: auto !important;
@@ -686,14 +686,15 @@ button, select, input, label, .badge, .tab-btn {
     left: 0 !important;
     right: 0 !important;
     width: 100vw !important;
+    max-width: 100vw !important;
     max-height: 75vh !important;
     border-radius: 20px 20px 0 0 !important;
     border: 1px solid var(--accent-primary) !important;
     border-bottom: none !important;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8) !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.85) !important;
     padding: 1rem !important;
     padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
-    z-index: 9999 !important;
+    z-index: 99999 !important;
     animation: slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 

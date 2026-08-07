@@ -2000,7 +2000,7 @@ function App() {
                       {isTeamDropdownOpen && (
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
                             onClick={() => setIsTeamDropdownOpen(false)} 
                           />
                           <div
@@ -2137,7 +2137,7 @@ function App() {
                       {isDevDropdownOpen && (
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
                             onClick={() => setIsDevDropdownOpen(false)} 
                           />
                           <div
@@ -2286,7 +2286,7 @@ function App() {
                       {isSkillDropdownOpen && (
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
                             onClick={() => setIsSkillDropdownOpen(false)} 
                           />
                           <div
@@ -2421,7 +2421,7 @@ function App() {
                       {isLevelDropdownOpen && (
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
                             onClick={() => setIsLevelDropdownOpen(false)} 
                           />
                           <div
@@ -2887,7 +2887,7 @@ function App() {
                   {isDevListTeamDropdownOpen && (
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
                         onClick={() => setIsDevListTeamDropdownOpen(false)} 
                       />
                       <div
@@ -3011,7 +3011,7 @@ function App() {
                   {isDevListRoleDropdownOpen && (
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
                         onClick={() => setIsDevListRoleDropdownOpen(false)} 
                       />
                       <div
@@ -3454,7 +3454,7 @@ function App() {
                   {isCategoryDropdownOpen && (
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
                         onClick={() => setIsCategoryDropdownOpen(false)} 
                       />
                       <div
@@ -3592,7 +3592,7 @@ function App() {
                   {isVendorDropdownOpen && (
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
                         onClick={() => setIsVendorDropdownOpen(false)} 
                       />
                       <div
