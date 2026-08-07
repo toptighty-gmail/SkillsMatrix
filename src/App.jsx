@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from './lib/supabaseClient';
 import { 
   Database, 
@@ -282,6 +283,44 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // Button refs for Portal Dropdown Positioning
+  const teamBtnRef = useRef(null);
+  const devBtnRef = useRef(null);
+  const skillBtnRef = useRef(null);
+  const levelBtnRef = useRef(null);
+  const devListTeamBtnRef = useRef(null);
+  const devListRoleBtnRef = useRef(null);
+  const categoryBtnRef = useRef(null);
+  const vendorBtnRef = useRef(null);
+
+  const getPortalDropdownStyle = (buttonRef) => {
+    if (typeof window === 'undefined' || window.innerWidth <= 900) {
+      return {};
+    }
+    if (!buttonRef || !buttonRef.current) return {};
+    const rect = buttonRef.current.getBoundingClientRect();
+    return {
+      position: 'fixed',
+      top: `${rect.bottom + 6}px`,
+      left: `${rect.left}px`,
+      minWidth: `${Math.max(rect.width, 240)}px`,
+      maxWidth: '320px',
+      zIndex: 99999
+    };
+  };
+
+  useEffect(() => {
+    const isAnyOpen = isTeamDropdownOpen || isDevDropdownOpen || isSkillDropdownOpen || isLevelDropdownOpen || isDevListTeamDropdownOpen || isDevListRoleDropdownOpen || isCategoryDropdownOpen || isVendorDropdownOpen;
+    if (isAnyOpen && typeof window !== 'undefined' && window.innerWidth <= 900) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isTeamDropdownOpen, isDevDropdownOpen, isSkillDropdownOpen, isLevelDropdownOpen, isDevListTeamDropdownOpen, isDevListRoleDropdownOpen, isCategoryDropdownOpen, isVendorDropdownOpen]);
 
   // Form states
   const [newDevName, setNewDevName] = useState('');
@@ -1964,6 +2003,7 @@ function App() {
                         Filter by Team ({selectedTeamNames.length === 0 ? 'All' : `${selectedTeamNames.length} selected`})
                       </label>
                       <button
+                        ref={teamBtnRef}
                         type="button"
                         className="form-select"
                         onClick={() => setIsTeamDropdownOpen(!isTeamDropdownOpen)}
@@ -1997,10 +2037,10 @@ function App() {
                         />
                       </button>
 
-                      {isTeamDropdownOpen && (
+                      {isTeamDropdownOpen && createPortal(
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
+                            style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(15, 23, 42, 0.5)' }} 
                             onClick={() => setIsTeamDropdownOpen(false)} 
                           />
                           <div
@@ -2017,7 +2057,8 @@ function App() {
                               boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                               maxHeight: '280px',
                               overflowY: 'auto',
-                              padding: '0.5rem'
+                              padding: '0.5rem',
+                              ...getPortalDropdownStyle(teamBtnRef)
                             }}
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
@@ -2091,7 +2132,8 @@ function App() {
                               </button>
                             </div>
                           </div>
-                        </>
+                        </>,
+                        document.body
                       )}
                     </div>
 
@@ -2101,6 +2143,7 @@ function App() {
                         Filter by Team Member ({selectedDevIds.length === 0 ? 'All' : `${selectedDevIds.length} selected`})
                       </label>
                       <button
+                        ref={devBtnRef}
                         type="button"
                         className="form-select"
                         onClick={() => setIsDevDropdownOpen(!isDevDropdownOpen)}
@@ -2134,10 +2177,10 @@ function App() {
                         />
                       </button>
 
-                      {isDevDropdownOpen && (
+                      {isDevDropdownOpen && createPortal(
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
+                            style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(15, 23, 42, 0.5)' }} 
                             onClick={() => setIsDevDropdownOpen(false)} 
                           />
                           <div
@@ -2154,7 +2197,8 @@ function App() {
                               boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                               maxHeight: '280px',
                               overflowY: 'auto',
-                              padding: '0.5rem'
+                              padding: '0.5rem',
+                              ...getPortalDropdownStyle(devBtnRef)
                             }}
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
@@ -2240,7 +2284,8 @@ function App() {
                               </button>
                             </div>
                           </div>
-                        </>
+                        </>,
+                        document.body
                       )}
                     </div>
 
@@ -2250,6 +2295,7 @@ function App() {
                         Filter by Skill ({selectedSkillIds.length === 0 ? 'All' : `${selectedSkillIds.length} selected`})
                       </label>
                       <button
+                        ref={skillBtnRef}
                         type="button"
                         className="form-select"
                         onClick={() => setIsSkillDropdownOpen(!isSkillDropdownOpen)}
@@ -2283,10 +2329,10 @@ function App() {
                         />
                       </button>
 
-                      {isSkillDropdownOpen && (
+                      {isSkillDropdownOpen && createPortal(
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
+                            style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(15, 23, 42, 0.5)' }} 
                             onClick={() => setIsSkillDropdownOpen(false)} 
                           />
                           <div
@@ -2303,7 +2349,8 @@ function App() {
                               boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                               maxHeight: '280px',
                               overflowY: 'auto',
-                              padding: '0.5rem'
+                              padding: '0.5rem',
+                              ...getPortalDropdownStyle(skillBtnRef)
                             }}
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
@@ -2368,7 +2415,8 @@ function App() {
                                 );
                               })}
                           </div>
-                        </>
+                        </>,
+                        document.body
                       )}
                     </div>
 
@@ -2378,6 +2426,7 @@ function App() {
                         Filter by Competency Level ({selectedLevelFilters.length === 0 || selectedLevelFilters.length === 6 ? 'All' : `${selectedLevelFilters.length} selected`})
                       </label>
                       <button
+                        ref={levelBtnRef}
                         type="button"
                         className="form-select"
                         onClick={() => setIsLevelDropdownOpen(!isLevelDropdownOpen)}
@@ -2418,10 +2467,10 @@ function App() {
                         />
                       </button>
 
-                      {isLevelDropdownOpen && (
+                      {isLevelDropdownOpen && createPortal(
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
+                            style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(15, 23, 42, 0.5)' }} 
                             onClick={() => setIsLevelDropdownOpen(false)} 
                           />
                           <div
@@ -2438,7 +2487,8 @@ function App() {
                               boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                               maxHeight: '280px',
                               overflowY: 'auto',
-                              padding: '0.5rem'
+                              padding: '0.5rem',
+                              ...getPortalDropdownStyle(levelBtnRef)
                             }}
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
@@ -2516,7 +2566,8 @@ function App() {
                               );
                             })}
                           </div>
-                        </>
+                        </>,
+                        document.body
                       )}
                     </div>
                     
@@ -2850,6 +2901,7 @@ function App() {
                     Filter by Team ({selectedDevListTeamNames.length === 0 ? 'All' : `${selectedDevListTeamNames.length} selected`})
                   </label>
                   <button
+                    ref={devListTeamBtnRef}
                     type="button"
                     className="form-select"
                     onClick={() => setIsDevListTeamDropdownOpen(!isDevListTeamDropdownOpen)}
@@ -2884,10 +2936,10 @@ function App() {
                     />
                   </button>
 
-                  {isDevListTeamDropdownOpen && (
+                  {isDevListTeamDropdownOpen && createPortal(
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
+                        style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(15, 23, 42, 0.5)' }} 
                         onClick={() => setIsDevListTeamDropdownOpen(false)} 
                       />
                       <div
@@ -2904,7 +2956,8 @@ function App() {
                           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                           maxHeight: '260px',
                           overflowY: 'auto',
-                          padding: '0.5rem'
+                          padding: '0.5rem',
+                          ...getPortalDropdownStyle(devListTeamBtnRef)
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
@@ -2964,7 +3017,8 @@ function App() {
                           );
                         })}
                       </div>
-                    </>
+                    </>,
+                    document.body
                   )}
                 </div>
 
@@ -2974,6 +3028,7 @@ function App() {
                     Filter by Role ({selectedDevListRoleNames.length === 0 ? 'All' : `${selectedDevListRoleNames.length} selected`})
                   </label>
                   <button
+                    ref={devListRoleBtnRef}
                     type="button"
                     className="form-select"
                     onClick={() => setIsDevListRoleDropdownOpen(!isDevListRoleDropdownOpen)}
@@ -3008,10 +3063,10 @@ function App() {
                     />
                   </button>
 
-                  {isDevListRoleDropdownOpen && (
+                  {isDevListRoleDropdownOpen && createPortal(
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
+                        style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(15, 23, 42, 0.5)' }} 
                         onClick={() => setIsDevListRoleDropdownOpen(false)} 
                       />
                       <div
@@ -3028,7 +3083,8 @@ function App() {
                           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                           maxHeight: '260px',
                           overflowY: 'auto',
-                          padding: '0.5rem'
+                          padding: '0.5rem',
+                          ...getPortalDropdownStyle(devListRoleBtnRef)
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
@@ -3090,7 +3146,8 @@ function App() {
                           });
                         })()}
                       </div>
-                    </>
+                    </>,
+                    document.body
                   )}
                 </div>
 
@@ -3417,6 +3474,7 @@ function App() {
                     Filter by Category ({selectedCategoryNames.length === 0 ? 'All' : `${selectedCategoryNames.length} selected`})
                   </label>
                   <button
+                    ref={categoryBtnRef}
                     type="button"
                     className="form-select"
                     onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
@@ -3451,10 +3509,10 @@ function App() {
                     />
                   </button>
 
-                  {isCategoryDropdownOpen && (
+                  {isCategoryDropdownOpen && createPortal(
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
+                        style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(15, 23, 42, 0.5)' }} 
                         onClick={() => setIsCategoryDropdownOpen(false)} 
                       />
                       <div
@@ -3471,7 +3529,8 @@ function App() {
                           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                           maxHeight: '260px',
                           overflowY: 'auto',
-                          padding: '0.5rem'
+                          padding: '0.5rem',
+                          ...getPortalDropdownStyle(categoryBtnRef)
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
@@ -3545,7 +3604,8 @@ function App() {
                           </button>
                         </div>
                       </div>
-                    </>
+                    </>,
+                    document.body
                   )}
                 </div>
 
@@ -3555,6 +3615,7 @@ function App() {
                     Filter by Vendor ({selectedVendorNames.length === 0 ? 'All' : `${selectedVendorNames.length} selected`})
                   </label>
                   <button
+                    ref={vendorBtnRef}
                     type="button"
                     className="form-select"
                     onClick={() => setIsVendorDropdownOpen(!isVendorDropdownOpen)}
@@ -3589,10 +3650,10 @@ function App() {
                     />
                   </button>
 
-                  {isVendorDropdownOpen && (
+                  {isVendorDropdownOpen && createPortal(
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} 
+                        style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(15, 23, 42, 0.5)' }} 
                         onClick={() => setIsVendorDropdownOpen(false)} 
                       />
                       <div
@@ -3609,7 +3670,8 @@ function App() {
                           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                           maxHeight: '260px',
                           overflowY: 'auto',
-                          padding: '0.5rem'
+                          padding: '0.5rem',
+                          ...getPortalDropdownStyle(vendorBtnRef)
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
@@ -3675,7 +3737,8 @@ function App() {
                           });
                         })()}
                       </div>
-                    </>
+                    </>,
+                    document.body
                   )}
                 </div>
 
