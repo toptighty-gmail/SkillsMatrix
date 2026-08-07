@@ -3395,16 +3395,6 @@ function App() {
               {/* Add Skill Form */}
               <form onSubmit={handleAddSkill} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
                 <div className="form-group" style={{ margin: 0, width: '100%' }}>
-                  <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Vendor</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="e.g. Microsoft" 
-                    value={newSkillVendor}
-                    onChange={(e) => setNewSkillVendor(e.target.value)}
-                  />
-                </div>
-                <div className="form-group" style={{ margin: 0, width: '100%' }}>
                   <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Skill Name</label>
                   <input 
                     type="text" 
@@ -3413,16 +3403,6 @@ function App() {
                     value={newSkillName}
                     onChange={(e) => setNewSkillName(e.target.value)}
                     required
-                  />
-                </div>
-                <div className="form-group" style={{ margin: 0, width: '100%' }}>
-                  <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Description</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="e.g. Strongly typed language" 
-                    value={newSkillDescription}
-                    onChange={(e) => setNewSkillDescription(e.target.value)}
                   />
                 </div>
                 <div className="form-group" style={{ margin: 0, width: '100%' }}>
@@ -3449,6 +3429,26 @@ function App() {
                     <option disabled>— Actions —</option>
                     <option value="ADD_CATEGORY">+ Add New Category...</option>
                   </select>
+                </div>
+                <div className="form-group" style={{ margin: 0, width: '100%' }}>
+                  <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Vendor</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. Microsoft (Optional)" 
+                    value={newSkillVendor}
+                    onChange={(e) => setNewSkillVendor(e.target.value)}
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0, width: '100%' }}>
+                  <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Description</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. Strongly typed language (Optional)" 
+                    value={newSkillDescription}
+                    onChange={(e) => setNewSkillDescription(e.target.value)}
+                  />
                 </div>
                 <button type="submit" className="btn-primary" style={{ height: '42px', width: '100%' }} disabled={loading}>
                   <Plus size={16} />
@@ -3768,7 +3768,6 @@ function App() {
                   <table className="list-table">
                     <thead>
                       <tr>
-                        <th style={{ width: '15%' }}>Vendor</th>
                         <th 
                           onClick={() => setSkillsSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
                           style={{ width: '25%', cursor: 'pointer', userSelect: 'none' }}
@@ -3785,6 +3784,7 @@ function App() {
                           </div>
                         </th>
                         <th style={{ width: '20%' }}>Category</th>
+                        <th style={{ width: '15%' }}>Vendor</th>
                         <th style={{ width: '27%' }}>Description</th>
                         <th style={{ width: '13%' }}>Actions</th>
                       </tr>
@@ -3812,15 +3812,6 @@ function App() {
                                 <input 
                                   type="text" 
                                   className="form-input compact-input" 
-                                  placeholder="Vendor"
-                                  value={editSkillVendor}
-                                  onChange={(e) => setEditSkillVendor(e.target.value)}
-                                />
-                              </td>
-                              <td>
-                                <input 
-                                  type="text" 
-                                  className="form-input compact-input" 
                                   placeholder="Skill Name"
                                   value={editSkillName}
                                   onChange={(e) => setEditSkillName(e.target.value)}
@@ -3839,6 +3830,15 @@ function App() {
                                     <option key={c.id} value={c.id}>{c.name}</option>
                                   ))}
                                 </select>
+                              </td>
+                              <td>
+                                <input 
+                                  type="text" 
+                                  className="form-input compact-input" 
+                                  placeholder="Vendor"
+                                  value={editSkillVendor}
+                                  onChange={(e) => setEditSkillVendor(e.target.value)}
+                                />
                               </td>
                               <td>
                                 <input 
@@ -3872,6 +3872,14 @@ function App() {
                           ) : (
                             <tr key={skill.id}>
                               <td>
+                                <div style={{ fontWeight: 600 }}>{skill.name}</div>
+                              </td>
+                              <td>
+                                <span className="badge category-badge" style={{ pointerEvents: 'none' }}>
+                                  {skill.category}
+                                </span>
+                              </td>
+                              <td>
                                 {skill.vendor ? (
                                   <span className="badge vendor-badge" style={{ pointerEvents: 'none' }}>
                                     {skill.vendor}
@@ -3879,14 +3887,6 @@ function App() {
                                 ) : (
                                   <span style={{ color: 'var(--text-muted)' }}>—</span>
                                 )}
-                              </td>
-                              <td>
-                                <div style={{ fontWeight: 600 }}>{skill.name}</div>
-                              </td>
-                              <td>
-                                <span className="badge category-badge" style={{ pointerEvents: 'none' }}>
-                                  {skill.category}
-                                </span>
                               </td>
                               <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                                 {skill.description || <span style={{ color: 'var(--text-muted)' }}>—</span>}
