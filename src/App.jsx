@@ -2004,6 +2004,7 @@ function App() {
                             onClick={() => setIsTeamDropdownOpen(false)} 
                           />
                           <div
+                            className="filter-dropdown-panel"
                             style={{
                               position: 'absolute',
                               top: 'calc(100% + 4px)',
@@ -2140,6 +2141,7 @@ function App() {
                             onClick={() => setIsDevDropdownOpen(false)} 
                           />
                           <div
+                            className="filter-dropdown-panel"
                             style={{
                               position: 'absolute',
                               top: 'calc(100% + 4px)',
@@ -2288,6 +2290,7 @@ function App() {
                             onClick={() => setIsSkillDropdownOpen(false)} 
                           />
                           <div
+                            className="filter-dropdown-panel"
                             style={{
                               position: 'absolute',
                               top: 'calc(100% + 4px)',
@@ -2422,6 +2425,7 @@ function App() {
                             onClick={() => setIsLevelDropdownOpen(false)} 
                           />
                           <div
+                            className="filter-dropdown-panel"
                             style={{
                               position: 'absolute',
                               top: 'calc(100% + 4px)',
@@ -2533,6 +2537,13 @@ function App() {
                         </button>
                       </div>
                     )}
+                  </div>
+
+                  {/* Swipe Hint for Mobile/Tablet */}
+                  <div className="swipe-hint-banner">
+                    <ChevronRight size={14} style={{ transform: 'rotate(180deg)' }} />
+                    <span>Swipe horizontally to view all skills</span>
+                    <ChevronRight size={14} />
                   </div>
 
                   <div className="matrix-container">
@@ -2880,6 +2891,7 @@ function App() {
                         onClick={() => setIsDevListTeamDropdownOpen(false)} 
                       />
                       <div
+                        className="filter-dropdown-panel"
                         style={{
                           position: 'absolute',
                           top: 'calc(100% + 4px)',
@@ -3003,6 +3015,7 @@ function App() {
                         onClick={() => setIsDevListRoleDropdownOpen(false)} 
                       />
                       <div
+                        className="filter-dropdown-panel"
                         style={{
                           position: 'absolute',
                           top: 'calc(100% + 4px)',
@@ -3445,6 +3458,7 @@ function App() {
                         onClick={() => setIsCategoryDropdownOpen(false)} 
                       />
                       <div
+                        className="filter-dropdown-panel"
                         style={{
                           position: 'absolute',
                           top: 'calc(100% + 4px)',
@@ -3582,6 +3596,7 @@ function App() {
                         onClick={() => setIsVendorDropdownOpen(false)} 
                       />
                       <div
+                        className="filter-dropdown-panel"
                         style={{
                           position: 'absolute',
                           top: 'calc(100% + 4px)',
