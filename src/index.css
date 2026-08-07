@@ -319,9 +319,8 @@ h1, h2, h3, h4, h5, h6 {
   position: sticky;
   left: 0;
   z-index: 10;
-  background: #1e293b;
+  background: #0f172a;
   border-right: 1px solid var(--border-color);
-  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
   min-width: 220px;
   width: 220px;
 }
@@ -339,7 +338,6 @@ h1, h2, h3, h4, h5, h6 {
   left: 0;
   z-index: 30;
   background: #1e293b;
-  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .matrix-table tbody tr {
@@ -347,11 +345,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .matrix-table tbody tr:hover td {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .matrix-table tbody tr:hover td:first-child {
-  background-color: #24334a;
+  background-color: #162234;
 }
 
 .dev-name {
@@ -900,13 +898,11 @@ button, select, input, label, .badge, .tab-btn {
   z-index: 10;
   background: #0f172a;
   border-right: 1px solid var(--border-color);
-  box-shadow: 3px 0 8px rgba(0, 0, 0, 0.35);
 }
 
 .list-table th:first-child {
   z-index: 30;
   background: #1e293b;
-  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.45);
 }
 
 .list-table td {
@@ -921,11 +917,11 @@ button, select, input, label, .badge, .tab-btn {
 }
 
 .list-table tbody tr:hover td {
-  background-color: rgba(255, 255, 255, 0.015);
+  background-color: rgba(255, 255, 255, 0.025);
 }
 
 .list-table tbody tr:hover td:first-child {
-  background-color: #1a2538;
+  background-color: #141d2d;
 }
 
 .compact-input {
