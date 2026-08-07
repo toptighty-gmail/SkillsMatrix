@@ -1959,7 +1959,7 @@ function App() {
                     alignItems: 'flex-end'
                   }}>
                     {/* 1. Filter by Team (Multi-select) */}
-                    <div style={{ flex: '1', minWidth: '220px', position: 'relative' }}>
+                    <div style={{ flex: '1', minWidth: '220px', position: 'relative', zIndex: isTeamDropdownOpen ? 500 : 1 }}>
                       <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Filter by Team ({selectedTeamNames.length === 0 ? 'All' : `${selectedTeamNames.length} selected`})
                       </label>
@@ -2000,7 +2000,7 @@ function App() {
                       {isTeamDropdownOpen && (
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
                             onClick={() => setIsTeamDropdownOpen(false)} 
                           />
                           <div
@@ -2096,7 +2096,7 @@ function App() {
                     </div>
 
                     {/* 2. Filter by Team Member (Multi-select) */}
-                    <div style={{ flex: '1', minWidth: '220px', position: 'relative' }}>
+                    <div style={{ flex: '1', minWidth: '220px', position: 'relative', zIndex: isDevDropdownOpen ? 500 : 1 }}>
                       <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Filter by Team Member ({selectedDevIds.length === 0 ? 'All' : `${selectedDevIds.length} selected`})
                       </label>
@@ -2137,7 +2137,7 @@ function App() {
                       {isDevDropdownOpen && (
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
                             onClick={() => setIsDevDropdownOpen(false)} 
                           />
                           <div
@@ -2245,7 +2245,7 @@ function App() {
                     </div>
 
                     {/* 3. Filter by Skill (Multi-select) */}
-                    <div style={{ flex: '1', minWidth: '220px', position: 'relative' }}>
+                    <div style={{ flex: '1', minWidth: '220px', position: 'relative', zIndex: isSkillDropdownOpen ? 500 : 1 }}>
                       <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Filter by Skill ({selectedSkillIds.length === 0 ? 'All' : `${selectedSkillIds.length} selected`})
                       </label>
@@ -2286,7 +2286,7 @@ function App() {
                       {isSkillDropdownOpen && (
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
                             onClick={() => setIsSkillDropdownOpen(false)} 
                           />
                           <div
@@ -2373,7 +2373,7 @@ function App() {
                     </div>
 
                     {/* 4. Filter by Competency Level (Multi-select) */}
-                    <div style={{ flex: '1', minWidth: '220px', position: 'relative' }}>
+                    <div style={{ flex: '1', minWidth: '220px', position: 'relative', zIndex: isLevelDropdownOpen ? 500 : 1 }}>
                       <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Filter by Competency Level ({selectedLevelFilters.length === 0 || selectedLevelFilters.length === 6 ? 'All' : `${selectedLevelFilters.length} selected`})
                       </label>
@@ -2421,7 +2421,7 @@ function App() {
                       {isLevelDropdownOpen && (
                         <>
                           <div 
-                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
                             onClick={() => setIsLevelDropdownOpen(false)} 
                           />
                           <div
@@ -2845,7 +2845,7 @@ function App() {
                 alignItems: 'flex-end'
               }}>
                 {/* 1. Filter by Team */}
-                <div style={{ flex: '1', minWidth: '200px', position: 'relative' }}>
+                <div style={{ flex: '1', minWidth: '200px', position: 'relative', zIndex: isDevListTeamDropdownOpen ? 500 : 1 }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Filter by Team ({selectedDevListTeamNames.length === 0 ? 'All' : `${selectedDevListTeamNames.length} selected`})
                   </label>
@@ -2887,7 +2887,7 @@ function App() {
                   {isDevListTeamDropdownOpen && (
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
                         onClick={() => setIsDevListTeamDropdownOpen(false)} 
                       />
                       <div
@@ -2969,7 +2969,7 @@ function App() {
                 </div>
 
                 {/* 2. Filter by Role */}
-                <div style={{ flex: '1', minWidth: '200px', position: 'relative' }}>
+                <div style={{ flex: '1', minWidth: '200px', position: 'relative', zIndex: isDevListRoleDropdownOpen ? 500 : 1 }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Filter by Role ({selectedDevListRoleNames.length === 0 ? 'All' : `${selectedDevListRoleNames.length} selected`})
                   </label>
@@ -3011,7 +3011,7 @@ function App() {
                   {isDevListRoleDropdownOpen && (
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
                         onClick={() => setIsDevListRoleDropdownOpen(false)} 
                       />
                       <div
@@ -3412,7 +3412,7 @@ function App() {
                 alignItems: 'flex-end'
               }}>
                 {/* 1. Filter by Category */}
-                <div style={{ flex: '1', minWidth: '200px', position: 'relative' }}>
+                <div style={{ flex: '1', minWidth: '200px', position: 'relative', zIndex: isCategoryDropdownOpen ? 500 : 1 }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Filter by Category ({selectedCategoryNames.length === 0 ? 'All' : `${selectedCategoryNames.length} selected`})
                   </label>
@@ -3454,7 +3454,7 @@ function App() {
                   {isCategoryDropdownOpen && (
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
                         onClick={() => setIsCategoryDropdownOpen(false)} 
                       />
                       <div
@@ -3550,7 +3550,7 @@ function App() {
                 </div>
 
                 {/* 2. Filter by Vendor */}
-                <div style={{ flex: '1', minWidth: '200px', position: 'relative' }}>
+                <div style={{ flex: '1', minWidth: '200px', position: 'relative', zIndex: isVendorDropdownOpen ? 500 : 1 }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Filter by Vendor ({selectedVendorNames.length === 0 ? 'All' : `${selectedVendorNames.length} selected`})
                   </label>
@@ -3592,7 +3592,7 @@ function App() {
                   {isVendorDropdownOpen && (
                     <>
                       <div 
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} 
                         onClick={() => setIsVendorDropdownOpen(false)} 
                       />
                       <div
