@@ -4627,9 +4627,9 @@ To enable managers to track team progress and skill development over time, the d
                                               </div>
                                             ) : (
                                               developers.filter(d => d.teamId === team.id).map(dev => (
-                                                <div key={dev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                                                  <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{dev.name}</span>
-                                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{dev.role}</span>
+                                                <div key={dev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', gap: '0.5rem', padding: '0.15rem 0' }}>
+                                                  <span style={{ fontWeight: 500, color: 'var(--text-primary)', textAlign: 'left', flex: 1 }}>{dev.name}</span>
+                                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'right', whiteSpace: 'nowrap' }}>{dev.role}</span>
                                                 </div>
                                               ))
                                             )}
