@@ -4793,33 +4793,6 @@ To enable managers to track team progress and skill development over time, the d
                                           </div>
                                         </div>
 
-                                        {/* Bottom Action Control Bar for Line Item */}
-                                        <div style={{
-                                          display: 'flex',
-                                          justifyContent: 'flex-end',
-                                          alignItems: 'center',
-                                          marginTop: '0.85rem',
-                                          paddingTop: '0.6rem',
-                                          borderTop: '1px solid rgba(255, 255, 255, 0.06)'
-                                        }}>
-                                          <button
-                                            type="button"
-                                            className="btn-primary"
-                                            onClick={() => setExpandedTeamId(null)}
-                                            style={{
-                                              display: 'inline-flex',
-                                              alignItems: 'center',
-                                              gap: '0.35rem',
-                                              padding: '0.35rem 0.9rem',
-                                              fontSize: '0.8rem',
-                                              height: '30px',
-                                              width: 'auto'
-                                            }}
-                                          >
-                                            <Check size={14} />
-                                            Done / Close Line Item
-                                          </button>
-                                        </div>
                                       </td>
                                     </tr>
                                   )}
