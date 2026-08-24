@@ -300,11 +300,14 @@ The **Categories** tab organizes skills into domain groups.
 
 The **Teams** tab manages operational teams and defines target skill profiles required for each team.
 
-#### 1. Team Administration
-- Create, edit, and delete teams.
+#### 1. Team Administration & Roster Management
+- Create, edit, and delete operational teams.
 - View real-time member counts per team.
-- Expand team rows to inspect team member rosters and assigned skills simultaneously.
-- **Line Item Close Controls**: Convenient top header and bottom action bar "Close Line Item / Done" buttons and table row toggle button to quickly collapse the expanded team line item when finished editing.
+- **Direct Team Member Assignment ("Add Member")**: Click the **`+ Add Member`** button in the Members table column or team drawer header to assign developers directly to a team.
+- **Assign Existing Roster Member**: Select any existing developer from the dropdown picker to immediately assign or reassign them to the team.
+- **"Add Member on the Fly"**: Create a brand-new developer (Full Name, Role Title, Email) directly inside the team drawer and auto-assign them to the team in a single step.
+- **Unassign Team Member**: Click the remove icon next to any listed developer to unassign them from the team.
+- **Line Item Close Controls**: Convenient top header `[✕] Close Line Item` and table row toggle button to quickly collapse the expanded team line item.
 
 #### 2. Target Skill Assignment & Skill Gaps
 - **Assign/Remove Required Skills**: Toggle skills to define the expected technical stack for a team.

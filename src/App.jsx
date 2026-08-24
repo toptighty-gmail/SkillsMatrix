@@ -325,6 +325,10 @@ function App() {
   const [inlineSkillVendor, setInlineSkillVendor] = useState('');
   const [inlineSkillDescription, setInlineSkillDescription] = useState('');
   const [inlineSkillCategoryId, setInlineSkillCategoryId] = useState('');
+  const [showInlineAddMemberTeamId, setShowInlineAddMemberTeamId] = useState(null);
+  const [inlineMemberName, setInlineMemberName] = useState('');
+  const [inlineMemberRole, setInlineMemberRole] = useState('Developer');
+  const [inlineMemberEmail, setInlineMemberEmail] = useState('');
   const [selectedDevInfo, setSelectedDevInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -1804,6 +1808,128 @@ To enable managers to track team progress and skill development over time, the d
     } catch (err) {
       console.error(err);
       showToast(`Error updating team skill: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Team Member Governance: Assign existing member or create & assign new member to team
+  const handleAssignDeveloperToTeam = async (devId, newTeamId) => {
+    if (!devId) return;
+    setLoading(true);
+    const dev = developers.find(d => d.id === devId);
+    if (!dev) {
+      setLoading(false);
+      return;
+    }
+    const oldTeamId = dev.teamId;
+    const targetTeam = teams.find(t => t.id === newTeamId);
+    const teamName = targetTeam ? targetTeam.name : 'No Team';
+
+    if (useDemoMode) {
+      setDevelopers(developers.map(d => d.id === devId ? { ...d, team: teamName, teamId: newTeamId } : d));
+      showToast(newTeamId ? `Assigned ${dev.name} to ${teamName}` : `Removed ${dev.name} from team`);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (oldTeamId && oldTeamId !== newTeamId) {
+        await supabase
+          .from('person_teams')
+          .update({ is_current: false, valid_to: todayStr, updated_at: new Date().toISOString() })
+          .eq('person_id', devId)
+          .eq('team_id', oldTeamId)
+          .eq('is_current', true);
+      }
+      if (newTeamId && oldTeamId !== newTeamId) {
+        await supabase
+          .from('person_teams')
+          .insert([{ person_id: devId, team_id: newTeamId, is_current: true, valid_from: todayStr }]);
+      }
+      setDevelopers(developers.map(d => d.id === devId ? { ...d, team: teamName, teamId: newTeamId } : d));
+      showToast(newTeamId ? `Assigned ${dev.name} to ${teamName}` : `Removed ${dev.name} from team`);
+    } catch (err) {
+      showToast(`Error assigning team member: ${err.message}`, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateAndAssignMember = async (e, teamId) => {
+    e.preventDefault();
+    if (!inlineMemberName.trim()) return;
+    setLoading(true);
+    const targetTeam = teams.find(t => t.id === teamId);
+    const teamName = targetTeam ? targetTeam.name : 'No Team';
+
+    if (useDemoMode) {
+      const newDev = {
+        id: `dev-fly-${Date.now()}`,
+        name: inlineMemberName.trim(),
+        role: inlineMemberRole.trim() || 'Developer',
+        email: inlineMemberEmail.trim() || `${inlineMemberName.trim().toLowerCase().replace(/\s+/g, '.')}@company.com`,
+        team: teamName,
+        teamId: teamId,
+        companyLoginId: '',
+        managerName: '',
+        managerCompanyLoginId: ''
+      };
+      setDevelopers(prev => [...prev, newDev]);
+      setInlineMemberName('');
+      setInlineMemberRole('Developer');
+      setInlineMemberEmail('');
+      setShowInlineAddMemberTeamId(null);
+      showToast(`Created & added ${newDev.name} to ${teamName}`);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data: personData, error: personErr } = await supabase
+        .from('person')
+        .insert([{
+          full_name: inlineMemberName.trim(),
+          role_title: inlineMemberRole.trim() || 'Developer',
+          email: inlineMemberEmail.trim() || null
+        }])
+        .select();
+
+      if (personErr) throw personErr;
+      const createdPerson = personData && personData[0] ? personData[0] : null;
+      const newDevId = createdPerson ? createdPerson.id : `dev-${Date.now()}`;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      await supabase
+        .from('person_teams')
+        .insert([{
+          person_id: newDevId,
+          team_id: teamId,
+          is_current: true,
+          valid_from: todayStr
+        }]);
+
+      const newDev = {
+        id: newDevId,
+        name: inlineMemberName.trim(),
+        role: inlineMemberRole.trim() || 'Developer',
+        email: inlineMemberEmail.trim() || '',
+        team: teamName,
+        teamId: teamId,
+        companyLoginId: '',
+        managerName: '',
+        managerCompanyLoginId: ''
+      };
+
+      setDevelopers(prev => [...prev, newDev]);
+      setInlineMemberName('');
+      setInlineMemberRole('Developer');
+      setInlineMemberEmail('');
+      setShowInlineAddMemberTeamId(null);
+      showToast(`Successfully created & added ${newDev.name} to ${teamName}`);
+    } catch (err) {
+      showToast(`Error creating team member: ${err.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -4477,18 +4603,43 @@ To enable managers to track team progress and skill development over time, the d
                                       {team.description || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                                     </td>
                                     <td style={{ whiteSpace: 'nowrap', width: '1%' }}>
-                                      <button 
-                                        className={`badge ${memberCount > 0 ? 'team-badge' : 'no-team'}`} 
-                                        style={{ 
-                                          cursor: 'pointer',
-                                          userSelect: 'none',
-                                          ...(expandedTeamId === team.id ? { outline: '2px solid var(--accent-primary)', outlineOffset: '1px' } : {})
-                                        }}
-                                        onClick={() => setExpandedTeamId(expandedTeamId === team.id ? null : team.id)}
-                                        title="Click to view team details & manage skills"
-                                      >
-                                        {memberCount} {memberCount === 1 ? 'member' : 'members'}
-                                      </button>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                        <button 
+                                          className={`badge ${memberCount > 0 ? 'team-badge' : 'no-team'}`} 
+                                          style={{ 
+                                            cursor: 'pointer',
+                                            userSelect: 'none',
+                                            ...(expandedTeamId === team.id ? { outline: '2px solid var(--accent-primary)', outlineOffset: '1px' } : {})
+                                          }}
+                                          onClick={() => setExpandedTeamId(expandedTeamId === team.id ? null : team.id)}
+                                          title="Click to view team details & manage skills"
+                                        >
+                                          {memberCount} {memberCount === 1 ? 'member' : 'members'}
+                                        </button>
+                                        <button 
+                                          type="button"
+                                          className="btn-secondary" 
+                                          style={{ 
+                                            padding: '0.15rem 0.5rem', 
+                                            fontSize: '0.72rem', 
+                                            height: '24px', 
+                                            width: 'auto',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '0.25rem',
+                                            borderColor: 'rgba(139, 92, 246, 0.4)',
+                                            color: 'var(--accent-primary)'
+                                          }}
+                                          onClick={() => {
+                                            setExpandedTeamId(team.id);
+                                            setShowInlineAddMemberTeamId(showInlineAddMemberTeamId === team.id ? null : team.id);
+                                          }}
+                                          title={`Add or assign members to ${team.name}`}
+                                        >
+                                          <UserPlus size={12} />
+                                          Add Member
+                                        </button>
+                                      </div>
                                     </td>
                                     <td>
                                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
@@ -4608,8 +4759,8 @@ To enable managers to track team progress and skill development over time, the d
                                           <div style={{
                                             flex: '0 0 auto',
                                             width: 'fit-content',
-                                            minWidth: '280px',
-                                            maxWidth: '450px',
+                                            minWidth: '300px',
+                                            maxWidth: '480px',
                                             padding: '0.75rem 1rem',
                                             background: 'rgba(15, 23, 42, 0.4)',
                                             borderRadius: '8px',
@@ -4618,19 +4769,145 @@ To enable managers to track team progress and skill development over time, the d
                                             flexDirection: 'column',
                                             gap: '0.5rem'
                                           }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.25rem' }}>
-                                              <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Team Members</h5>
-                                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({memberCount})</span>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.4rem' }}>
+                                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, margin: 0 }}>Team Members</h5>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({memberCount})</span>
+                                              </div>
+                                              <button
+                                                type="button"
+                                                className="btn-secondary"
+                                                onClick={() => {
+                                                  if (showInlineAddMemberTeamId === team.id) {
+                                                    setShowInlineAddMemberTeamId(null);
+                                                  } else {
+                                                    setShowInlineAddMemberTeamId(team.id);
+                                                  }
+                                                }}
+                                                style={{ height: '24px', padding: '0 0.5rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.25rem', width: 'auto', margin: 0, borderColor: 'rgba(139, 92, 246, 0.3)', color: 'var(--accent-primary)' }}
+                                                title="Assign existing team member or add new member on the fly"
+                                              >
+                                                <UserPlus size={12} />
+                                                Add Member
+                                              </button>
                                             </div>
+
+                                            {/* Inline Member Add Form & Selector Drawer */}
+                                            {showInlineAddMemberTeamId === team.id && (
+                                              <div style={{ 
+                                                background: 'rgba(15, 23, 42, 0.6)', 
+                                                border: '1px solid var(--accent-primary)', 
+                                                borderRadius: '6px', 
+                                                padding: '0.75rem', 
+                                                marginTop: '0.25rem', 
+                                                marginBottom: '0.5rem',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '0.6rem'
+                                              }}>
+                                                {/* Option 1: Assign Existing Member */}
+                                                <div>
+                                                  <div style={{ fontSize: '0.73rem', fontWeight: 600, color: 'var(--accent-primary)', marginBottom: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                                    <Users size={12} />
+                                                    Assign Existing Member to {team.name}:
+                                                  </div>
+                                                  <select
+                                                    className="form-input compact-input"
+                                                    style={{ fontSize: '0.78rem', height: '30px', width: '100%' }}
+                                                    value=""
+                                                    onChange={(e) => {
+                                                      if (e.target.value) {
+                                                        handleAssignDeveloperToTeam(e.target.value, team.id);
+                                                      }
+                                                    }}
+                                                  >
+                                                    <option value="">-- Choose Existing Member --</option>
+                                                    {developers.map(dev => (
+                                                      <option key={dev.id} value={dev.id}>
+                                                        {dev.name} ({dev.role || 'Developer'}) — {dev.teamId === team.id ? 'Already in this team' : dev.team ? `In ${dev.team}` : 'No Team'}
+                                                      </option>
+                                                    ))}
+                                                  </select>
+                                                </div>
+
+                                                <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', margin: '0.2rem 0' }} />
+
+                                                {/* Option 2: Create & Add New Member on the Fly */}
+                                                <form onSubmit={(e) => handleCreateAndAssignMember(e, team.id)} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                                  <div style={{ fontSize: '0.73rem', fontWeight: 600, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                                    <UserPlus size={12} />
+                                                    Create & Add New Member on the fly:
+                                                  </div>
+                                                  <input
+                                                    type="text"
+                                                    className="form-input compact-input"
+                                                    placeholder="Full Name (e.g. Sarah Connor)"
+                                                    value={inlineMemberName}
+                                                    onChange={(e) => setInlineMemberName(e.target.value)}
+                                                    style={{ fontSize: '0.78rem', height: '30px' }}
+                                                    required
+                                                  />
+                                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                                                    <input
+                                                      type="text"
+                                                      className="form-input compact-input"
+                                                      placeholder="Role Title (e.g. Senior Frontend)"
+                                                      value={inlineMemberRole}
+                                                      onChange={(e) => setInlineMemberRole(e.target.value)}
+                                                      style={{ fontSize: '0.78rem', height: '30px' }}
+                                                    />
+                                                    <input
+                                                      type="email"
+                                                      className="form-input compact-input"
+                                                      placeholder="Email (Optional)"
+                                                      value={inlineMemberEmail}
+                                                      onChange={(e) => setInlineMemberEmail(e.target.value)}
+                                                      style={{ fontSize: '0.78rem', height: '30px' }}
+                                                    />
+                                                  </div>
+                                                  <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', marginTop: '0.2rem' }}>
+                                                    <button
+                                                      type="button"
+                                                      className="btn-secondary"
+                                                      onClick={() => setShowInlineAddMemberTeamId(null)}
+                                                      style={{ height: '26px', padding: '0 0.6rem', fontSize: '0.75rem', width: 'auto' }}
+                                                    >
+                                                      Cancel
+                                                    </button>
+                                                    <button
+                                                      type="submit"
+                                                      className="btn-primary"
+                                                      disabled={loading}
+                                                      style={{ height: '26px', padding: '0 0.75rem', fontSize: '0.75rem', width: 'auto' }}
+                                                    >
+                                                      <UserPlus size={12} />
+                                                      Create & Assign
+                                                    </button>
+                                                  </div>
+                                                </form>
+                                              </div>
+                                            )}
+
                                             {developers.filter(d => d.teamId === team.id).length === 0 ? (
                                               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                                                No members in this team.
+                                                No members in this team yet. Click "Add Member" above to assign developers.
                                               </div>
                                             ) : (
                                               developers.filter(d => d.teamId === team.id).map(dev => (
-                                                <div key={dev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', gap: '1rem', padding: '0.15rem 0' }}>
+                                                <div key={dev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', gap: '0.5rem', padding: '0.2rem 0' }}>
                                                   <span style={{ fontWeight: 500, color: 'var(--text-primary)', textAlign: 'left', whiteSpace: 'nowrap' }}>{dev.name}</span>
-                                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'right', whiteSpace: 'nowrap' }}>{dev.role}</span>
+                                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                    <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'right', whiteSpace: 'nowrap' }}>{dev.role}</span>
+                                                    <button
+                                                      type="button"
+                                                      className="btn-secondary"
+                                                      onClick={() => handleAssignDeveloperToTeam(dev.id, null)}
+                                                      style={{ padding: '0 0.35rem', height: '22px', fontSize: '0.7rem', borderColor: 'rgba(239, 68, 68, 0.25)', color: '#ef4444', width: 'auto', display: 'inline-flex', alignItems: 'center' }}
+                                                      title={`Remove ${dev.name} from ${team.name}`}
+                                                    >
+                                                      <X size={11} />
+                                                    </button>
+                                                  </div>
                                                 </div>
                                               ))
                                             )}
