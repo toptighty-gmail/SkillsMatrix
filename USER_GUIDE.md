@@ -33,6 +33,38 @@ The database architecture is designed using a **Dimensional Data Modeling / Star
 
 ### 📐 Entity-Relationship Star Schema Diagram
 
+```ascii
++-----------------------+         +-------------------------------+         +-----------------------+
+|        PERSON         |         |   PERSON_SKILL_ASSESSMENTS    |         |        SKILLS         |
++-----------------------+         +-------------------------------+         +-----------------------+
+| id (PK, UUID)         |<------->| id (PK, UUID)                 |<------->| id (PK, UUID)         |
+| full_name             |         | person_id (FK -> person)      |         | name                  |
+| role_title            |         | skill_id (FK -> skills)       |         | category_id (FK)----->|-----+
+| email                 |         | competency_level_id (1..5)    |         | vendor                |     |
+| company_login_id      |         | is_current (BOOLEAN)          |         | description           |     |
+| manager_fullname      |         | valid_from / valid_to (DATE)  |         +-----------------------+     |
+| manager_login_id      |         | assessed_on (DATE)            |                                       |
++-----------------------+         +-------------------------------+                                       |
+        ^                                                                                                 |
+        |                         +-------------------------------+         +-----------------------+     |
+        +------------------------>|         PERSON_TEAMS          |         |      CATEGORIES       |     |
+                                  +-------------------------------+         +-----------------------+     |
+                                  | id (PK, UUID)                 |         | id (PK, INT)          |<----+
+                                  | person_id (FK -> person)      |         | name                  |
+                                  | team_id (FK -> teams)-------->|----+    | description           |
+                                  | is_current / valid_from/to    |    |    +-----------------------+
+                                  +-------------------------------+    |
+                                                                       v
+                                  +-------------------------------+ +-----------------------+
+                                  |          TEAM_SKILLS          | |         TEAMS         |
+                                  +-------------------------------+ +-----------------------+
+                                  | id (PK, UUID)                 | | id (PK, INT)          |
+                                  | team_id (FK -> teams)---------->| name                  |
+                                  | skill_id (FK -> skills)       | | description           |
+                                  | is_required (BOOLEAN)         | +-----------------------+
+                                  +-------------------------------+
+```
+
 ```mermaid
 erDiagram
     PERSON ||--o{ PERSON_SKILL_ASSESSMENTS : "assessed in"

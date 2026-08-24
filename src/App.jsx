@@ -4836,6 +4836,224 @@ To enable managers to track team progress and skill development over time, the d
                   The database architecture is designed using a <strong>Dimensional Data Modeling / Star Schema</strong> pattern optimized for both fast online transactional queries (OLTP) and analytical progress reporting (OLAP).
                 </p>
 
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginTop: '1.25rem' }}>📐 Entity-Relationship Star Schema Diagram</h3>
+                <pre style={{ background: '#0f172a', padding: '1rem', borderRadius: '6px', color: '#f8fafc', overflowX: 'auto', fontSize: '0.82rem', margin: '0.75rem 0' }}>
+{`+-----------------------+         +-------------------------------+         +-----------------------+
+|        PERSON         |         |   PERSON_SKILL_ASSESSMENTS    |         |        SKILLS         |
++-----------------------+         +-------------------------------+         +-----------------------+
+| id (PK, UUID)         |<------->| id (PK, UUID)                 |<------->| id (PK, UUID)         |
+| full_name             |         | person_id (FK -> person)      |         | name                  |
+| role_title            |         | skill_id (FK -> skills)       |         | category_id (FK)----->|-----+
+| email                 |         | competency_level_id (1..5)    |         | vendor                |     |
+| company_login_id      |         | is_current (BOOLEAN)          |         | description           |     |
+| manager_fullname      |         | valid_from / valid_to (DATE)  |         +-----------------------+     |
+| manager_login_id      |         | assessed_on (DATE)            |                                       |
++-----------------------+         +-------------------------------+                                       |
+        ^                                                                                                 |
+        |                         +-------------------------------+         +-----------------------+     |
+        +------------------------>|         PERSON_TEAMS          |         |      CATEGORIES       |     |
+                                  +-------------------------------+         +-----------------------+     |
+                                  | id (PK, UUID)                 |         | id (PK, INT)          |<----+
+                                  | person_id (FK -> person)      |         | name                  |
+                                  | team_id (FK -> teams)-------->|----+    | description           |
+                                  | is_current / valid_from/to    |    |    +-----------------------+
+                                  +-------------------------------+    |
+                                                                       v
+                                  +-------------------------------+ +-----------------------+
+                                  |          TEAM_SKILLS          | |         TEAMS         |
+                                  +-------------------------------+ +-----------------------+
+                                  | id (PK, UUID)                 | | id (PK, INT)          |
+                                  | team_id (FK -> teams)---------->| name                  |
+                                  | skill_id (FK -> skills)       | | description           |
+                                  | is_required (BOOLEAN)         | +-----------------------+
+                                  +-------------------------------+`}
+                </pre>
+
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginTop: '1.5rem' }}>📑 Full Database Table Schemas & Data Types</h3>
+                <div style={{ overflowX: 'auto', margin: '1rem 0' }}>
+                  <table className="list-table" style={{ width: '100%', fontSize: '0.85rem' }}>
+                    <thead>
+                      <tr>
+                        <th>Table Name</th>
+                        <th>Column Name</th>
+                        <th>Data Type</th>
+                        <th>Key / Constraint</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>person</strong></td>
+                        <td><code>id</code></td>
+                        <td>UUID</td>
+                        <td>PRIMARY KEY</td>
+                        <td>Unique developer ID (<code>gen_random_uuid()</code>)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person</strong></td>
+                        <td><code>full_name</code></td>
+                        <td>VARCHAR(255)</td>
+                        <td>NOT NULL</td>
+                        <td>Full name of the team member</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person</strong></td>
+                        <td><code>role_title</code></td>
+                        <td>VARCHAR(255)</td>
+                        <td>DEFAULT 'Developer'</td>
+                        <td>Role / Job title (e.g. Senior Frontend Engineer)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person</strong></td>
+                        <td><code>email</code></td>
+                        <td>VARCHAR(255)</td>
+                        <td>NULLABLE</td>
+                        <td>Email address</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person</strong></td>
+                        <td><code>company_login_id</code></td>
+                        <td>VARCHAR(100)</td>
+                        <td>NULLABLE</td>
+                        <td>Corporate login identifier / SSO handle</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person</strong></td>
+                        <td><code>manager_fullname</code></td>
+                        <td>VARCHAR(255)</td>
+                        <td>NULLABLE</td>
+                        <td>Reporting manager full name</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person</strong></td>
+                        <td><code>manager_company_login_id</code></td>
+                        <td>VARCHAR(100)</td>
+                        <td>NULLABLE</td>
+                        <td>Reporting manager corporate ID</td>
+                      </tr>
+                      <tr>
+                        <td><strong>skills</strong></td>
+                        <td><code>id</code></td>
+                        <td>UUID</td>
+                        <td>PRIMARY KEY</td>
+                        <td>Unique skill identifier</td>
+                      </tr>
+                      <tr>
+                        <td><strong>skills</strong></td>
+                        <td><code>name</code></td>
+                        <td>VARCHAR(255)</td>
+                        <td>NOT NULL</td>
+                        <td>Skill name (e.g. React, PostgreSQL)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>skills</strong></td>
+                        <td><code>category_id</code></td>
+                        <td>INT</td>
+                        <td>FK -&gt; categories(id)</td>
+                        <td>Associated domain taxonomy ID</td>
+                      </tr>
+                      <tr>
+                        <td><strong>skills</strong></td>
+                        <td><code>vendor</code></td>
+                        <td>VARCHAR(255)</td>
+                        <td>NULLABLE</td>
+                        <td>Vendor or technology provider</td>
+                      </tr>
+                      <tr>
+                        <td><strong>skills</strong></td>
+                        <td><code>description</code></td>
+                        <td>TEXT</td>
+                        <td>NULLABLE</td>
+                        <td>Detailed description of the skill</td>
+                      </tr>
+                      <tr>
+                        <td><strong>categories</strong></td>
+                        <td><code>id</code></td>
+                        <td>SERIAL / INT</td>
+                        <td>PRIMARY KEY</td>
+                        <td>Category surrogate ID</td>
+                      </tr>
+                      <tr>
+                        <td><strong>categories</strong></td>
+                        <td><code>name</code></td>
+                        <td>VARCHAR(100)</td>
+                        <td>NOT NULL</td>
+                        <td>Category domain (Frontend, Backend, DevOps, etc.)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>teams</strong></td>
+                        <td><code>id</code></td>
+                        <td>SERIAL / INT</td>
+                        <td>PRIMARY KEY</td>
+                        <td>Team surrogate ID</td>
+                      </tr>
+                      <tr>
+                        <td><strong>teams</strong></td>
+                        <td><code>name</code></td>
+                        <td>VARCHAR(100)</td>
+                        <td>NOT NULL</td>
+                        <td>Team name (e.g. Core Engineering, Platform)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person_skill_assessments</strong></td>
+                        <td><code>id</code></td>
+                        <td>UUID</td>
+                        <td>PRIMARY KEY</td>
+                        <td>Assessment record ID</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person_skill_assessments</strong></td>
+                        <td><code>person_id</code></td>
+                        <td>UUID</td>
+                        <td>FK -&gt; person(id) CASCADE</td>
+                        <td>Assessed developer ID</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person_skill_assessments</strong></td>
+                        <td><code>skill_id</code></td>
+                        <td>UUID</td>
+                        <td>FK -&gt; skills(id) CASCADE</td>
+                        <td>Assessed skill ID</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person_skill_assessments</strong></td>
+                        <td><code>competency_level_id</code></td>
+                        <td>INT</td>
+                        <td>CHECK (1..5)</td>
+                        <td>Rating level from 1 (Basic) to 5 (Expert)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person_skill_assessments</strong></td>
+                        <td><code>is_current</code></td>
+                        <td>BOOLEAN</td>
+                        <td>DEFAULT true</td>
+                        <td>True for active current rating; false for past ratings</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person_skill_assessments</strong></td>
+                        <td><code>valid_from / valid_to</code></td>
+                        <td>DATE</td>
+                        <td>NULLABLE</td>
+                        <td>SCD Type 2 audit timeline range</td>
+                      </tr>
+                      <tr>
+                        <td><strong>team_skills</strong></td>
+                        <td><code>team_id / skill_id</code></td>
+                        <td>INT / UUID</td>
+                        <td>FK CASCADE</td>
+                        <td>Target team requirement mapping</td>
+                      </tr>
+                      <tr>
+                        <td><strong>person_teams</strong></td>
+                        <td><code>person_id / team_id</code></td>
+                        <td>UUID / INT</td>
+                        <td>FK CASCADE</td>
+                        <td>Developer team roster placement bridge</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
                 <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '8px', margin: '1.25rem 0' }}>
                   <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--accent-primary)', fontSize: '1.05rem' }}>🌟 Fact Tables vs. Dimension Tables Breakdown</h4>
                   
