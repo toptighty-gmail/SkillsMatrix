@@ -334,6 +334,55 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState(null);
 
+  // Column Resizer State & Handlers
+  const [columnWidths, setColumnWidths] = useState({});
+  const [resizingColKey, setResizingColKey] = useState(null);
+
+  const handleResizeStart = (e, colKey, initialWidth = 150, minWidth = 60) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startWidth = columnWidths[colKey] || initialWidth;
+    setResizingColKey(colKey);
+    document.body.classList.add('is-resizing-col');
+
+    const onMouseMove = (moveEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const newWidth = Math.max(minWidth, startWidth + deltaX);
+      setColumnWidths(prev => ({ ...prev, [colKey]: newWidth }));
+    };
+
+    const onMouseUp = () => {
+      setResizingColKey(null);
+      document.body.classList.remove('is-resizing-col');
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
+  const getColStyle = (colKey, defaultWidth) => {
+    const width = columnWidths[colKey] || defaultWidth;
+    if (!width) return {};
+    return {
+      width: `${width}px`,
+      minWidth: `${width}px`,
+      maxWidth: `${width}px`,
+      boxSizing: 'border-box'
+    };
+  };
+
+  const ColumnResizer = ({ colKey, defaultWidth = 150, minWidth = 60 }) => (
+    <div
+      className={`col-resizer-handle ${resizingColKey === colKey ? 'resizing' : ''}`}
+      onMouseDown={(e) => handleResizeStart(e, colKey, defaultWidth, minWidth)}
+      onClick={(e) => e.stopPropagation()}
+      title="Drag to resize column width"
+    />
+  );
+
   // Button refs for Portal Dropdown Positioning
   const teamBtnRef = useRef(null);
   const devBtnRef = useRef(null);
@@ -3020,7 +3069,7 @@ To enable managers to track team progress and skill development over time, the d
                               <tr>
                                 <th 
                                   onClick={() => setMatrixSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')} 
-                                  style={{ cursor: 'pointer', userSelect: 'none' }}
+                                  style={{ cursor: 'pointer', userSelect: 'none', ...getColStyle('matrix-dev-col', 220) }}
                                   className="sortable-header"
                                   title={`Sort by Team Member Name ${matrixSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                                 >
@@ -3032,6 +3081,7 @@ To enable managers to track team progress and skill development over time, the d
                                       <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
                                     )}
                                   </div>
+                                  <ColumnResizer colKey="matrix-dev-col" defaultWidth={220} minWidth={140} />
                                 </th>
                                 {displayedSkills.length === 0 ? (
                                   <th style={{ fontStyle: 'italic', fontWeight: 400, color: 'var(--text-muted)' }}>
@@ -3039,9 +3089,10 @@ To enable managers to track team progress and skill development over time, the d
                                   </th>
                                 ) : (
                                   displayedSkills.map((skill) => (
-                                    <th key={skill.id} title={`${skill.name} (${skill.category})`}>
+                                    <th key={skill.id} title={`${skill.name} (${skill.category})`} style={getColStyle(`matrix-skill-${skill.id}`, 150)}>
                                       {skill.name}
                                       <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 400, opacity: 0.6 }}>{skill.category}</span>
+                                      <ColumnResizer colKey={`matrix-skill-${skill.id}`} defaultWidth={150} minWidth={80} />
                                     </th>
                                   ))
                                 )}
@@ -3088,7 +3139,7 @@ To enable managers to track team progress and skill development over time, the d
                               ) : (
                                 filteredDevs.map((dev) => (
                                   <tr key={dev.id}>
-                                    <td>
+                                    <td style={getColStyle('matrix-dev-col', 220)}>
                                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', width: '100%' }}>
                                         <span className="dev-name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                           {dev.name}
@@ -3103,7 +3154,7 @@ To enable managers to track team progress and skill development over time, the d
                                       </div>
                                     </td>
                                     {displayedSkills.map((skill) => (
-                                      <td key={skill.id}>
+                                      <td key={skill.id} style={getColStyle(`matrix-skill-${skill.id}`, 150)}>
                                         {getProficiencyBadge(dev.id, skill.id)}
                                       </td>
                                     ))}
@@ -3545,7 +3596,7 @@ To enable managers to track team progress and skill development over time, the d
                       <tr>
                         <th 
                           onClick={() => setDevListSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                          style={{ width: '22%', cursor: 'pointer', userSelect: 'none' }}
+                          style={{ cursor: 'pointer', userSelect: 'none', ...getColStyle('dev-col-name', 220) }}
                           className="sortable-header"
                           title={`Sort by Developer Name ${devListSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                         >
@@ -3557,12 +3608,28 @@ To enable managers to track team progress and skill development over time, the d
                               <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
                             )}
                           </div>
+                          <ColumnResizer colKey="dev-col-name" defaultWidth={220} minWidth={120} />
                         </th>
-                        <th style={{ width: '20%' }}>Role</th>
-                        <th style={{ width: '15%' }}>Team</th>
-                        <th style={{ width: '12%' }}>Login ID</th>
-                        <th style={{ width: '18%' }}>Manager</th>
-                        <th style={{ width: '13%' }}>Actions</th>
+                        <th style={getColStyle('dev-col-role', 180)}>
+                          Role
+                          <ColumnResizer colKey="dev-col-role" defaultWidth={180} minWidth={100} />
+                        </th>
+                        <th style={getColStyle('dev-col-team', 140)}>
+                          Team
+                          <ColumnResizer colKey="dev-col-team" defaultWidth={140} minWidth={90} />
+                        </th>
+                        <th style={getColStyle('dev-col-login', 130)}>
+                          Login ID
+                          <ColumnResizer colKey="dev-col-login" defaultWidth={130} minWidth={80} />
+                        </th>
+                        <th style={getColStyle('dev-col-manager', 180)}>
+                          Manager
+                          <ColumnResizer colKey="dev-col-manager" defaultWidth={180} minWidth={100} />
+                        </th>
+                        <th style={getColStyle('dev-col-actions', 130)}>
+                          Actions
+                          <ColumnResizer colKey="dev-col-actions" defaultWidth={130} minWidth={90} />
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -3582,7 +3649,7 @@ To enable managers to track team progress and skill development over time, the d
                         .map((dev) => (
                         editingDevId === dev.id ? (
                           <tr key={dev.id} style={{ background: 'rgba(30, 41, 59, 0.4)' }}>
-                            <td>
+                            <td style={getColStyle('dev-col-name', 220)}>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                                 <input 
                                   type="text" 
@@ -3601,7 +3668,7 @@ To enable managers to track team progress and skill development over time, the d
                                 />
                               </div>
                             </td>
-                            <td>
+                            <td style={getColStyle('dev-col-role', 180)}>
                               <input 
                                 type="text" 
                                 className="form-input compact-input" 
@@ -3611,7 +3678,7 @@ To enable managers to track team progress and skill development over time, the d
                                 required
                               />
                             </td>
-                            <td>
+                            <td style={getColStyle('dev-col-team', 140)}>
                               <select 
                                 className="form-input compact-input" 
                                 value={editDevTeamId}
@@ -3623,7 +3690,7 @@ To enable managers to track team progress and skill development over time, the d
                                 ))}
                               </select>
                             </td>
-                            <td>
+                            <td style={getColStyle('dev-col-login', 130)}>
                               <input 
                                 type="text" 
                                 className="form-input compact-input" 
@@ -3632,7 +3699,7 @@ To enable managers to track team progress and skill development over time, the d
                                 onChange={(e) => setEditDevCompanyLoginId(e.target.value)}
                               />
                             </td>
-                            <td>
+                            <td style={getColStyle('dev-col-manager', 180)}>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                                 <input 
                                   type="text" 
@@ -3650,7 +3717,7 @@ To enable managers to track team progress and skill development over time, the d
                                 />
                               </div>
                             </td>
-                            <td>
+                            <td style={getColStyle('dev-col-actions', 130)}>
                               <div style={{ display: 'flex', gap: '0.35rem' }}>
                                 <button 
                                   className="btn-primary" 
@@ -3672,7 +3739,7 @@ To enable managers to track team progress and skill development over time, the d
                           </tr>
                         ) : (
                           <tr key={dev.id}>
-                            <td>
+                            <td style={getColStyle('dev-col-name', 220)}>
                               <div style={{ fontWeight: 600 }}>{dev.name}</div>
                               {dev.email && (
                                 <div style={{ fontSize: '0.78rem', color: '#a7f3d0', fontWeight: 500, marginTop: '0.15rem' }}>
@@ -3680,8 +3747,8 @@ To enable managers to track team progress and skill development over time, the d
                                 </div>
                               )}
                             </td>
-                            <td>{dev.role}</td>
-                            <td>
+                            <td style={getColStyle('dev-col-role', 180)}>{dev.role}</td>
+                            <td style={getColStyle('dev-col-team', 140)}>
                               <span 
                                 className={`badge ${dev.team === 'No Team' ? 'no-team' : 'team-badge'}`}
                                 style={{ pointerEvents: 'none' }}
@@ -3689,10 +3756,10 @@ To enable managers to track team progress and skill development over time, the d
                                 {dev.team}
                               </span>
                             </td>
-                            <td>
+                            <td style={getColStyle('dev-col-login', 130)}>
                               <code>{dev.companyLoginId || '—'}</code>
                             </td>
-                            <td>
+                            <td style={getColStyle('dev-col-manager', 180)}>
                               {dev.managerName ? (
                                 <div>
                                   <div style={{ fontWeight: 500 }}>{dev.managerName}</div>
@@ -3708,7 +3775,7 @@ To enable managers to track team progress and skill development over time, the d
                                 <span style={{ color: 'var(--text-muted)' }}>—</span>
                               )}
                             </td>
-                            <td>
+                            <td style={getColStyle('dev-col-actions', 130)}>
                               <div style={{ display: 'flex', gap: '0.4rem' }}>
                                 <button 
                                   className="btn-secondary" 
@@ -4136,7 +4203,7 @@ To enable managers to track team progress and skill development over time, the d
                       <tr>
                         <th 
                           onClick={() => setSkillsSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                          style={{ width: '25%', cursor: 'pointer', userSelect: 'none' }}
+                          style={{ cursor: 'pointer', userSelect: 'none', ...getColStyle('skill-col-name', 200) }}
                           className="sortable-header"
                           title={`Sort by Skill Name ${skillsSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                         >
@@ -4148,11 +4215,24 @@ To enable managers to track team progress and skill development over time, the d
                               <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
                             )}
                           </div>
+                          <ColumnResizer colKey="skill-col-name" defaultWidth={200} minWidth={120} />
                         </th>
-                        <th style={{ width: '20%' }}>Category</th>
-                        <th style={{ width: '15%' }}>Vendor</th>
-                        <th style={{ width: '27%' }}>Description</th>
-                        <th style={{ width: '13%' }}>Actions</th>
+                        <th style={getColStyle('skill-col-cat', 150)}>
+                          Category
+                          <ColumnResizer colKey="skill-col-cat" defaultWidth={150} minWidth={90} />
+                        </th>
+                        <th style={getColStyle('skill-col-vendor', 140)}>
+                          Vendor
+                          <ColumnResizer colKey="skill-col-vendor" defaultWidth={140} minWidth={90} />
+                        </th>
+                        <th style={getColStyle('skill-col-desc', 260)}>
+                          Description
+                          <ColumnResizer colKey="skill-col-desc" defaultWidth={260} minWidth={120} />
+                        </th>
+                        <th style={getColStyle('skill-col-actions', 130)}>
+                          Actions
+                          <ColumnResizer colKey="skill-col-actions" defaultWidth={130} minWidth={90} />
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -4174,7 +4254,7 @@ To enable managers to track team progress and skill development over time, the d
                         .map((skill) => (
                           editingSkillId === skill.id ? (
                             <tr key={skill.id} style={{ background: 'rgba(30, 41, 59, 0.4)' }}>
-                              <td>
+                              <td style={getColStyle('skill-col-name', 200)}>
                                 <input 
                                   type="text" 
                                   className="form-input compact-input" 
@@ -4184,7 +4264,7 @@ To enable managers to track team progress and skill development over time, the d
                                   required
                                 />
                               </td>
-                              <td>
+                              <td style={getColStyle('skill-col-cat', 150)}>
                                 <select 
                                   className="form-input compact-input" 
                                   value={editSkillCategoryId}
@@ -4197,7 +4277,7 @@ To enable managers to track team progress and skill development over time, the d
                                   ))}
                                 </select>
                               </td>
-                              <td>
+                              <td style={getColStyle('skill-col-vendor', 140)}>
                                 <input 
                                   type="text" 
                                   className="form-input compact-input" 
@@ -4206,7 +4286,7 @@ To enable managers to track team progress and skill development over time, the d
                                   onChange={(e) => setEditSkillVendor(e.target.value)}
                                 />
                               </td>
-                              <td>
+                              <td style={getColStyle('skill-col-desc', 260)}>
                                 <input 
                                   type="text" 
                                   className="form-input compact-input" 
@@ -4215,7 +4295,7 @@ To enable managers to track team progress and skill development over time, the d
                                   onChange={(e) => setEditSkillDescription(e.target.value)}
                                 />
                               </td>
-                              <td>
+                              <td style={getColStyle('skill-col-actions', 130)}>
                                 <div style={{ display: 'flex', gap: '0.35rem' }}>
                                   <button 
                                     className="btn-primary" 
@@ -4237,15 +4317,15 @@ To enable managers to track team progress and skill development over time, the d
                             </tr>
                           ) : (
                             <tr key={skill.id}>
-                              <td>
+                              <td style={getColStyle('skill-col-name', 200)}>
                                 <div style={{ fontWeight: 600 }}>{skill.name}</div>
                               </td>
-                              <td>
+                              <td style={getColStyle('skill-col-cat', 150)}>
                                 <span className="badge category-badge" style={{ pointerEvents: 'none' }}>
                                   {skill.category}
                                 </span>
                               </td>
-                              <td>
+                              <td style={getColStyle('skill-col-vendor', 140)}>
                                 {skill.vendor ? (
                                   <span className="badge vendor-badge" style={{ pointerEvents: 'none' }}>
                                     {skill.vendor}
@@ -4254,10 +4334,10 @@ To enable managers to track team progress and skill development over time, the d
                                   <span style={{ color: 'var(--text-muted)' }}>—</span>
                                 )}
                               </td>
-                              <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                              <td style={{ ...getColStyle('skill-col-desc', 260), whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                                 {skill.description || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                               </td>
-                              <td>
+                              <td style={getColStyle('skill-col-actions', 130)}>
                                 <div style={{ display: 'flex', gap: '0.4rem' }}>
                                   <button 
                                     className="btn-secondary" 
@@ -4345,7 +4425,7 @@ To enable managers to track team progress and skill development over time, the d
                       <tr>
                         <th 
                           onClick={() => setCategoriesSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                          style={{ width: '30%', cursor: 'pointer', userSelect: 'none' }}
+                          style={{ cursor: 'pointer', userSelect: 'none', ...getColStyle('cat-col-name', 220) }}
                           className="sortable-header"
                           title={`Sort by Category Name ${categoriesSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                         >
@@ -4357,9 +4437,16 @@ To enable managers to track team progress and skill development over time, the d
                               <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
                             )}
                           </div>
+                          <ColumnResizer colKey="cat-col-name" defaultWidth={220} minWidth={120} />
                         </th>
-                        <th style={{ width: '57%' }}>Description</th>
-                        <th style={{ width: '13%' }}>Actions</th>
+                        <th style={getColStyle('cat-col-desc', 320)}>
+                          Description
+                          <ColumnResizer colKey="cat-col-desc" defaultWidth={320} minWidth={150} />
+                        </th>
+                        <th style={getColStyle('cat-col-actions', 130)}>
+                          Actions
+                          <ColumnResizer colKey="cat-col-actions" defaultWidth={130} minWidth={90} />
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -4374,7 +4461,7 @@ To enable managers to track team progress and skill development over time, the d
                         .map((cat) => (
                           editingCategoryId === cat.id ? (
                             <tr key={cat.id} style={{ background: 'rgba(30, 41, 59, 0.4)' }}>
-                              <td>
+                              <td style={getColStyle('cat-col-name', 220)}>
                                 <input 
                                   type="text" 
                                   className="form-input compact-input" 
@@ -4384,7 +4471,7 @@ To enable managers to track team progress and skill development over time, the d
                                   required
                                 />
                               </td>
-                              <td>
+                              <td style={getColStyle('cat-col-desc', 320)}>
                                 <input 
                                   type="text" 
                                   className="form-input compact-input" 
@@ -4393,7 +4480,7 @@ To enable managers to track team progress and skill development over time, the d
                                   onChange={(e) => setEditCategoryDesc(e.target.value)}
                                 />
                               </td>
-                              <td>
+                              <td style={getColStyle('cat-col-actions', 130)}>
                                 <div style={{ display: 'flex', gap: '0.35rem' }}>
                                   <button 
                                     className="btn-primary" 
@@ -4415,13 +4502,13 @@ To enable managers to track team progress and skill development over time, the d
                             </tr>
                           ) : (
                             <tr key={cat.id}>
-                              <td>
+                              <td style={getColStyle('cat-col-name', 220)}>
                                 <div style={{ fontWeight: 600 }}>{cat.name}</div>
                               </td>
-                              <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                              <td style={{ ...getColStyle('cat-col-desc', 320), whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                                 {cat.description || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                               </td>
-                              <td>
+                              <td style={getColStyle('cat-col-actions', 130)}>
                                 <div style={{ display: 'flex', gap: '0.4rem' }}>
                                   <button 
                                     className="btn-secondary" 
@@ -4507,7 +4594,7 @@ To enable managers to track team progress and skill development over time, the d
                       <tr>
                         <th 
                           onClick={() => setTeamsSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                          style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', width: 'auto' }}
+                          style={{ cursor: 'pointer', userSelect: 'none', ...getColStyle('team-col-name', 200) }}
                           className="sortable-header"
                           title={`Sort by Team Name ${teamsSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                         >
@@ -4519,11 +4606,24 @@ To enable managers to track team progress and skill development over time, the d
                               <ArrowDown size={14} style={{ color: 'var(--accent-primary)' }} />
                             )}
                           </div>
+                          <ColumnResizer colKey="team-col-name" defaultWidth={200} minWidth={120} />
                         </th>
-                        <th style={{ width: 'auto', minWidth: '180px' }}>Description</th>
-                        <th style={{ width: '1%', whiteSpace: 'nowrap' }}>Members</th>
-                        <th style={{ width: 'auto' }}>Assigned Skills</th>
-                        <th style={{ width: '1%', whiteSpace: 'nowrap' }}>Actions</th>
+                        <th style={getColStyle('team-col-desc', 260)}>
+                          Description
+                          <ColumnResizer colKey="team-col-desc" defaultWidth={260} minWidth={120} />
+                        </th>
+                        <th style={{ ...getColStyle('team-col-members', 170), whiteSpace: 'nowrap' }}>
+                          Members
+                          <ColumnResizer colKey="team-col-members" defaultWidth={170} minWidth={100} />
+                        </th>
+                        <th style={getColStyle('team-col-skills', 260)}>
+                          Assigned Skills
+                          <ColumnResizer colKey="team-col-skills" defaultWidth={260} minWidth={120} />
+                        </th>
+                        <th style={{ ...getColStyle('team-col-actions', 130), whiteSpace: 'nowrap' }}>
+                          Actions
+                          <ColumnResizer colKey="team-col-actions" defaultWidth={130} minWidth={90} />
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -4544,7 +4644,7 @@ To enable managers to track team progress and skill development over time, the d
                             <React.Fragment key={team.id}>
                               {editingTeamId === team.id ? (
                                 <tr style={{ background: 'rgba(30, 41, 59, 0.4)' }}>
-                                  <td>
+                                  <td style={getColStyle('team-col-name', 200)}>
                                     <input 
                                       type="text" 
                                       className="form-input compact-input" 
@@ -4554,7 +4654,7 @@ To enable managers to track team progress and skill development over time, the d
                                       required
                                     />
                                   </td>
-                                  <td>
+                                  <td style={getColStyle('team-col-desc', 260)}>
                                     <input 
                                       type="text" 
                                       className="form-input compact-input" 
@@ -4563,17 +4663,17 @@ To enable managers to track team progress and skill development over time, the d
                                       onChange={(e) => setEditTeamDesc(e.target.value)}
                                     />
                                   </td>
-                                  <td>
+                                  <td style={getColStyle('team-col-members', 170)}>
                                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                       {memberCount} {memberCount === 1 ? 'member' : 'members'}
                                     </span>
                                   </td>
-                                  <td>
+                                  <td style={getColStyle('team-col-skills', 260)}>
                                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                       {assignedSkills.length} {assignedSkills.length === 1 ? 'skill' : 'skills'}
                                     </span>
                                   </td>
-                                  <td>
+                                  <td style={getColStyle('team-col-actions', 130)}>
                                     <div style={{ display: 'flex', gap: '0.35rem' }}>
                                       <button 
                                         className="btn-primary" 
@@ -4596,13 +4696,13 @@ To enable managers to track team progress and skill development over time, the d
                               ) : (
                                 <>
                                   <tr>
-                                    <td style={{ whiteSpace: 'nowrap' }}>
+                                    <td style={{ ...getColStyle('team-col-name', 200), whiteSpace: 'nowrap' }}>
                                       <div style={{ fontWeight: 600 }}>{team.name}</div>
                                     </td>
-                                    <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)', minWidth: '180px' }}>
+                                    <td style={{ ...getColStyle('team-col-desc', 260), whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                                       {team.description || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                                     </td>
-                                    <td style={{ whiteSpace: 'nowrap', width: '1%' }}>
+                                    <td style={{ ...getColStyle('team-col-members', 170), whiteSpace: 'nowrap' }}>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                                         <button 
                                           className={`badge ${memberCount > 0 ? 'team-badge' : 'no-team'}`} 
@@ -4641,7 +4741,7 @@ To enable managers to track team progress and skill development over time, the d
                                         </button>
                                       </div>
                                     </td>
-                                    <td>
+                                    <td style={getColStyle('team-col-skills', 260)}>
                                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
                                         <button 
                                           className="btn-secondary" 
@@ -4682,7 +4782,7 @@ To enable managers to track team progress and skill development over time, the d
                                         )}
                                       </div>
                                     </td>
-                                    <td style={{ whiteSpace: 'nowrap', width: '1%' }}>
+                                    <td style={{ ...getColStyle('team-col-actions', 130), whiteSpace: 'nowrap' }}>
                                       <div style={{ display: 'flex', gap: '0.4rem' }}>
                                         <button 
                                           className="btn-secondary" 

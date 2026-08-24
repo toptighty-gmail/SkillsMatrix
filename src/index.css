@@ -940,6 +940,36 @@ button, select, input, label, .badge, .tab-btn {
   color: var(--text-primary) !important;
 }
 
+/* Drag & Drop Column Resizer Handle Styles */
+.matrix-table th,
+.list-table th {
+  position: relative;
+  box-sizing: border-box;
+}
+
+.col-resizer-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 7px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  z-index: 45;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.col-resizer-handle:hover,
+.col-resizer-handle.resizing {
+  background-color: var(--accent-primary) !important;
+  box-shadow: 0 0 8px var(--accent-primary);
+}
+
+body.is-resizing-col {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
 .sortable-header div svg {
   transition: transform 0.2s ease, color 0.2s ease;
 }

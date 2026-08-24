@@ -231,7 +231,8 @@ The **Skills Matrix Grid** is the primary interactive hub of the application. It
 - **Filter by Skill Level**: Isolate developers matching specific proficiency levels (0 to 5).
 - **Search Query**: Real-time text search filter for skills.
 
-#### 3. Matrix Sorting & Navigation
+#### 3. Matrix Sorting, Drag & Resize Columns, & Navigation
+- **Interactive Drag & Resize Columns**: Drag the resize handle on the right edge of any table column header (`<th>`) to dynamically adjust column widths across all grids and management tables in real time.
 - **Sort Developers**: Sort team member rows alphabetically in ascending (`A-Z`) or descending (`Z-A`) order.
 - **Team Target Skills Context**: View target/required skills designated for each team, highlighting gaps where team members lack required proficiencies.
 - **Inline Skill Addition**: Create a brand-new skill directly from the team view and auto-assign it on the fly.
