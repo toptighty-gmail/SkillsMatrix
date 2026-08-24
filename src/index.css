@@ -293,7 +293,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .matrix-table th, .matrix-table td {
-  padding: 1.1rem 1.25rem;
+  padding: 0.85rem 0.65rem;
   border-bottom: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
   background: #1e293b;
@@ -328,8 +328,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .matrix-table th:not(:first-child),
 .matrix-table td:not(:first-child) {
-  min-width: 150px;
-  width: 150px;
+  min-width: 180px;
+  width: 180px;
   text-align: center;
 }
 

@@ -235,7 +235,7 @@ const StarRating = ({ value, onChange, disabled }) => {
     <div 
       className="star-rating-container"
       onMouseLeave={() => !disabled && setHoverValue(null)}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}
     >
       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
         {[1, 2, 3, 4, 5].map((starIdx) => {
@@ -3089,10 +3089,10 @@ To enable managers to track team progress and skill development over time, the d
                                   </th>
                                 ) : (
                                   displayedSkills.map((skill) => (
-                                    <th key={skill.id} title={`${skill.name} (${skill.category})`} style={getColStyle(`matrix-skill-${skill.id}`, 150)}>
+                                    <th key={skill.id} title={`${skill.name} (${skill.category})`} style={getColStyle(`matrix-skill-${skill.id}`, 180)}>
                                       {skill.name}
                                       <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 400, opacity: 0.6 }}>{skill.category}</span>
-                                      <ColumnResizer colKey={`matrix-skill-${skill.id}`} defaultWidth={150} minWidth={80} />
+                                      <ColumnResizer colKey={`matrix-skill-${skill.id}`} defaultWidth={180} minWidth={140} />
                                     </th>
                                   ))
                                 )}
@@ -3154,7 +3154,7 @@ To enable managers to track team progress and skill development over time, the d
                                       </div>
                                     </td>
                                     {displayedSkills.map((skill) => (
-                                      <td key={skill.id} style={getColStyle(`matrix-skill-${skill.id}`, 150)}>
+                                      <td key={skill.id} style={getColStyle(`matrix-skill-${skill.id}`, 180)}>
                                         {getProficiencyBadge(dev.id, skill.id)}
                                       </td>
                                     ))}
