@@ -304,6 +304,7 @@ The **Teams** tab manages operational teams and defines target skill profiles re
 - Create, edit, and delete teams.
 - View real-time member counts per team.
 - Expand team rows to inspect team member rosters and assigned skills simultaneously.
+- **Line Item Close Controls**: Convenient top header and bottom action bar "Close Line Item / Done" buttons and table row toggle button to quickly collapse the expanded team line item when finished editing.
 
 #### 2. Target Skill Assignment & Skill Gaps
 - **Assign/Remove Required Skills**: Toggle skills to define the expected technical stack for a team.

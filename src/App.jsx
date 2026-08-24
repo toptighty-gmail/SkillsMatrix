@@ -4508,10 +4508,26 @@ To enable managers to track team progress and skill development over time, the d
                                         )}
                                         <button 
                                           className="btn-secondary" 
-                                          style={{ padding: '0.1rem 0.4rem', fontSize: '0.7rem', height: '22px', marginLeft: '0.25rem', width: 'auto' }}
+                                          style={{ 
+                                            padding: '0.1rem 0.5rem', 
+                                            fontSize: '0.7rem', 
+                                            height: '22px', 
+                                            marginLeft: '0.25rem', 
+                                            width: 'auto',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '0.25rem',
+                                            ...(expandedTeamId === team.id ? { background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.35)' } : {})
+                                          }}
                                           onClick={() => setExpandedTeamId(expandedTeamId === team.id ? null : team.id)}
+                                          title={expandedTeamId === team.id ? "Click to close line item" : "Click to manage assigned skills"}
                                         >
-                                          Manage
+                                          {expandedTeamId === team.id ? (
+                                            <>
+                                              <X size={12} />
+                                              Close
+                                            </>
+                                          ) : 'Manage'}
                                         </button>
                                       </div>
                                     </td>
@@ -4547,8 +4563,46 @@ To enable managers to track team progress and skill development over time, the d
                                     </td>
                                   </tr>
                                   {expandedTeamId === team.id && (
-                                    <tr style={{ background: 'rgba(15, 23, 42, 0.2)' }}>
+                                    <tr style={{ background: 'rgba(15, 23, 42, 0.25)' }}>
                                       <td colSpan={5} style={{ padding: '1rem 1.5rem' }}>
+                                        {/* Top Header Control Bar for Line Item */}
+                                        <div style={{
+                                          display: 'flex',
+                                          justifyContent: 'space-between',
+                                          alignItems: 'center',
+                                          marginBottom: '0.85rem',
+                                          paddingBottom: '0.6rem',
+                                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+                                        }}>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <Users size={16} color="var(--accent-primary)" />
+                                            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                              Managing Team Capabilities: <strong style={{ color: 'var(--accent-primary)' }}>{team.name}</strong>
+                                            </span>
+                                          </div>
+                                          <button
+                                            type="button"
+                                            className="btn-secondary"
+                                            onClick={() => setExpandedTeamId(null)}
+                                            style={{
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '0.35rem',
+                                              padding: '0.25rem 0.7rem',
+                                              fontSize: '0.78rem',
+                                              height: '28px',
+                                              width: 'auto',
+                                              background: 'rgba(239, 68, 68, 0.12)',
+                                              borderColor: 'rgba(239, 68, 68, 0.3)',
+                                              color: '#f87171'
+                                            }}
+                                            title="Close assigned skills manager for this line item"
+                                          >
+                                            <X size={13} />
+                                            Close Line Item
+                                          </button>
+                                        </div>
+
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
                                           {/* Left Box: Team Members */}
                                           <div style={{
@@ -4731,6 +4785,34 @@ To enable managers to track team progress and skill development over time, the d
                                               })}
                                             </div>
                                           </div>
+                                        </div>
+
+                                        {/* Bottom Action Control Bar for Line Item */}
+                                        <div style={{
+                                          display: 'flex',
+                                          justifyContent: 'flex-end',
+                                          alignItems: 'center',
+                                          marginTop: '0.85rem',
+                                          paddingTop: '0.6rem',
+                                          borderTop: '1px solid rgba(255, 255, 255, 0.06)'
+                                        }}>
+                                          <button
+                                            type="button"
+                                            className="btn-primary"
+                                            onClick={() => setExpandedTeamId(null)}
+                                            style={{
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '0.35rem',
+                                              padding: '0.35rem 0.9rem',
+                                              fontSize: '0.8rem',
+                                              height: '30px',
+                                              width: 'auto'
+                                            }}
+                                          >
+                                            <Check size={14} />
+                                            Done / Close Line Item
+                                          </button>
                                         </div>
                                       </td>
                                     </tr>
