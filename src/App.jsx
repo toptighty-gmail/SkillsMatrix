@@ -4604,11 +4604,12 @@ To enable managers to track team progress and skill development over time, the d
                                         </div>
 
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
-                                          {/* Left Box: Team Members (Auto-sized compact width) */}
+                                          {/* Left Box: Team Members (Dynamic fit-content width, no name wrapping) */}
                                           <div style={{
                                             flex: '0 0 auto',
-                                            width: '260px',
-                                            maxWidth: '100%',
+                                            width: 'fit-content',
+                                            minWidth: '280px',
+                                            maxWidth: '450px',
                                             padding: '0.75rem 1rem',
                                             background: 'rgba(15, 23, 42, 0.4)',
                                             borderRadius: '8px',
@@ -4627,8 +4628,8 @@ To enable managers to track team progress and skill development over time, the d
                                               </div>
                                             ) : (
                                               developers.filter(d => d.teamId === team.id).map(dev => (
-                                                <div key={dev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', gap: '0.5rem', padding: '0.15rem 0' }}>
-                                                  <span style={{ fontWeight: 500, color: 'var(--text-primary)', textAlign: 'left', flex: 1 }}>{dev.name}</span>
+                                                <div key={dev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', gap: '1rem', padding: '0.15rem 0' }}>
+                                                  <span style={{ fontWeight: 500, color: 'var(--text-primary)', textAlign: 'left', whiteSpace: 'nowrap' }}>{dev.name}</span>
                                                   <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'right', whiteSpace: 'nowrap' }}>{dev.role}</span>
                                                 </div>
                                               ))
