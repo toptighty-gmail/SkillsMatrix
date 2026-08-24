@@ -4491,28 +4491,14 @@ To enable managers to track team progress and skill development over time, the d
                                       </button>
                                     </td>
                                     <td>
-                                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', alignItems: 'center' }}>
-                                        {assignedSkills.length === 0 ? (
-                                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>None assigned</span>
-                                        ) : (
-                                          assignedSkills.slice(0, 3).map(sk => (
-                                            <span key={sk.id} className="badge category-badge" style={{ fontSize: '0.7rem', padding: '0.1rem 0.35rem' }}>
-                                              {sk.name}
-                                            </span>
-                                          ))
-                                        )}
-                                        {assignedSkills.length > 3 && (
-                                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                                            +{assignedSkills.length - 3} more
-                                          </span>
-                                        )}
+                                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
                                         <button 
                                           className="btn-secondary" 
                                           style={{ 
-                                            padding: '0.1rem 0.5rem', 
-                                            fontSize: '0.7rem', 
-                                            height: '22px', 
-                                            marginLeft: '0.25rem', 
+                                            padding: '0.15rem 0.55rem', 
+                                            fontSize: '0.72rem', 
+                                            height: '24px', 
+                                            marginRight: '0.25rem', 
                                             width: 'auto',
                                             display: 'inline-flex',
                                             alignItems: 'center',
@@ -4529,6 +4515,20 @@ To enable managers to track team progress and skill development over time, the d
                                             </>
                                           ) : 'Manage'}
                                         </button>
+                                        {assignedSkills.length === 0 ? (
+                                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>None assigned</span>
+                                        ) : (
+                                          assignedSkills.slice(0, 3).map(sk => (
+                                            <span key={sk.id} className="badge category-badge" style={{ fontSize: '0.7rem', padding: '0.1rem 0.35rem' }}>
+                                              {sk.name}
+                                            </span>
+                                          ))
+                                        )}
+                                        {assignedSkills.length > 3 && (
+                                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                                            +{assignedSkills.length - 3} more
+                                          </span>
+                                        )}
                                       </div>
                                     </td>
                                     <td>
