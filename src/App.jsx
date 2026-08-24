@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from './lib/supabaseClient';
+import pkg from '../package.json';
+
+const APP_VERSION = `v${pkg.version}`;
 import { 
   Database, 
   CheckCircle, 
@@ -24,7 +27,9 @@ import {
   ArrowDown,
   Info,
   Download,
-  Upload
+  Upload,
+  FileText,
+  Printer
 } from 'lucide-react';
 
 // Predefined mock data for Demo Mode
@@ -86,15 +91,26 @@ const mockTeamSkills = [
   { id: 'ts-6', team_id: 3, skill_id: 'skill-4' }
 ];
 
-const SQL_SETUP_SCRIPT = `-- 1. Create developers table
-CREATE TABLE IF NOT EXISTS developers (
+const SQL_SETUP_SCRIPT = `-- 1. Create person table (team members)
+CREATE TABLE IF NOT EXISTS person (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
-  role TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  role_title TEXT DEFAULT 'Software Engineer',
+  email TEXT,
+  company_login_id TEXT,
+  manager_fullname TEXT,
+  manager_company_login_id TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 2. Create skills table
+-- 2. Create categories table
+CREATE TABLE IF NOT EXISTS categories (
+  id SERIAL PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL,
+  description TEXT
+);
+
+-- 3. Create skills table
 CREATE TABLE IF NOT EXISTS skills (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
@@ -104,69 +120,98 @@ CREATE TABLE IF NOT EXISTS skills (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 3. Create developer_skills join table
-CREATE TABLE IF NOT EXISTS developer_skills (
-  developer_id UUID REFERENCES developers(id) ON DELETE CASCADE,
+-- 4. Create person_skill_assessments table with temporal audit history
+-- Active assessment records are flagged as is_current = true.
+-- When a skill level is added or updated, previous records are flagged as is_current = false with valid_to set to today,
+-- and a new record is inserted with is_current = true. This preserves team progress history over time for future reporting.
+CREATE TABLE IF NOT EXISTS person_skill_assessments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  person_id UUID REFERENCES person(id) ON DELETE CASCADE,
   skill_id UUID REFERENCES skills(id) ON DELETE CASCADE,
-  level TEXT NOT NULL CHECK (level IN ('Basic', 'Emerging', 'Competent', 'Strong', 'Expert')),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  PRIMARY KEY (developer_id, skill_id)
+  competency_level_id INTEGER NOT NULL CHECK (competency_level_id BETWEEN 1 AND 5),
+  is_current BOOLEAN DEFAULT true NOT NULL,
+  valid_from DATE DEFAULT CURRENT_DATE NOT NULL,
+  valid_to DATE,
+  assessed_on DATE DEFAULT CURRENT_DATE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 3b. Create team_skills join table
-CREATE TABLE IF NOT EXISTS team_skills (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  team_id BIGINT REFERENCES teams(id) ON DELETE CASCADE,
-  skill_id UUID REFERENCES skills(id) ON DELETE CASCADE,
-  is_required BOOLEAN DEFAULT true NOT NULL,
-  is_current BOOLEAN DEFAULT true NOT NULL,
-  valid_from TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  valid_to TIMESTAMP WITH TIME ZONE,
+-- 5. Create teams table
+CREATE TABLE IF NOT EXISTS teams (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 4. Enable Row Level Security (RLS)
-ALTER TABLE developers ENABLE ROW LEVEL SECURITY;
+-- 6. Create person_teams join table
+CREATE TABLE IF NOT EXISTS person_teams (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  person_id UUID REFERENCES person(id) ON DELETE CASCADE,
+  team_id INTEGER REFERENCES teams(id) ON DELETE CASCADE,
+  is_current BOOLEAN DEFAULT true NOT NULL,
+  valid_from DATE DEFAULT CURRENT_DATE NOT NULL,
+  valid_to DATE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 7. Create team_skills join table
+CREATE TABLE IF NOT EXISTS team_skills (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  team_id INTEGER REFERENCES teams(id) ON DELETE CASCADE,
+  skill_id UUID REFERENCES skills(id) ON DELETE CASCADE,
+  is_required BOOLEAN DEFAULT true NOT NULL,
+  is_current BOOLEAN DEFAULT true NOT NULL,
+  valid_from DATE DEFAULT CURRENT_DATE NOT NULL,
+  valid_to DATE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 8. Enable Row Level Security (RLS)
+ALTER TABLE person ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skills ENABLE ROW LEVEL SECURITY;
-ALTER TABLE developer_skills ENABLE ROW LEVEL SECURITY;
+ALTER TABLE person_skill_assessments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
+ALTER TABLE person_teams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE team_skills ENABLE ROW LEVEL SECURITY;
 
--- 5. Create policies to allow public read/write (for this demo app)
-CREATE POLICY "Allow public read developers" ON developers FOR SELECT TO public USING (true);
-CREATE POLICY "Allow public insert developers" ON developers FOR INSERT TO public WITH CHECK (true);
-CREATE POLICY "Allow public update developers" ON developers FOR UPDATE TO public USING (true);
-CREATE POLICY "Allow public delete developers" ON developers FOR DELETE TO public USING (true);
+-- 9. Create policies to allow public read/write (for this demo app)
+CREATE POLICY "Allow public read person" ON person FOR SELECT TO public USING (true);
+CREATE POLICY "Allow public insert person" ON person FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow public update person" ON person FOR UPDATE TO public USING (true);
+CREATE POLICY "Allow public delete person" ON person FOR DELETE TO public USING (true);
+
+CREATE POLICY "Allow public read categories" ON categories FOR SELECT TO public USING (true);
+CREATE POLICY "Allow public insert categories" ON categories FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow public update categories" ON categories FOR UPDATE TO public USING (true);
+CREATE POLICY "Allow public delete categories" ON categories FOR DELETE TO public USING (true);
 
 CREATE POLICY "Allow public read skills" ON skills FOR SELECT TO public USING (true);
 CREATE POLICY "Allow public insert skills" ON skills FOR INSERT TO public WITH CHECK (true);
 CREATE POLICY "Allow public update skills" ON skills FOR UPDATE TO public USING (true);
 CREATE POLICY "Allow public delete skills" ON skills FOR DELETE TO public USING (true);
 
-CREATE POLICY "Allow public read developer_skills" ON developer_skills FOR SELECT TO public USING (true);
-CREATE POLICY "Allow public insert developer_skills" ON developer_skills FOR INSERT TO public WITH CHECK (true);
-CREATE POLICY "Allow public update developer_skills" ON developer_skills FOR UPDATE TO public USING (true);
-CREATE POLICY "Allow public delete developer_skills" ON developer_skills FOR DELETE TO public USING (true);
+CREATE POLICY "Allow public read person_skill_assessments" ON person_skill_assessments FOR SELECT TO public USING (true);
+CREATE POLICY "Allow public insert person_skill_assessments" ON person_skill_assessments FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow public update person_skill_assessments" ON person_skill_assessments FOR UPDATE TO public USING (true);
+CREATE POLICY "Allow public delete person_skill_assessments" ON person_skill_assessments FOR DELETE TO public USING (true);
+
+CREATE POLICY "Allow public read teams" ON teams FOR SELECT TO public USING (true);
+CREATE POLICY "Allow public insert teams" ON teams FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow public update teams" ON teams FOR UPDATE TO public USING (true);
+CREATE POLICY "Allow public delete teams" ON teams FOR DELETE TO public USING (true);
+
+CREATE POLICY "Allow public read person_teams" ON person_teams FOR SELECT TO public USING (true);
+CREATE POLICY "Allow public insert person_teams" ON person_teams FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow public update person_teams" ON person_teams FOR UPDATE TO public USING (true);
+CREATE POLICY "Allow public delete person_teams" ON person_teams FOR DELETE TO public USING (true);
 
 CREATE POLICY "Allow public read team_skills" ON team_skills FOR SELECT TO public USING (true);
 CREATE POLICY "Allow public insert team_skills" ON team_skills FOR INSERT TO public WITH CHECK (true);
 CREATE POLICY "Allow public update team_skills" ON team_skills FOR UPDATE TO public USING (true);
-CREATE POLICY "Allow public delete team_skills" ON team_skills FOR DELETE TO public USING (true);
-
--- 6. Insert some sample seed data
-INSERT INTO developers (name, role) VALUES
-  ('Sarah Connor', 'Frontend Architect'),
-  ('John Doe', 'Backend Developer'),
-  ('Ada Lovelace', 'Lead Systems Engineer'),
-  ('Bruce Wayne', 'DevOps Specialist')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO skills (name, category) VALUES
-  ('React', 'Frontend'),
-  ('Node.js', 'Backend'),
-  ('PostgreSQL', 'Database'),
-  ('Docker', 'DevOps'),
-  ('CSS Grid & Flexbox', 'Frontend')
-ON CONFLICT DO NOTHING;`;
+CREATE POLICY "Allow public delete team_skills" ON team_skills FOR DELETE TO public USING (true);`;
 
 // Detailed mapping of competency levels
 const levelDetails = {
@@ -240,6 +285,7 @@ function App() {
   const [useDemoMode, setUseDemoMode] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('checking'); // checking, connected, error, partial
   const [errorMessage, setErrorMessage] = useState('');
+  const [showDocModal, setShowDocModal] = useState(false);
   
   // Data states
   const [developers, setDevelopers] = useState([]);
@@ -725,6 +771,176 @@ function App() {
     link.click();
     document.body.removeChild(link);
     showToast('Exported team members to CSV!');
+  };
+
+  // Documentation Export to Word (.doc)
+  const handleExportDocx = () => {
+    const docBody = document.getElementById('doc-modal-body');
+    if (!docBody) return;
+    
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Skills Matrix Application - User Guide & Architecture Documentation</title>
+        <style>
+          body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #1e293b; padding: 40px; background-color: #ffffff; }
+          h1 { color: #5b21b6; border-bottom: 2px solid #8b5cf6; padding-bottom: 8px; font-size: 24pt; margin-top: 0; }
+          h2 { color: #6d28d9; margin-top: 28px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; font-size: 18pt; }
+          h3 { color: #7c3aed; margin-top: 20px; font-size: 14pt; }
+          h4 { color: #0f172a; margin-top: 16px; font-size: 12pt; }
+          table { border-collapse: collapse; width: 100%; margin: 18px 0; }
+          th, td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; font-size: 10pt; }
+          th { background-color: #f1f5f9; color: #0f172a; font-weight: bold; }
+          tr:nth-child(even) { background-color: #f8fafc; }
+          code { background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: Consolas, monospace; font-size: 9.5pt; color: #0f172a; }
+          pre { background-color: #0f172a; color: #f8fafc; padding: 14px; border-radius: 6px; overflow-x: auto; font-family: Consolas, monospace; font-size: 9.5pt; }
+          .badge { background: #8b5cf6; color: white; padding: 2px 8px; border-radius: 12px; font-size: 8.5pt; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        ${docBody.innerHTML}
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `SkillsMatrix_User_Guide_${new Date().toISOString().split('T')[0]}.doc`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Downloaded Documentation as Word Document (.doc)!');
+  };
+
+  // Documentation Export to Markdown (.md)
+  const handleExportMarkdown = () => {
+    const markdownContent = `# Skills Matrix Application — User Guide & Feature Documentation
+
+Welcome to the **Skills Matrix Application**, a modern, interactive web application engineered to track, manage, analyze, and visualize technical skills, team competencies, and capability gaps across your organization.
+
+---
+
+## 📋 Executive Overview
+
+The **Skills Matrix Application** provides engineering managers, team leads, and HR leaders with complete visibility into the technical capabilities of their organization. By mapping team members against a catalog of tracked skills and competency levels (from 0 to 5 stars), the application enables data-driven decision-making for:
+
+- **Resource Allocation & Project Staffing**: Quickly locate team members with specific technical mastery (e.g., Expert in React or Strong in PostgreSQL).
+- **Skill Gap Identification**: Contrast team skill requirements against actual team capabilities to identify training needs or hiring priorities.
+- **Team Capability Benchmarking**: Measure category-level and team-level proficiency metrics in real time.
+- **Data Management & Governance**: Seamlessly import/export team rosters and connect to PostgreSQL via Supabase with full Row-Level Security (RLS).
+- **Historical Progress Tracking**: Preserve immutable rating change histories using temporal boolean flags (\`is_current = true / false\`) to enable long-term team growth reports.
+
+---
+
+## 🏗️ Architecture & Design System
+
+### Technical Stack
+- **Frontend Core**: React 19, Vite, JavaScript (ES Modules).
+- **Icons & Visuals**: Lucide React icon suite.
+- **Styling & Theme**: Modern Vanilla CSS featuring a dark-mode **Glassmorphism Design System** with custom properties, smooth transitions, star rating widgets, and responsive layout containers.
+- **Backend & Database**: Supabase PostgreSQL connection with fallback to an **Autonomous Demo Mode** featuring pre-populated mock datasets.
+- **Code Quality**: Oxlint integration for fast linting.
+
+---
+
+## 🗄️ Database Architecture & Star Schema Specification
+
+The database architecture is designed using a **Dimensional Data Modeling / Star Schema** pattern optimized for both fast online transactional queries (OLTP) and analytical progress reporting (OLAP).
+
+### 🌟 Fact Tables vs. Dimension Tables
+
+1. **Fact Tables**:
+   - \`person_skill_assessments\` (Periodic Assessment Fact Table): Stores competency ratings (1 to 5), developer FK, skill FK, and temporal audit flags (\`is_current\`, \`valid_from\`, \`valid_to\`, \`assessed_on\`).
+   - \`team_skills\` (Team Requirement Fact Table): Stores target skills per team (\`is_required\`, \`is_current\`, \`valid_from\`, \`valid_to\`).
+   - \`person_teams\` (Team Placement Fact Table): Maps developers to teams over time.
+
+2. **Dimension Tables**:
+   - \`person\` (Developer Dimension): Personnel context (Full Name, Role Title, Email, Company Login ID, Manager info).
+   - \`skills\` (Skill Inventory Dimension): Skill Name, Vendor, Description, Category FK.
+   - \`categories\` (Domain Taxonomy Dimension): Skill domains (Frontend, Backend, Database, DevOps, etc.).
+   - \`teams\` (Organizational Team Dimension): Team metadata.
+
+---
+
+## 🕒 Temporal Audit Model & Progress Tracking
+
+To enable managers to track team progress and skill development over time, the database implements a **Slowly Changing Dimension (SCD Type 2)** temporal design:
+- When a skill rating is added or updated, the previous record is updated to \`is_current = false\` with \`valid_to = CURRENT_DATE\`.
+- A new active record is created with \`is_current = true\`, \`valid_from = CURRENT_DATE\`, and \`assessed_on = CURRENT_DATE\`.
+- This preserves a complete historical timeline for team progress reporting and audit tracking.
+
+---
+
+## ⭐ Competency Level Scale Reference
+
+| Level | Rating | Label | Description |
+| :---: | :---: | :--- | :--- |
+| **0** | ☆☆☆☆☆ | **0 – None** | No prior experience. |
+| **1** | ★☆☆☆☆ | **1 – Basic** | Follows tutorials; requires active guidance. |
+| **2** | ★★☆☆☆ | **2 – Emerging** | Completes simple tasks independently. |
+| **3** | ★★★☆☆ | **3 – Competent** | Works independently; writes production-ready code. |
+| **4** | ★★★★☆ | **4 – Strong** | Solves complex architectural problems; mentors others. |
+| **5** | ★★★★★ | **5 – Expert** | Deep technical mastery; sets organization standards. |
+`;
+
+    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `SkillsMatrix_User_Guide_${new Date().toISOString().split('T')[0]}.md`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Downloaded Documentation as Markdown (.md)!');
+  };
+
+  // Print Documentation to PDF
+  const handlePrintPdf = () => {
+    const docBody = document.getElementById('doc-modal-body');
+    if (!docBody) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      showToast('Please allow popup permissions to print PDF');
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Skills Matrix Application - User Guide & Documentation</title>
+        <style>
+          body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #0f172a; padding: 2.5rem; background: #ffffff; }
+          h1 { color: #5b21b6; border-bottom: 2px solid #8b5cf6; padding-bottom: 0.5rem; font-size: 2rem; margin-top: 0; }
+          h2 { color: #6d28d9; margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.4rem; font-size: 1.4rem; }
+          h3 { color: #7c3aed; margin-top: 1.5rem; font-size: 1.15rem; }
+          table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; page-break-inside: avoid; }
+          th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; font-size: 0.9rem; }
+          th { background: #f1f5f9; font-weight: 600; }
+          tr:nth-child(even) { background: #f8fafc; }
+          code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; }
+          pre { background: #0f172a; color: #f8fafc; padding: 1rem; border-radius: 6px; overflow-x: auto; font-family: monospace; font-size: 0.85rem; page-break-inside: avoid; }
+          @media print {
+            body { padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        ${docBody.innerHTML}
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   // Helper to parse CSV text line supporting comma, semicolon, or tab delimiters and quotes
@@ -1849,9 +2065,26 @@ function App() {
         <div className="logo-section">
           <Activity size={32} color="#8b5cf6" style={{ filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.4))' }} />
           <h1>SkillsMatrix</h1>
+          <span 
+            className="version-tag" 
+            style={{ 
+              background: 'rgba(139, 92, 246, 0.18)', 
+              border: '1px solid rgba(139, 92, 246, 0.4)', 
+              color: '#c4b5fd', 
+              fontSize: '0.72rem', 
+              fontWeight: 700, 
+              padding: '0.15rem 0.5rem', 
+              borderRadius: '12px',
+              letterSpacing: '0.04em',
+              marginLeft: '0.2rem'
+            }}
+            title={`Application Version ${APP_VERSION}`}
+          >
+            {APP_VERSION}
+          </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {/* Toggles Demo Mode */}
           {connectionStatus === 'error' && (
             <button 
@@ -1967,6 +2200,13 @@ function App() {
             >
               <Briefcase size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
               Teams ({teams.length})
+            </button>
+            <button 
+              className={`tab-btn ${activeTab === 'docs' ? 'active' : ''}`}
+              onClick={() => setActiveTab('docs')}
+            >
+              <BookOpen size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+              User Guide & Docs
             </button>
           </div>
 
@@ -4506,7 +4746,251 @@ function App() {
               )}
             </div>
           )}
-        </main>
+                  {activeTab === 'docs' && (
+            <div className="glass-panel" style={{ padding: '1.75rem', minWidth: 0, width: '100%', boxSizing: 'border-box' }}>
+              {/* Action Toolbar Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <BookOpen size={24} color="var(--accent-primary)" />
+                  <div>
+                    <h3 style={{ fontSize: '1.35rem', margin: 0, color: 'var(--text-primary)' }}>User Guide & Technical Architecture Documentation</h3>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Exhaustive manual, Star Schema database architecture, temporal audit specs, and step-by-step workflows</p>
+                  </div>
+                </div>
+
+                {/* Toolbar Buttons */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <button 
+                    className="btn-primary" 
+                    onClick={handleExportDocx}
+                    style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', height: '34px', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    title="Export Documentation to Microsoft Word Document (.doc)"
+                  >
+                    <FileText size={14} />
+                    Export Word (.doc)
+                  </button>
+                  <button 
+                    className="btn-secondary" 
+                    onClick={handleExportMarkdown}
+                    style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', height: '34px', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    title="Export Documentation to Markdown (.md)"
+                  >
+                    <Download size={14} />
+                    Export .md
+                  </button>
+                  <button 
+                    className="btn-secondary" 
+                    onClick={handlePrintPdf}
+                    style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', height: '34px', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    title="Save or Print as PDF Document"
+                  >
+                    <Printer size={14} />
+                    Print / PDF
+                  </button>
+                </div>
+              </div>
+
+              {/* Complete Documentation Body Container */}
+              <div 
+                id="doc-modal-body" 
+                style={{ 
+                  lineHeight: '1.75', 
+                  fontSize: '0.93rem', 
+                  color: 'var(--text-primary)',
+                  background: 'rgba(15, 23, 42, 0.4)',
+                  padding: '1.75rem 2rem',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)'
+                }}
+              >
+                <h1 style={{ fontSize: '1.75rem', color: 'var(--accent-primary)', marginBottom: '0.5rem', marginTop: 0 }}>Skills Matrix Application — User Guide & Feature Documentation</h1>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
+                  Welcome to the complete user guide and technical documentation for the Skills Matrix Application. You can view, save, or export this document to Word (.doc), Markdown (.md), or PDF format at any time using the toolbar above.
+                </p>
+
+                <hr style={{ borderColor: 'var(--border-color)', margin: '1.5rem 0' }} />
+
+                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '1.5rem' }}>📋 Executive Overview</h2>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  The <strong>Skills Matrix Application</strong> provides engineering managers, team leads, and HR leaders with complete visibility into the technical capabilities of their organization. By mapping team members against a catalog of tracked skills and competency levels (from 0 to 5 stars), the application enables data-driven decision-making for:
+                </p>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li><strong>Resource Allocation & Project Staffing</strong>: Quickly locate team members with specific technical mastery (e.g., Expert in React or Strong in PostgreSQL).</li>
+                  <li><strong>Skill Gap Identification</strong>: Contrast team skill requirements against actual team capabilities to identify training needs or hiring priorities.</li>
+                  <li><strong>Team Capability Benchmarking</strong>: Measure category-level and team-level proficiency metrics in real time.</li>
+                  <li><strong>Data Management & Governance</strong>: Seamlessly import/export team rosters and connect to PostgreSQL via Supabase with full Row-Level Security (RLS).</li>
+                  <li><strong>Historical Progress Tracking</strong>: Preserve immutable rating change histories using temporal boolean flags (<code>is_current = true / false</code>) to enable long-term team growth reports.</li>
+                </ul>
+
+                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>🏗️ Architecture & Technical Stack</h2>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li><strong>Frontend Core</strong>: React 19, Vite, JavaScript (ES Modules).</li>
+                  <li><strong>Icons & Visuals</strong>: Lucide React icon suite.</li>
+                  <li><strong>Styling & Theme</strong>: Modern Vanilla CSS featuring a dark-mode <strong>Glassmorphism Design System</strong> with custom properties, smooth transitions, star rating widgets, and responsive layout containers.</li>
+                  <li><strong>Backend & Database</strong>: Supabase PostgreSQL connection with fallback to an <strong>Autonomous Demo Mode</strong> featuring pre-populated mock datasets.</li>
+                  <li><strong>Code Quality</strong>: Oxlint integration for fast linting.</li>
+                </ul>
+
+                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>🗄️ Database Architecture & Star Schema Specification</h2>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  The database architecture is designed using a <strong>Dimensional Data Modeling / Star Schema</strong> pattern optimized for both fast online transactional queries (OLTP) and analytical progress reporting (OLAP).
+                </p>
+
+                <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '8px', margin: '1.25rem 0' }}>
+                  <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--accent-primary)', fontSize: '1.05rem' }}>🌟 Fact Tables vs. Dimension Tables Breakdown</h4>
+                  
+                  <h5 style={{ color: '#c4b5fd', margin: '0.75rem 0 0.35rem 0', fontSize: '0.95rem' }}>1. Fact Tables (Event & Assessment Data)</h5>
+                  <ul style={{ paddingLeft: '1.25rem', margin: 0, color: 'var(--text-secondary)' }}>
+                    <li><strong><code>person_skill_assessments</code> (Periodic Assessment Fact Table)</strong>: Stores developer competency ratings (1 to 5 stars), developer FK, skill FK, and temporal audit attributes (<code>is_current</code>, <code>valid_from</code>, <code>valid_to</code>, <code>assessed_on</code>).</li>
+                    <li><strong><code>team_skills</code> (Team Requirement Fact Table)</strong>: Stores target required skills per team (<code>is_required</code>, <code>is_current</code>, <code>valid_from</code>, <code>valid_to</code>).</li>
+                    <li><strong><code>person_teams</code> (Team Placement Fact / Bridge Table)</strong>: Maps developers to operational teams over time (<code>is_current</code>, <code>valid_from</code>, <code>valid_to</code>).</li>
+                  </ul>
+
+                  <h5 style={{ color: '#c4b5fd', margin: '1rem 0 0.35rem 0', fontSize: '0.95rem' }}>2. Dimension Tables (Context & Attributes)</h5>
+                  <ul style={{ paddingLeft: '1.25rem', margin: 0, color: 'var(--text-secondary)' }}>
+                    <li><strong><code>person</code> (Developer Dimension)</strong>: Personnel context (Full Name, Role Title, Email, Company Login ID, Manager Full Name, Manager Login ID).</li>
+                    <li><strong><code>skills</code> (Skill Dimension)</strong>: Catalog metadata (Skill Name, Vendor, Description, Foreign Key to Category).</li>
+                    <li><strong><code>categories</code> (Taxonomy Dimension)</strong>: Skill domains (Frontend, Backend, Database, DevOps, etc.).</li>
+                    <li><strong><code>teams</code> (Organizational Team Dimension)</strong>: Team names and descriptions.</li>
+                  </ul>
+                </div>
+
+                <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '8px', margin: '1.25rem 0' }}>
+                  <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--accent-primary)', fontSize: '1.05rem' }}>🔑 Key Database Technical Highlights</h4>
+                  <ol style={{ paddingLeft: '1.25rem', margin: 0, color: 'var(--text-secondary)' }}>
+                    <li><strong>Surrogate Keys & UUID Primary Keys</strong>: Uses UUID primary keys (<code>gen_random_uuid()</code>) for core data tables to prevent key collision issues across distributed systems and CSV imports. Uses integer surrogate keys (<code>SERIAL</code>) for static taxonomies.</li>
+                    <li><strong>Referential Integrity & Cascading</strong>: Foreign keys enforce relational integrity with <code>ON DELETE CASCADE</code> clauses (e.g., deleting a team member purges their associated assessments automatically).</li>
+                    <li><strong>Row-Level Security (RLS)</strong>: PostgreSQL Row-Level Security policies are enabled across all tables (<code>ALTER TABLE ... ENABLE ROW LEVEL SECURITY</code>).</li>
+                    <li>
+                      <strong>Recommended Performance Indexes</strong>:
+                      <pre style={{ background: '#0f172a', padding: '0.75rem 1rem', borderRadius: '6px', marginTop: '0.5rem', color: '#f8fafc', overflowX: 'auto', fontSize: '0.85rem' }}>
+{`-- Optimize active assessment queries for matrix grid loading
+CREATE INDEX idx_psa_current ON person_skill_assessments (person_id, skill_id) WHERE is_current = true;
+
+-- Optimize temporal history queries for team progress reporting
+CREATE INDEX idx_psa_history ON person_skill_assessments (person_id, valid_from, valid_to);
+
+-- Optimize current team member lookups
+CREATE INDEX idx_pt_current ON person_teams (person_id, team_id) WHERE is_current = true;`}
+                      </pre>
+                    </li>
+                  </ol>
+                </div>
+
+                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>🕒 Temporal Audit Model & Progress Tracking (SCD Type 2)</h2>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  To enable managers to track team progress and skill development over time, the database implements a <strong>Slowly Changing Dimension (SCD Type 2)</strong> temporal design:
+                </p>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li>When a skill level is added or updated for a developer, the previous active record is updated to <code>is_current = false</code> with <code>valid_to = CURRENT_DATE</code>.</li>
+                  <li>A new active record is inserted with <code>is_current = true</code>, <code>valid_from = CURRENT_DATE</code>, and <code>assessed_on = CURRENT_DATE</code>.</li>
+                  <li>This preserves an immutable, auditable timeline of skill growth over quarters for future progress reporting.</li>
+                </ul>
+
+                <pre style={{ background: '#0f172a', padding: '1rem', borderRadius: '6px', color: '#f8fafc', overflowX: 'auto', fontSize: '0.85rem', margin: '1rem 0' }}>
+{`Timeline of Skill Assessments (e.g. John Doe - React):
++-----------------------------------------------------------------------------------------------+
+| ID | Person | Skill | Level | is_current | valid_from | valid_to   | Description              |
++----+--------+-------+-------+------------+------------+------------+--------------------------+
+| #1 | John   | React | 1     | FALSE      | 2026-01-01 | 2026-04-15 | Initial Assessment       |
+| #2 | John   | React | 3     | FALSE      | 2026-04-15 | 2026-08-23 | Mid-Year Progress Review |
+| #3 | John   | React | 4     | TRUE       | 2026-08-23 | NULL       | Active Current Rating    |
++-----------------------------------------------------------------------------------------------+`}
+                </pre>
+
+                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>⚡ Connection Modes & Database Setup</h2>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li><strong>🟡 Autonomous Demo Mode</strong>: Activated when Supabase credentials are missing or unreachable. Uses pre-loaded mock datasets for instant offline evaluation.</li>
+                  <li><strong>🟢 Supabase Database Connection</strong>: Connects directly to cloud PostgreSQL via Supabase with live status indicators and 1-click SQL setup script generator.</li>
+                </ul>
+
+                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>⭐ Competency Level Scale Reference</h2>
+                <table className="list-table" style={{ margin: '1rem 0' }}>
+                  <thead>
+                    <tr>
+                      <th>Level</th>
+                      <th>Rating</th>
+                      <th>Label</th>
+                      <th>Description & Expectations</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>0</strong></td>
+                      <td>☆☆☆☆☆</td>
+                      <td><strong>0 – None</strong></td>
+                      <td>No prior experience or knowledge of the skill.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>1</strong></td>
+                      <td>★☆☆☆☆</td>
+                      <td><strong>1 – Basic</strong></td>
+                      <td>Can follow step-by-step examples and tutorials; requires active guidance.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>2</strong></td>
+                      <td>★★☆☆☆</td>
+                      <td><strong>2 – Emerging</strong></td>
+                      <td>Completes simple tasks independently; familiar with core syntax and concepts.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>3</strong></td>
+                      <td>★★★☆☆</td>
+                      <td><strong>3 – Competent</strong></td>
+                      <td>Works independently on routine tasks; writes production-ready code for standard scenarios.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>4</strong></td>
+                      <td>★★★★☆</td>
+                      <td><strong>4 – Strong</strong></td>
+                      <td>Solves complex architectural problems, optimizes performance, and mentors junior team members.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>5</strong></td>
+                      <td>★★★★★</td>
+                      <td><strong>5 – Expert</strong></td>
+                      <td>Deep mastery; defines engineering standards, authors internal libraries, and teaches organization-wide.</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>🌟 Core Interactive Tabs Guide</h2>
+                <ol style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li><strong>Skills Matrix Grid</strong>: Interactive grid view mapping team skills with 5-star ratings, multi-faceted filtering (Team, Member, Skill, Category, Vendor, Level 0-5), search, and inline skill creation.</li>
+                  <li><strong>Team Members (Developers)</strong>: Manage roster attributes, edit roles/teams/managers, open developer detail modals, and bulk import/export CSV files.</li>
+                  <li><strong>Tracked Skills</strong>: Catalog inventory listing skill metrics, average ratings, and proficient developer counts.</li>
+                  <li><strong>Categories</strong>: Domain taxonomy management.</li>
+                  <li><strong>Teams Governance</strong>: Assign required skills to teams, inspect team rosters, and track target capability gaps.</li>
+                </ol>
+
+                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>📖 Step-by-Step User Workflows</h2>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li><strong>Workflow 1: Initializing the System</strong> — Launch app in Demo Mode or copy SQL script into Supabase SQL Editor.</li>
+                  <li><strong>Workflow 2: Onboarding Team Members via CSV</strong> — Export roster template, prepare CSV, and upload via smart CSV import.</li>
+                  <li><strong>Workflow 3: Defining Team Skill Requirements</strong> — Expand team rows and assign target required skills.</li>
+                  <li><strong>Workflow 4: Assessing Team Proficiency & Preserving History</strong> — Rate skills using 5 stars in matrix grid to auto-update active ratings and record past entries with <code>is_current = false</code>.</li>
+                </ul>
+
+                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>🛠️ File Structure Reference</h2>
+                <pre style={{ background: '#0f172a', padding: '1rem', borderRadius: '6px', color: '#f8fafc', overflowX: 'auto', fontSize: '0.85rem', margin: '1rem 0' }}>
+{`SkillsMatrix/
+├── index.html              # App entry point
+├── package.json            # Vite, React 19, Supabase JS, Lucide icons dependencies
+├── vite.config.js          # Vite build & server config
+├── USER_GUIDE.md           # Full User Guide & Feature Documentation
+└── src/
+    ├── App.jsx             # Main Application Logic, State, Tabs, Controls & Renderers
+    ├── App.css             # Supplementary styling
+    ├── index.css           # Glassmorphism Design System, Tokens, CSS Variables
+    ├── main.jsx            # React root DOM renderer
+    └── lib/
+        └── supabaseClient.js # Supabase client initialization & env config`}
+                </pre>
+              </div>
+            </div>
+          )}
+
+</main>
       </div>
 
       {/* Team Member Details Modal */}
