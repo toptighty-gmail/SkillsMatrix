@@ -4603,9 +4603,12 @@ To enable managers to track team progress and skill development over time, the d
                                           </button>
                                         </div>
 
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
-                                          {/* Left Box: Team Members */}
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
+                                          {/* Left Box: Team Members (Auto-sized compact width) */}
                                           <div style={{
+                                            flex: '0 0 auto',
+                                            width: '260px',
+                                            maxWidth: '100%',
                                             padding: '0.75rem 1rem',
                                             background: 'rgba(15, 23, 42, 0.4)',
                                             borderRadius: '8px',
@@ -4632,8 +4635,10 @@ To enable managers to track team progress and skill development over time, the d
                                             )}
                                           </div>
 
-                                          {/* Right Box: Team Assigned Skills */}
+                                          {/* Right Box: Team Assigned Skills (Utilizes all remaining line item width) */}
                                           <div style={{
+                                            flex: '1 1 320px',
+                                            minWidth: 0,
                                             padding: '0.75rem 1rem',
                                             background: 'rgba(15, 23, 42, 0.4)',
                                             borderRadius: '8px',
@@ -4754,7 +4759,7 @@ To enable managers to track team progress and skill development over time, the d
                                               Click skills to assign or remove them from <strong>{team.name}</strong>:
                                             </div>
 
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', maxHeight: '180px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', maxHeight: '260px', overflowY: 'auto', paddingRight: '0.25rem' }}>
                                               {skills.map(skill => {
                                                 const isAssigned = assignedSkillIds.includes(skill.id);
                                                 return (
