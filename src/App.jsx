@@ -4381,7 +4381,7 @@ To enable managers to track team progress and skill development over time, the d
                       <tr>
                         <th 
                           onClick={() => setTeamsSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                          style={{ width: '30%', cursor: 'pointer', userSelect: 'none' }}
+                          style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', width: 'auto' }}
                           className="sortable-header"
                           title={`Sort by Team Name ${teamsSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                         >
@@ -4394,10 +4394,10 @@ To enable managers to track team progress and skill development over time, the d
                             )}
                           </div>
                         </th>
-                        <th style={{ width: '30%' }}>Description</th>
-                        <th style={{ width: '15%' }}>Members</th>
-                        <th style={{ width: '25%' }}>Assigned Skills</th>
-                        <th style={{ width: '10%' }}>Actions</th>
+                        <th style={{ width: 'auto', minWidth: '180px' }}>Description</th>
+                        <th style={{ width: '1%', whiteSpace: 'nowrap' }}>Members</th>
+                        <th style={{ width: 'auto' }}>Assigned Skills</th>
+                        <th style={{ width: '1%', whiteSpace: 'nowrap' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -4470,13 +4470,13 @@ To enable managers to track team progress and skill development over time, the d
                               ) : (
                                 <>
                                   <tr>
-                                    <td>
+                                    <td style={{ whiteSpace: 'nowrap' }}>
                                       <div style={{ fontWeight: 600 }}>{team.name}</div>
                                     </td>
-                                    <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                    <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '0.85rem', color: 'var(--text-secondary)', minWidth: '180px' }}>
                                       {team.description || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                                     </td>
-                                    <td>
+                                    <td style={{ whiteSpace: 'nowrap', width: '1%' }}>
                                       <button 
                                         className={`badge ${memberCount > 0 ? 'team-badge' : 'no-team'}`} 
                                         style={{ 
@@ -4531,7 +4531,7 @@ To enable managers to track team progress and skill development over time, the d
                                         )}
                                       </div>
                                     </td>
-                                    <td>
+                                    <td style={{ whiteSpace: 'nowrap', width: '1%' }}>
                                       <div style={{ display: 'flex', gap: '0.4rem' }}>
                                         <button 
                                           className="btn-secondary" 
