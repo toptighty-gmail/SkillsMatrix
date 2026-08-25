@@ -199,120 +199,178 @@ erDiagram
 
 ---
 
+## 📱 Navigation Tabs Menu Bar Overview
+
+The application features a top navigation bar containing **6 primary interactive tabs**. The bar uses a dark glassmorphism design system, active tab highlighting, Lucide React icons, and dynamic real-time count badges that update live as data is added or modified.
+
+```
++-------------------------------------------------------------------------------------------------------+
+|                                      SKILLS MATRIX APPLICATION                                        |
++-------------------------------------------------------------------------------------------------------+
+| [📊 Matrix Grid] | [👥 Team Members (4)] | [📚 Tracked Skills (5)] | [🏷️ Categories (6)] | [🏢 Teams (3)] | [📖 User Guide] |
++-------------------------------------------------------------------------------------------------------+
+```
+
+### 🏷️ Tabs Menu Items Specification
+
+| Menu Item | Tab Key | Icon | Badge / Counter | Primary Responsibility |
+| :--- | :---: | :---: | :---: | :--- |
+| **Skills Matrix Grid** | `matrix` | `<LayoutGrid />` | — | Interactive 5-star competency rating matrix mapping developers against skills with multi-facet filtering and column resizing. |
+| **Team Members** | `developers` | `<Users />` | `(N)` Total Members | Roster directory, developer profile attributes, reporting manager details, side profile modal, and CSV Import/Export engine. |
+| **Tracked Skills** | `skills` | `<BookOpen />` | `(N)` Total Skills | Master technical catalog, technology vendors, average star ratings, proficient developer counts, and skill CRUD operations. |
+| **Categories** | `categories` | `<LayoutGrid />` | `(N)` Total Categories | Taxonomy domain management grouping technical competencies (Frontend, Backend, Database, DevOps, etc.). |
+| **Teams** | `teams` | `<Briefcase />` | `(N)` Total Teams | Operational team administration, required skill assignment, roster member management, and target capability gap tracking. |
+| **User Guide & Docs** | `docs` | `<BookOpen />` | Specs Portal | Comprehensive in-app technical user guide, Star Schema specifications, SCD Type 2 audit documentation, and 1-click export toolbar. |
+
+### 🧭 Navigation & Interface Behaviors
+- **Active State Highlighting**: The currently selected tab is visually emphasized with an active glow background (`var(--accent-primary-alpha)`), clear borders, and high-contrast text.
+- **Dynamic Entity Count Badges**: Menu item titles for *Team Members*, *Tracked Skills*, *Categories*, and *Teams* automatically display live count badges reflecting real-time database query results.
+- **Responsive Overflow Scrolling**: On mobile devices and narrow viewports, the tab navigation bar enables smooth horizontal touch scrolling while preserving tab alignment.
+- **State Preservation Across Tabs**: Switching between tabs retains all active filters, matrix scroll positions, and unsaved form states without requiring page reloads.
+
+---
+
 ## 🌟 Core Features & Tab-by-Tab Guide
 
-```
-+-----------------------------------------------------------------------------------+
-|                            SKILLS MATRIX APPLICATION                              |
-+-----------------------------------------------------------------------------------+
-|  [Matrix Grid]  |  [Team Members]  |  [Tracked Skills]  |  [Categories]  | [Teams] |
-+-----------------------------------------------------------------------------------+
-```
-
-The application is structured into **5 main interactive tabs**, each dedicated to a core aspect of skills governance.
-
 ---
 
-### Tab 1: 📊 Skills Matrix Grid
+### Tab 1: 📊 Skills Matrix Grid (`matrix`)
 
-The **Skills Matrix Grid** is the primary interactive hub of the application. It displays a dynamic matrix mapping **Team Members (Rows)** against **Tracked Skills (Columns)**.
+The **Skills Matrix Grid** is the primary interactive hub of the application. It displays a dynamic matrix mapping **Team Members (Rows)** against **Tracked Skills (Columns)** with 5-star proficiency widgets.
 
 #### 1. Interactive 5-Star Rating Widget
-- Click on stars (1 to 5) to set a developer's proficiency level in real time.
-- Click the active star rating again or click the **✕ (reset)** button to revert the rating to **0 stars (None)**.
-- Hover over any star to reveal detailed tooltips describing the expectation for that proficiency level.
+- **Star Rating Range**: Click on stars (1 to 5) to instantly evaluate a developer's proficiency level in real time.
+- **Rating Reset Controls**: Click the active star rating again or click the **✕ (reset)** button to revert the rating to **0 stars (None)**.
+- **Interactive Level Tooltips**: Hover over any star to reveal detailed tooltips describing the exact performance expectations for that competency level (0: None, 1: Basic, 2: Emerging, 3: Competent, 4: Strong, 5: Expert).
 
-#### 2. Comprehensive Multi-Facet Filtering
-- **Filter by Team**: Multi-select dropdown to view specific teams or all teams.
-- **Filter by Team Member**: Focus on specific individuals.
-- **Filter by Skill**: Target specific skills across the organization.
-- **Filter by Category**: Limit columns to specific skill domain categories (e.g., Frontend, Backend, DevOps).
-- **Filter by Vendor**: Filter skills by technology vendors (e.g., Meta, OpenJS, W3C, PostgreSQL Group).
-- **Filter by Skill Level**: Isolate developers matching specific proficiency levels (0 to 5).
-- **Search Query**: Real-time text search filter for skills.
+#### 2. Comprehensive Multi-Facet Filtering Engine
+The matrix grid includes a multi-select filtering panel to slice data across 7 dimensions:
+- **Filter by Team**: Multi-select dropdown to filter developer rows by specific teams (or view all teams).
+- **Filter by Team Member**: Multi-select dropdown to focus on specific developers.
+- **Filter by Skill**: Multi-select dropdown to isolate specific skills across the grid.
+- **Filter by Category**: Multi-select dropdown to limit columns to technical domain categories (e.g., *Frontend*, *Backend*, *DevOps*).
+- **Filter by Vendor**: Multi-select dropdown to filter skills by technology vendors (e.g., *Meta*, *OpenJS*, *W3C*, *PostgreSQL Group*).
+- **Filter by Skill Level**: Multi-select dropdown to isolate developers matching specific star ratings (0 to 5).
+- **Real-Time Skill Search**: Instant text search box to filter skill columns by query string on the fly.
 
-#### 3. Matrix Sorting, Drag & Resize Columns, & Navigation
-- **Interactive Drag & Resize Columns**: Drag the resize handle on the right edge of any table column header (`<th>`) to dynamically adjust column widths across all grids and management tables in real time.
-- **Sort Developers**: Sort team member rows alphabetically in ascending (`A-Z`) or descending (`Z-A`) order.
-- **Team Target Skills Context**: View target/required skills designated for each team, highlighting gaps where team members lack required proficiencies.
-- **Inline Skill Addition**: Create a brand-new skill directly from the team view and auto-assign it on the fly.
+#### 3. Matrix Sorting, Column Resizing, & Gap Analysis
+- **Interactive Drag & Resize Columns**: Drag the vertical resizer handle on the right edge of any table column header (`<th>`) to dynamically adjust column widths across all grids and management tables in real time.
+- **Developer Name Sorting**: Toggle developer row sorting alphabetically in ascending (`A-Z`) or descending (`Z-A`) order.
+- **Team Target Skills Context**: Visual indicator badges highlight target skills designated for each team, making it easy to identify capability gaps where team members fall below target standards.
+- **Inline Skill Creation**: Create a brand-new skill directly from the matrix view and auto-assign it to the catalog on the fly.
 
 ---
 
-### Tab 2: 👥 Team Members (Developers) Management
+### Tab 2: 👥 Team Members (Developers) Management (`developers`)
 
-The **Team Members** tab manages individual profiles, team assignments, reporting structures, and bulk data operations.
+The **Team Members** tab manages individual profiles, organizational reporting structures, team placements, and bulk roster import/export operations.
 
-#### 1. Team Member Attributes
-Each team member profile maintains:
+#### 1. Personnel Profile Attributes
+Each developer profile maintains full organizational metadata:
 - **Full Name**: Developer's complete name.
-- **Role / Job Title**: Position title (e.g., *Frontend Architect*, *DevOps Specialist*).
-- **Email Address**: Corporate email.
-- **Assigned Team**: Active team membership.
-- **Company Login ID**: Corporate single sign-on or login identifier.
-- **Manager Details**: Manager's full name and Manager's company login ID for organizational reporting trees.
+- **Role / Job Title**: Position title (e.g., *Frontend Architect*, *DevOps Specialist*, *Senior Backend Engineer*).
+- **Email Address**: Corporate email address.
+- **Assigned Team**: Active operational team membership.
+- **Company Login ID**: Corporate single sign-on (SSO) or login handle.
+- **Manager Details**: Reporting manager's full name and manager's company login ID for organizational reporting trees.
 
-#### 2. Member Roster Management
-- **Add Team Member**: Dedicated form to onboard new personnel into teams.
-- **Edit Member**: Inline row editing for updating roles, emails, teams, or reporting managers.
-- **Delete Member**: Safe deletion with confirmation alerts.
-- **Interactive Profile Modal**: Click any member's name or detail trigger to pop open a rich side modal detailing their profile, team info, manager details, and complete skill rating breakdown.
+#### 2. Roster Management Controls
+- **Add Team Member Form**: Dedicated onboarding form to add personnel into teams with role, email, SSO ID, and manager reporting structure.
+- **Inline Row Editing**: Update roles, email, team assignment, or manager information directly inside table rows.
+- **Delete Member**: Safe deletion with confirmation modal dialogs and cascading DB cleanups.
+- **Table Filtering & Sorting**: Multi-select filtering by Team and Role, plus name sorting (A-Z / Z-A).
 
-#### 3. CSV Import & Export Capabilities
-- **CSV Export**: Download the complete team member roster as a CSV file (`team_members_YYYY-MM-DD.csv`).
-- **Smart CSV Import**: Bulk upload team members from CSV files.
-  - **Auto-Delimiter Detection**: Intelligent parsing for `,` (comma), `;` (semicolon), and `\t` (tab).
-  - **BOM Handling**: Automatically strips UTF-8 Byte Order Marks.
-  - **Flexible Column Auto-Mapping**: Matches headers regardless of naming variations (`Full Name`, `Name`, `Developer Name`, `Role`, `Job Title`, `Email`, `Team`, `Company Login ID`, `Manager`).
+#### 3. Interactive Member Profile Modal
+- Click any developer's name or detail icon to pop open a rich side profile modal.
+- Displays full contact details, assigned team, SSO ID, reporting manager hierarchy, and a complete breakdown of all rated skills with 5-star widgets.
+
+#### 4. Smart CSV Import & Export Engine
+- **CSV Export**: Download the complete team roster as a CSV file (`team_members_YYYY-MM-DD.csv`).
+- **Smart CSV Import**: Bulk upload team members from standard CSV files:
+  - **Auto-Delimiter Detection**: Parses CSV files formatted with commas (`,`), semicolons (`;`), or tabs (`\t`).
+  - **BOM Handling**: Automatically strips UTF-8 Byte Order Marks to prevent encoding issues.
+  - **Flexible Column Auto-Mapping**: Automatically matches headers regardless of naming variations (`Full Name`, `Name`, `Developer Name`, `Role`, `Job Title`, `Email`, `Team`, `Company Login ID`, `Manager`).
   - **Resilient Fallback Execution**: Auto-recovers if non-critical database constraints or missing optional fields occur during upload.
 
 ---
 
-### Tab 3: 📚 Tracked Skills Inventory
+### Tab 3: 📚 Tracked Skills Inventory (`skills`)
 
 The **Tracked Skills** tab acts as the master technical catalog of your organization.
 
-#### 1. Catalog Attributes & Metrics
-- **Skill Name**: Unique name of the technology or competency (e.g., *React*, *Docker*, *PostgreSQL*).
-- **Category**: Associated domain category (e.g., *Frontend*, *Database*, *DevOps*).
-- **Vendor / Publisher**: Creator or maintaining body (e.g., *Meta*, *Docker Inc.*, *OpenJS Foundation*).
-- **Description**: Detailed explanation of the skill scope.
-- **Average Proficiency Rating**: Live calculated average star rating across all assessed developers.
-- **Proficient Developers Count**: Number of team members possessing a rating of Basic or above.
+#### 1. Catalog Attributes & Live Metrics
+- **Skill Name**: Unique name of the technology or competency (e.g., *React*, *Node.js*, *PostgreSQL*, *Docker*).
+- **Category**: Associated domain category (e.g., *Frontend*, *Backend*, *Database*, *DevOps*).
+- **Vendor / Publisher**: Creator or maintaining organization (e.g., *Meta*, *Docker Inc.*, *OpenJS Foundation*).
+- **Description**: Detailed description of the skill scope.
+- **Average Proficiency Rating**: Live calculated average star rating across all assessed team members.
+- **Proficient Developers Count**: Total count of developers possessing a rating of 1 star (Basic) or higher.
 
-#### 2. Skill Management
-- **Add New Skill**: Define skill name, category, vendor, and description.
-- **Edit Skill**: Modify existing skill attributes across the app.
-- **Delete Skill**: Removes skill from catalog and cleans up assessments.
-
----
-
-### Tab 4: 🏷️ Skill Categories Taxonomy
-
-The **Categories** tab organizes skills into domain groups.
-
-- **Pre-configured Defaults**: *Frontend*, *Backend*, *Database*, *DevOps*, *Design*, *Other*.
-- **Category Metrics**: Displays the total count of tracked skills contained within each category.
-- **Category CRUD**: Add custom categories, edit names/descriptions, and delete unused categories.
+#### 2. Skill Catalog CRUD & Navigation
+- **Add New Skill**: Create catalog entries specifying name, category, vendor, and description.
+- **Edit Skill**: Modify existing skill attributes across the application.
+- **Delete Skill**: Removes skill from catalog and cleans up related assessments via cascading database deletes.
+- **Category Badges**: Click category badges inside the table to navigate directly to the filtered category domain.
 
 ---
 
-### Tab 5: 🏢 Teams Governance & Skill Requirements
+### Tab 4: 🏷️ Skill Categories Taxonomy (`categories`)
 
-The **Teams** tab manages operational teams and defines target skill profiles required for each team.
+The **Categories** tab manages the high-level taxonomy domain structure used to organize skills into technical discipline groups.
 
-#### 1. Team Administration & Roster Management
-- Create, edit, and delete operational teams.
-- View real-time member counts per team.
-- **Direct Team Member Assignment ("Add Member")**: Click the **`+ Add Member`** button in the Members table column or team drawer header to assign developers directly to a team.
-- **Assign Existing Roster Member**: Select any existing developer from the dropdown picker to immediately assign or reassign them to the team.
-- **"Add Member on the Fly"**: Create a brand-new developer (Full Name, Role Title, Email) directly inside the team drawer and auto-assign them to the team in a single step.
+#### 1. Domain Taxonomy Structure
+- **Pre-configured Taxonomy Defaults**: *Frontend*, *Backend*, *Database*, *DevOps*, *Design*, *Other*.
+- **Category Skill Metrics**: Real-time counter displaying total tracked skills contained within each domain category.
+
+#### 2. Taxonomy CRUD Operations
+- **Add Custom Category**: Define new technical domain groups with custom names and descriptions.
+- **Edit Category**: Update category titles and domain definitions.
+- **Delete Category**: Delete unused categories safely with integrity checking.
+
+---
+
+### Tab 5: 🏢 Teams Governance & Skill Requirements (`teams`)
+
+The **Teams** tab manages operational teams, roster placements, and target skill profiles required for each team.
+
+#### 1. Team Administration & Roster Overview
+- **Team CRUD**: Create, edit, and delete operational teams.
+- **Team Summary Metrics**: Real-time developer roster counts and target required skill counts per team.
+- **Alphabetical Sorting**: Sort teams list by name (A-Z / Z-A).
+
+#### 2. Expanded Team Drawer & Line Item Controls
+Expanding any team row opens a detailed management drawer:
+- **Target Skill Assignment Engine**: Select skills from the catalog to assign or unassign them as required team competencies.
+- **"Add Skill on the Fly"**: Create a brand-new skill directly inside the team drawer and automatically bind it as a required team skill in a single step.
+- **Direct Team Member Assignment ("Add Member")**: Select existing roster developers from a dropdown picker to assign or reassign them to the team.
+- **"Add Member on the Fly"**: Create a brand-new developer profile (Full Name, Role Title, Email) directly inside the team drawer and auto-assign them to the team.
 - **Unassign Team Member**: Click the remove icon next to any listed developer to unassign them from the team.
-- **Line Item Close Controls**: Convenient top header `[✕] Close Line Item` and table row toggle button to quickly collapse the expanded team line item.
+- **Line Item Close Controls**: Top header `[✕] Close Line Item` and table row toggle buttons to collapse the expanded team line item view.
 
-#### 2. Target Skill Assignment & Skill Gaps
-- **Assign/Remove Required Skills**: Toggle skills to define the expected technical stack for a team.
-- **"Add Skill on the Fly"**: Create a new skill directly inside a team drawer and automatically bind it as a required team skill in a single step.
+---
+
+### Tab 6: 📖 User Guide & System Specifications (`docs`)
+
+The **User Guide & System Specifications** tab embeds this complete technical documentation portal directly inside the application interface.
+
+#### 1. Interactive Export Toolbar
+Located at the top of the documentation panel, the toolbar provides 1-click documentation export options:
+- **Export Word (.doc)**: Download a formatted Microsoft Word document version of the documentation (`Skills_Matrix_User_Guide_YYYY-MM-DD.doc`).
+- **Export Markdown (.md)**: Download the raw Markdown source code file (`Skills_Matrix_User_Guide.md`).
+- **Print / PDF**: Launch the browser print dialog optimized with CSS print media styles to save or print as a clean PDF document.
+
+#### 2. Comprehensive System Documentation Content
+Renders all architectural and operational specifications:
+- Executive Overview & Business Value
+- System Architecture & Glassmorphism Design System
+- Star Schema ERD Diagrams & Complete Database Table Specifications
+- Fact Tables vs. Dimension Tables Analysis
+- PostgreSQL Database Indexing & RLS Policies
+- Temporal Audit Model (SCD Type 2) & Skill History Tracking
+- Dual Database Connection Modes (Supabase PostgreSQL vs Autonomous Demo Mode)
+- 5-Star Competency Rating Scale Matrix
+- Complete Navigation Tabs Menu Bar Overview & 6-Tab Interactive Guide
+- Step-by-Step User Workflows & File Structure Reference
 
 ---
 

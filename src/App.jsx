@@ -5610,14 +5610,104 @@ CREATE INDEX idx_pt_current ON person_teams (person_id, team_id) WHERE is_curren
                   </tbody>
                 </table>
 
-                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>🌟 Core Interactive Tabs Guide</h2>
-                <ol style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
-                  <li><strong>Skills Matrix Grid</strong>: Interactive grid view mapping team skills with 5-star ratings, multi-faceted filtering (Team, Member, Skill, Category, Vendor, Level 0-5), search, and inline skill creation.</li>
-                  <li><strong>Team Members (Developers)</strong>: Manage roster attributes, edit roles/teams/managers, open developer detail modals, and bulk import/export CSV files.</li>
-                  <li><strong>Tracked Skills</strong>: Catalog inventory listing skill metrics, average ratings, and proficient developer counts.</li>
-                  <li><strong>Categories</strong>: Domain taxonomy management.</li>
-                  <li><strong>Teams Governance</strong>: Assign required skills to teams, inspect team rosters, and track target capability gaps.</li>
-                </ol>
+                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>📱 Navigation Tabs Menu Bar Overview</h2>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  The application top navigation bar features <strong>6 primary interactive tabs</strong>. Each tab header includes a Lucide icon and real-time counter badges that reflect active database queries:
+                </p>
+                <div style={{ overflowX: 'auto', margin: '1rem 0' }}>
+                  <table className="list-table" style={{ width: '100%', fontSize: '0.85rem' }}>
+                    <thead>
+                      <tr>
+                        <th>Menu Item</th>
+                        <th>Tab Key</th>
+                        <th>Badge / Counter</th>
+                        <th>Primary Description & Responsibilities</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Skills Matrix Grid</strong></td>
+                        <td><code>matrix</code></td>
+                        <td>—</td>
+                        <td>Primary operational evaluation grid mapping developers against skills with 5-star rating widgets, 7 filter dimensions, column resizing, and gap indicators.</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Team Members</strong></td>
+                        <td><code>developers</code></td>
+                        <td><code>(N) Members</code></td>
+                        <td>Personnel roster directory, profile attributes (Role, Email, SSO ID, Manager details), side profile modal, and CSV Import/Export engine.</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Tracked Skills</strong></td>
+                        <td><code>skills</code></td>
+                        <td><code>(N) Skills</code></td>
+                        <td>Master technical catalog, vendor management, live average star ratings, proficient developer counts, and skill CRUD operations.</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Categories</strong></td>
+                        <td><code>categories</code></td>
+                        <td><code>(N) Categories</code></td>
+                        <td>High-level taxonomy domain management (Frontend, Backend, Database, DevOps, Design, Other) grouping competencies.</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Teams</strong></td>
+                        <td><code>teams</code></td>
+                        <td><code>(N) Teams</code></td>
+                        <td>Operational team administration, target required skill profiles, roster placement, and capability gap analysis.</td>
+                      </tr>
+                      <tr>
+                        <td><strong>User Guide & Docs</strong></td>
+                        <td><code>docs</code></td>
+                        <td>Specs Portal</td>
+                        <td>Comprehensive technical manual, Star Schema specifications, SCD Type 2 audit model documentation, and 1-click Word/Markdown/PDF export toolbar.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>🌟 Core Features & Tab-by-Tab Guide</h2>
+                
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginTop: '1.25rem' }}>Tab 1: 📊 Skills Matrix Grid (<code>matrix</code>)</h3>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li><strong>Interactive 5-Star Rating Widget</strong>: Click 1–5 stars to set proficiency; click active rating again or click <strong>✕ (reset)</strong> to clear to 0 stars (None). Level tooltips describe criteria from 0 (None) to 5 (Expert).</li>
+                  <li><strong>Multi-Facet Filter Engine</strong>: Slices matrix across 7 dimensions (Team, Member, Skill, Category, Vendor, Level 0-5, and Text Search Query).</li>
+                  <li><strong>Column Width Resizing & Sorting</strong>: Drag resize handle on column headers to adjust width; sort developers (A-Z / Z-A).</li>
+                  <li><strong>Target Skill Gap Context</strong>: Visual badges highlight required team skills and capability gaps.</li>
+                  <li><strong>Inline Skill Addition</strong>: Quick-create new skills directly from the matrix.</li>
+                </ul>
+
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginTop: '1.25rem' }}>Tab 2: 👥 Team Members (Developers) Management (<code>developers</code>)</h3>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li><strong>Personnel Profile Attributes</strong>: Full Name, Role Title, Email, Team Assignment, SSO Company Login ID, Manager Full Name & Manager Login ID.</li>
+                  <li><strong>Roster CRUD & Controls</strong>: Add Member form, inline row editing, safe deletion, and multi-select filtering by Team and Role.</li>
+                  <li><strong>Interactive Profile Side Modal</strong>: Pop-over panel detailing member contact info, manager hierarchy, and complete rated skills breakdown.</li>
+                  <li><strong>Smart CSV Engine</strong>: 1-click CSV Export and Smart CSV Import with auto-delimiter detection (<code>,</code>, <code>;</code>, <code>\t</code>), UTF-8 BOM stripping, header auto-mapping, and resilient DB constraint fallback execution.</li>
+                </ul>
+
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginTop: '1.25rem' }}>Tab 3: 📚 Tracked Skills Inventory (<code>skills</code>)</h3>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li><strong>Catalog Attributes & Live Metrics</strong>: Skill Name, Domain Category, Vendor, Description, Live Average Star Rating, and Proficient Developer Count.</li>
+                  <li><strong>Skill Catalog CRUD</strong>: Add, edit, or delete catalog skills with cascading database cleanups.</li>
+                  <li><strong>Category Hyperlinks</strong>: Click category badges to jump directly to filtered taxonomy views.</li>
+                </ul>
+
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginTop: '1.25rem' }}>Tab 4: 🏷️ Skill Categories Taxonomy (<code>categories</code>)</h3>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li><strong>Domain Taxonomy Structure</strong>: Pre-configured defaults (Frontend, Backend, Database, DevOps, Design, Other) and custom domain groups.</li>
+                  <li><strong>Taxonomy Metrics & CRUD</strong>: Displays live skill count per domain; add, edit, or delete categories safely.</li>
+                </ul>
+
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginTop: '1.25rem' }}>Tab 5: 🏢 Teams Governance & Skill Requirements (<code>teams</code>)</h3>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li><strong>Team Administration</strong>: Create, edit, and delete operational teams with member count and target skill count summaries.</li>
+                  <li><strong>Expanded Team Drawer View</strong>: Assign required skills, <em>"Add Skill on the fly"</em>, assign roster developers, <em>"Add Member on the fly"</em>, unassign members, and line item collapse controls (<code>[✕] Close Line Item</code>).</li>
+                </ul>
+
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginTop: '1.25rem' }}>Tab 6: 📖 User Guide & System Specifications (<code>docs</code>)</h3>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+                  <li><strong>Interactive Export Toolbar</strong>: 1-click export to Word (<code>.doc</code>), raw Markdown (<code>.md</code>), or PDF print format.</li>
+                  <li><strong>System Architecture & Specs</strong>: Complete Star Schema database specs, SCD Type 2 audit model, Supabase vs Demo connection modes, 5-star rating matrix, and workflows.</li>
+                </ul>
 
                 <h2 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginTop: '2rem' }}>📖 Step-by-Step User Workflows</h2>
                 <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
