@@ -943,7 +943,6 @@ button, select, input, label, .badge, .tab-btn {
 /* Drag & Drop Column Resizer Handle Styles */
 .matrix-table th,
 .list-table th {
-  position: relative;
   box-sizing: border-box;
 }
 
