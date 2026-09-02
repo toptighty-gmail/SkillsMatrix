@@ -2888,6 +2888,21 @@ SkillsMatrix/
     }
 
     try {
+      // Optimistic UI Update to remove delay
+      setDeveloperSkills(prev => {
+        if (targetLevel === 'None') {
+          return prev.filter((ds) => !(ds.developer_id === devId && ds.skill_id === skillId));
+        } else {
+          const index = prev.findIndex((ds) => ds.developer_id === devId && ds.skill_id === skillId);
+          if (index > -1) {
+            const next = [...prev];
+            next[index] = { ...next[index], level: targetLevel };
+            return next;
+          }
+          return [...prev, { developer_id: devId, skill_id: skillId, level: targetLevel }];
+        }
+      });
+
       const targetLevelIdx = levels.indexOf(targetLevel);
       const todayStr = new Date().toISOString().split('T')[0];
 
