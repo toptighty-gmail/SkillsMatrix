@@ -3041,7 +3041,7 @@ SkillsMatrix/
           onChange={(targetLevel) => handleSetSkillLevel(devId, skillId, targetLevel)}
           disabled={loading}
         />
-                {level !== 'None' && level > 0 && (
+                {level !== 'None' && (
           <button
             type="button"
             onClick={() => fetchSkillTimeline(devId, skillId, person?.name || 'Unknown', skill?.name || 'Unknown')}
