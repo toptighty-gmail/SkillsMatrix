@@ -43,7 +43,7 @@ const mockDevelopers = [
 
 const mockSkills = [
   { id: 'skill-1', name: 'React', category: 'Frontend', category_id: 1, vendor: 'Meta', description: 'JavaScript library for building user interfaces' },
-  { id: 'skill-2', name: 'Node.js', category: 'Backend', category_id: 2, vendor: 'OpenJS Foundation', description: 'JavaScript runtime built on Chrome\'s V8 engine' },
+  { id: 'skill-2', name: 'Node.js', category: 'Backend', category_id: 2, vendor: 'OpenJS Foundation', description: "JavaScript runtime built on Chrome's V8 engine" },
   { id: 'skill-3', name: 'PostgreSQL', category: 'Database', category_id: 3, vendor: 'PostgreSQL Global Development Group', description: 'Powerful, open source object-relational database' },
   { id: 'skill-4', name: 'Docker', category: 'DevOps', category_id: 4, vendor: 'Docker Inc.', description: 'Containerization platform' },
   { id: 'skill-5', name: 'CSS Grid & Flexbox', category: 'Frontend', category_id: 1, vendor: 'W3C', description: 'CSS layout methodologies' }
@@ -4211,14 +4211,14 @@ SkillsMatrix/
                 marginBottom: '1.5rem',
                 flexWrap: 'wrap',
                 background: 'rgba(255, 255, 255, 0.02)',
-                padding: '1rem 1.25rem',
+                padding: '1.25rem',
                 borderRadius: '12px',
                 border: '1px solid var(--border-color)',
                 alignItems: 'flex-end'
               }}>
                 {/* 1. Filter by Team */}
-                <div style={{ flex: '1', minWidth: '200px', position: 'relative', zIndex: isDevListTeamDropdownOpen ? 500 : 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <div style={{ flex: '1', minWidth: '220px', position: 'relative', zIndex: isDevListTeamDropdownOpen ? 500 : 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Filter by Team ({selectedDevListTeamNames.length === 0 ? 'All' : `${selectedDevListTeamNames.length} selected`})
                   </label>
                   <button
@@ -4361,8 +4361,8 @@ SkillsMatrix/
                 </div>
 
                 {/* 2. Filter by Role */}
-                <div style={{ flex: '1', minWidth: '200px', position: 'relative', zIndex: isDevListRoleDropdownOpen ? 500 : 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <div style={{ flex: '1', minWidth: '220px', position: 'relative', zIndex: isDevListRoleDropdownOpen ? 500 : 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Filter by Role ({selectedDevListRoleNames.length === 0 ? 'All' : `${selectedDevListRoleNames.length} selected`})
                   </label>
                   <button
@@ -4861,14 +4861,14 @@ SkillsMatrix/
                 marginBottom: '1.5rem',
                 flexWrap: 'wrap',
                 background: 'rgba(255, 255, 255, 0.02)',
-                padding: '1rem 1.25rem',
+                padding: '1.25rem',
                 borderRadius: '12px',
                 border: '1px solid var(--border-color)',
                 alignItems: 'flex-end'
               }}>
                 {/* 1. Filter by Category */}
-                <div style={{ flex: '1', minWidth: '200px', position: 'relative', zIndex: isCategoryDropdownOpen ? 500 : 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <div style={{ flex: '1', minWidth: '220px', position: 'relative', zIndex: isCategoryDropdownOpen ? 500 : 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Filter by Category ({selectedCategoryNames.length === 0 ? 'All' : `${selectedCategoryNames.length} selected`})
                   </label>
                   <button
@@ -5025,8 +5025,8 @@ SkillsMatrix/
                 </div>
 
                 {/* 2. Filter by Vendor */}
-                <div style={{ flex: '1', minWidth: '200px', position: 'relative', zIndex: isVendorDropdownOpen ? 500 : 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <div style={{ flex: '1', minWidth: '220px', position: 'relative', zIndex: isVendorDropdownOpen ? 500 : 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Filter by Vendor ({selectedVendorNames.length === 0 ? 'All' : `${selectedVendorNames.length} selected`})
                   </label>
                   <button
