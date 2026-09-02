@@ -3041,26 +3041,28 @@ SkillsMatrix/
           onChange={(targetLevel) => handleSetSkillLevel(devId, skillId, targetLevel)}
           disabled={loading}
         />
-        <button 
-          type="button" 
-          onClick={() => fetchSkillTimeline(devId, skillId, person?.name || 'Unknown', skill?.name || 'Unknown')}
-          title="View Timeline History"
-          style={{ 
-            background: 'none', 
-            border: 'none', 
-            cursor: 'pointer', 
-            padding: '2px', 
-            color: 'var(--accent-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            opacity: 1,
-            transition: 'opacity 0.2s ease, filter 0.2s ease'
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.2)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.filter = 'brightness(1)'; }}
-        >
-          <Activity size={14} />
-        </button>
+                {level !== 'None' && level > 0 && (
+          <button
+            type="button"
+            onClick={() => fetchSkillTimeline(devId, skillId, person?.name || 'Unknown', skill?.name || 'Unknown')}
+            title="View Timeline History"
+            style={{
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer', 
+              padding: '2px', 
+              color: 'var(--accent-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              opacity: 1,
+              transition: 'opacity 0.2s ease, filter 0.2s ease'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.2)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.filter = 'brightness(1)'; }}
+          >
+            <Activity size={14} />
+          </button>
+        )}
       </div>
     );
   };
