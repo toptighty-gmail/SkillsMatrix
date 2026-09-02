@@ -316,6 +316,8 @@ function App() {
   const [devListSortOrder, setDevListSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [selectedDevListTeamNames, setSelectedDevListTeamNames] = useState([]); // Array of team names, empty = All
   const [isDevListTeamDropdownOpen, setIsDevListTeamDropdownOpen] = useState(false);
+  const [isNewDevTeamDropdownOpen, setIsNewDevTeamDropdownOpen] = useState(false);
+  const [isNewSkillCategoryDropdownOpen, setIsNewSkillCategoryDropdownOpen] = useState(false);
   const [selectedDevListRoleNames, setSelectedDevListRoleNames] = useState([]); // Array of role titles, empty = All
   const [isDevListRoleDropdownOpen, setIsDevListRoleDropdownOpen] = useState(false);
   const [skillsSortOrder, setSkillsSortOrder] = useState('asc'); // 'asc' or 'desc'
@@ -395,6 +397,8 @@ function App() {
   const devListRoleBtnRef = useRef(null);
   const categoryBtnRef = useRef(null);
   const vendorBtnRef = useRef(null);
+  const newDevTeamBtnRef = useRef(null);
+  const newSkillCategoryBtnRef = useRef(null);
 
   const getPortalDropdownStyle = (buttonRef) => {
     if (typeof window === 'undefined' || window.innerWidth <= 900) {
