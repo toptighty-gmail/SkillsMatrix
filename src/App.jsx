@@ -1911,7 +1911,8 @@ SkillsMatrix/
     };
     reader.readAsText(file);
   };
-\n  // CRUD: Update a Developer (Person)
+
+  // CRUD: Update a Developer (Person)
   const handleUpdateDeveloper = async (devId) => {
     if (!editDevName || !editDevRole) return;
     setLoading(true);
