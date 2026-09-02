@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from './lib/supabaseClient';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import pkg from '../package.json';
 
 const APP_VERSION = `v${pkg.version}`;
@@ -2971,6 +2972,48 @@ SkillsMatrix/
     }
   };
 
+
+  const fetchSkillTimeline = async (personId, skillId, personName, skillName) => {
+    setLoading(true);
+    setTimelineContext({ personName, skillName });
+    
+    if (useDemoMode) {
+      // Generate some mock history for demo mode
+      const now = new Date();
+      const mockData = [
+        { date: new Date(now.getFullYear() - 1, now.getMonth(), 1).toISOString().split('T')[0], level: 1 },
+        { date: new Date(now.getFullYear(), now.getMonth() - 6, 15).toISOString().split('T')[0], level: 2 },
+        { date: new Date(now.getFullYear(), now.getMonth() - 2, 10).toISOString().split('T')[0], level: 3 },
+        { date: new Date().toISOString().split('T')[0], level: 4 }
+      ];
+      setTimelineData(mockData);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('person_skill_assessments')
+        .select('valid_from, competency_level_id')
+        .eq('person_id', personId)
+        .eq('skill_id', skillId)
+        .order('valid_from', { ascending: true });
+
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        setTimelineData(data.map(d => ({ date: d.valid_from, level: d.competency_level_id })));
+      } else {
+        setTimelineData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching timeline:', error);
+      showToast('Error loading timeline history');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Helper to retrieve the current proficiency level star rating
   const getProficiencyBadge = (devId, skillId) => {
     const record = developerSkills.find(
@@ -2978,13 +3021,37 @@ SkillsMatrix/
     );
     
     const level = record ? record.level : 'None';
+    const person = developers.find(d => d.id === devId);
+    const skill = skills.find(s => s.id === skillId);
     
     return (
-      <StarRating
-        value={level}
-        onChange={(targetLevel) => handleSetSkillLevel(devId, skillId, targetLevel)}
-        disabled={loading}
-      />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <StarRating
+          value={level}
+          onChange={(targetLevel) => handleSetSkillLevel(devId, skillId, targetLevel)}
+          disabled={loading}
+        />
+        <button 
+          type="button" 
+          onClick={() => fetchSkillTimeline(devId, skillId, person?.name || 'Unknown', skill?.name || 'Unknown')}
+          title="View Timeline History"
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            cursor: 'pointer', 
+            padding: '2px', 
+            color: 'var(--text-muted)',
+            display: 'flex',
+            alignItems: 'center',
+            opacity: 0.6,
+            transition: 'opacity 0.2s ease, color 0.2s ease'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--accent-primary)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.6'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+        >
+          <Activity size={14} />
+        </button>
+      </div>
     );
   };
 
@@ -6582,6 +6649,76 @@ CREATE INDEX idx_pt_current ON person_teams (person_id, team_id) WHERE is_curren
 
 </main>
       </div>
+
+            {/* Timeline Chart Modal */}
+      {timelineData && timelineContext && (
+        <div className="modal-overlay" onClick={() => setTimelineData(null)}>
+          <div className="modal-content glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', width: '100%', padding: '1.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--text-primary)' }}>Skill Timeline History</h3>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>{timelineContext.personName}</span> 
+                  {' — '} 
+                  <span style={{ fontWeight: 600 }}>{timelineContext.skillName}</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setTimelineData(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0 }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div style={{ height: '300px', width: '100%', marginTop: '1rem' }}>
+              {timelineData.length === 0 ? (
+                <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                  No historical data available for this skill.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={timelineData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" vertical={false} />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="var(--text-muted)" 
+                      fontSize={11} 
+                      tickLine={false} 
+                      axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
+                      tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                    />
+                    <YAxis 
+                      domain={[0, 5]} 
+                      ticks={[0, 1, 2, 3, 4, 5]} 
+                      stroke="var(--text-muted)" 
+                      fontSize={11} 
+                      tickLine={false} 
+                      axisLine={false}
+                    />
+                    <RechartsTooltip 
+                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid var(--border-color)', borderRadius: '8px', color: '#fff' }}
+                      itemStyle={{ color: 'var(--accent-primary)', fontWeight: 600 }}
+                      labelStyle={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}
+                      formatter={(value) => [`${value} Star${value !== 1 ? 's' : ''}`, 'Level']}
+                      labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                    />
+                    <Line 
+                      type="stepAfter" 
+                      dataKey="level" 
+                      stroke="#8b5cf6" 
+                      strokeWidth={3} 
+                      dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#0f172a' }} 
+                      activeDot={{ r: 6, fill: '#8b5cf6', strokeWidth: 0 }}
+                      animationDuration={1000}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Team Member Details Modal */}
       {selectedDevInfo && (
