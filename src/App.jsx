@@ -4178,29 +4178,132 @@ SkillsMatrix/
                     onChange={(e) => setNewDevManagerCompanyLoginId(e.target.value)}
                   />
                 </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label style={{ fontSize: '0.8rem' }}>Assign to Team</label>
-                  <select 
-                    className="form-input" 
-                    style={{ height: '42px' }}
-                    value={newDevTeamId}
-                    onChange={(e) => {
-                      if (e.target.value === 'ADD_TEAM') {
-                        setTeamRedirectTarget('developers');
-                        setActiveTab('teams');
-                        setNewDevTeamId('');
-                      } else {
-                        setNewDevTeamId(e.target.value);
-                      }
+                <div className="form-group" style={{ margin: 0, position: 'relative', zIndex: isNewDevTeamDropdownOpen ? 500 : 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Assign to Team</label>
+                  <button
+                    ref={newDevTeamBtnRef}
+                    type="button"
+                    className="form-select"
+                    onClick={() => setIsNewDevTeamDropdownOpen(!isNewDevTeamDropdownOpen)}
+                    style={{
+                      height: '42px',
+                      padding: '0.5rem 1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      borderColor: isNewDevTeamDropdownOpen ? 'var(--accent-primary)' : 'var(--border-color)'
                     }}
                   >
-                    <option value="">No Team</option>
-                    {[...teams].sort((a, b) => a.name.localeCompare(b.name)).map(t => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                    <option disabled>— Actions —</option>
-                    <option value="ADD_TEAM">+ Add New Team...</option>
-                  </select>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {newDevTeamId === '' ? 'No Team' : (teams.find(t => t.id == newDevTeamId)?.name || 'Select Team')}
+                    </span>
+                    <ChevronRight 
+                      size={16} 
+                      style={{ 
+                        transform: isNewDevTeamDropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease',
+                        color: 'var(--text-muted)'
+                      }} 
+                    />
+                  </button>
+                  
+                  {isNewDevTeamDropdownOpen && createPortal(
+                    <>
+                      <div 
+                        style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'transparent' }} 
+                        onClick={() => setIsNewDevTeamDropdownOpen(false)}
+                      />
+                      <div 
+                        className="filter-dropdown-panel"
+                        style={{
+                          position: 'absolute',
+                          top: 'calc(100% + 4px)',
+                          left: 0,
+                          right: 0,
+                          zIndex: 100,
+                          background: '#0f172a',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                          maxHeight: '260px',
+                          overflowY: 'auto',
+                          padding: '0.5rem',
+                          ...getPortalDropdownStyle(newDevTeamBtnRef)
+                        }}
+                      >
+                        <div
+                          onClick={() => {
+                            setNewDevTeamId('');
+                            setIsNewDevTeamDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '0.45rem 0.5rem',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            color: newDevTeamId === '' ? '#fff' : 'var(--text-secondary)',
+                            background: newDevTeamId === '' ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                            transition: 'background 0.15s ease',
+                            marginBottom: '0.2rem'
+                          }}
+                          onMouseEnter={(e) => { if(newDevTeamId !== '') e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)' }}
+                          onMouseLeave={(e) => { if(newDevTeamId !== '') e.currentTarget.style.background = 'transparent' }}
+                        >
+                          No Team
+                        </div>
+                        {[...teams].sort((a, b) => a.name.localeCompare(b.name)).map(t => (
+                          <div
+                            key={t.id}
+                            onClick={() => {
+                              setNewDevTeamId(t.id);
+                              setIsNewDevTeamDropdownOpen(false);
+                            }}
+                            style={{
+                              padding: '0.45rem 0.5rem',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              color: (newDevTeamId == t.id) ? '#fff' : 'var(--text-secondary)',
+                              background: (newDevTeamId == t.id) ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                              transition: 'background 0.15s ease',
+                              marginBottom: '0.2rem'
+                            }}
+                            onMouseEnter={(e) => { if(newDevTeamId != t.id) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)' }}
+                            onMouseLeave={(e) => { if(newDevTeamId != t.id) e.currentTarget.style.background = 'transparent' }}
+                          >
+                            {t.name}
+                          </div>
+                        ))}
+                        <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', margin: '0.5rem 0' }}></div>
+                        <div
+                          onClick={() => {
+                            setTeamRedirectTarget('developers');
+                            setActiveTab('teams');
+                            setNewDevTeamId('');
+                            setIsNewDevTeamDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '0.45rem 0.5rem',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            color: 'var(--accent-primary)',
+                            background: 'transparent',
+                            transition: 'background 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                        >
+                          + Add New Team...
+                        </div>
+                      </div>
+                    </>,
+                    document.body
+                  )}
                 </div>
                 <button type="submit" className="btn-primary" style={{ height: '42px' }} disabled={loading}>
                   <Plus size={16} />
@@ -4807,30 +4910,112 @@ SkillsMatrix/
                     required
                   />
                 </div>
-                <div className="form-group" style={{ margin: 0, width: '100%' }}>
-                  <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Category</label>
-                  <select 
+                <div className="form-group" style={{ margin: 0, width: '100%', position: 'relative', zIndex: isNewSkillCategoryDropdownOpen ? 500 : 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Category</label>
+                  <button
+                    ref={newSkillCategoryBtnRef}
+                    type="button"
                     className="form-select"
-                    style={{ height: '42px', width: '100%' }}
-                    value={newSkillCategoryId}
-                    onChange={(e) => {
-                      if (e.target.value === 'ADD_CATEGORY') {
-                        setCategoryRedirectTarget('skills');
-                        setActiveTab('categories');
-                        setNewSkillCategoryId('');
-                      } else {
-                        setNewSkillCategoryId(e.target.value);
-                      }
+                    onClick={() => setIsNewSkillCategoryDropdownOpen(!isNewSkillCategoryDropdownOpen)}
+                    style={{
+                      height: '42px',
+                      padding: '0.5rem 1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      borderColor: isNewSkillCategoryDropdownOpen ? 'var(--accent-primary)' : 'var(--border-color)'
                     }}
-                    required
                   >
-                    <option value="" disabled>Select Category</option>
-                    {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                    <option disabled>— Actions —</option>
-                    <option value="ADD_CATEGORY">+ Add New Category...</option>
-                  </select>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: newSkillCategoryId === '' ? 'gray' : 'inherit' }}>
+                      {newSkillCategoryId === '' ? 'Select Category' : (categories.find(c => c.id == newSkillCategoryId)?.name || 'Select Category')}
+                    </span>
+                    <ChevronRight 
+                      size={16} 
+                      style={{ 
+                        transform: isNewSkillCategoryDropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease',
+                        color: 'var(--text-muted)'
+                      }} 
+                    />
+                  </button>
+                  
+                  {isNewSkillCategoryDropdownOpen && createPortal(
+                    <>
+                      <div 
+                        style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'transparent' }} 
+                        onClick={() => setIsNewSkillCategoryDropdownOpen(false)}
+                      />
+                      <div 
+                        className="filter-dropdown-panel"
+                        style={{
+                          position: 'absolute',
+                          top: 'calc(100% + 4px)',
+                          left: 0,
+                          right: 0,
+                          zIndex: 100,
+                          background: '#0f172a',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                          maxHeight: '260px',
+                          overflowY: 'auto',
+                          padding: '0.5rem',
+                          ...getPortalDropdownStyle(newSkillCategoryBtnRef)
+                        }}
+                      >
+                        {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
+                          <div
+                            key={c.id}
+                            onClick={() => {
+                              setNewSkillCategoryId(c.id);
+                              setIsNewSkillCategoryDropdownOpen(false);
+                            }}
+                            style={{
+                              padding: '0.45rem 0.5rem',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              color: (newSkillCategoryId == c.id) ? '#fff' : 'var(--text-secondary)',
+                              background: (newSkillCategoryId == c.id) ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                              transition: 'background 0.15s ease',
+                              marginBottom: '0.2rem'
+                            }}
+                            onMouseEnter={(e) => { if(newSkillCategoryId != c.id) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)' }}
+                            onMouseLeave={(e) => { if(newSkillCategoryId != c.id) e.currentTarget.style.background = 'transparent' }}
+                          >
+                            {c.name}
+                          </div>
+                        ))}
+                        <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', margin: '0.5rem 0' }}></div>
+                        <div
+                          onClick={() => {
+                            setCategoryRedirectTarget('skills');
+                            setActiveTab('categories');
+                            setNewSkillCategoryId('');
+                            setIsNewSkillCategoryDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '0.45rem 0.5rem',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            color: 'var(--accent-primary)',
+                            background: 'transparent',
+                            transition: 'background 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                        >
+                          + Add New Category...
+                        </div>
+                      </div>
+                    </>,
+                    document.body
+                  )}
                 </div>
                 <div className="form-group" style={{ margin: 0, width: '100%' }}>
                   <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Vendor</label>
