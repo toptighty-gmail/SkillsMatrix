@@ -1505,7 +1505,8 @@ SkillsMatrix/
         }
 
         const todayStr = new Date().toISOString().split('T')[0];
-        let importedCount = 0;
+        let insertedCount = 0;
+        let updatedCount = 0;
         let lastError = null;
 
         for (let i = 1; i < lines.length; i++) {
@@ -1520,62 +1521,72 @@ SkillsMatrix/
           const managerName = (mgrNameIdx !== -1 && cols[mgrNameIdx] && cols[mgrNameIdx].trim()) ? cols[mgrNameIdx].trim() : null;
           const managerLoginId = (mgrLoginIdx !== -1 && cols[mgrLoginIdx] && cols[mgrLoginIdx].trim()) ? cols[mgrLoginIdx].trim() : null;
 
-          // Find team match if provided
           const matchedTeam = teamNameRaw 
             ? teams.find(t => t.name.toLowerCase() === teamNameRaw.toLowerCase()) 
             : null;
 
           if (useDemoMode) {
-            const newDev = {
-              id: `dev-imp-${Date.now()}-${i}`,
-              name: fullName,
-              role: roleTitle,
-              email: email || '',
-              team: matchedTeam ? matchedTeam.name : (teamNameRaw || 'No Team'),
-              teamId: matchedTeam ? matchedTeam.id : null,
-              companyLoginId,
-              managerName,
-              managerCompanyLoginId: managerLoginId
-            };
-            setDevelopers(prev => [...prev, newDev]);
-            importedCount++;
+            const existing = developers.find(d => d.name.toLowerCase() === fullName.toLowerCase());
+            if (existing) {
+              setDevelopers(prev => prev.map(d => d.id === existing.id ? { 
+                ...d, 
+                role: roleTitle, 
+                email: email || d.email, 
+                team: matchedTeam ? matchedTeam.name : (teamNameRaw || d.team),
+                teamId: matchedTeam ? matchedTeam.id : d.teamId,
+                companyLoginId: companyLoginId || d.companyLoginId,
+                managerName: managerName || d.managerName,
+                managerCompanyLoginId: managerLoginId || d.managerCompanyLoginId
+              } : d));
+              updatedCount++;
+            } else {
+              setDevelopers(prev => [...prev, {
+                id: `dev-imp-${Date.now()}-${i}`,
+                name: fullName,
+                role: roleTitle,
+                email: email || '',
+                team: matchedTeam ? matchedTeam.name : (teamNameRaw || 'No Team'),
+                teamId: matchedTeam ? matchedTeam.id : null,
+                companyLoginId,
+                managerName,
+                managerCompanyLoginId: managerLoginId
+              }]);
+              insertedCount++;
+            }
           } else {
-            // Build insert payload without undefined/empty string fields
-            const insertPayload = {
-              full_name: fullName
-            };
+            const insertPayload = { full_name: fullName };
             if (roleTitle) insertPayload.role_title = roleTitle;
             if (email) insertPayload.email = email;
             if (companyLoginId) insertPayload.company_login_id = companyLoginId;
             if (managerName) insertPayload.manager_fullname = managerName;
             if (managerLoginId) insertPayload.manager_company_login_id = managerLoginId;
 
-            let { data, error } = await supabase
-              .from('person')
-              .insert([insertPayload])
-              .select();
-
-            // Fallback if role_title column fails or requires role FK / title
-            if (error && (error.message.includes('role') || error.code === '23503' || error.code === '42703')) {
-              delete insertPayload.role_title;
-              const retryRes = await supabase
-                .from('person')
-                .insert([insertPayload])
-                .select();
-              data = retryRes.data;
-              error = retryRes.error;
+            const existing = developers.find(d => d.name.toLowerCase() === fullName.toLowerCase());
+            
+            let data, error;
+            if (existing) {
+              const res = await supabase.from('person').update(insertPayload).eq('id', existing.id).select();
+              data = res.data; error = res.error;
+            } else {
+              const res = await supabase.from('person').insert([insertPayload]).select();
+              data = res.data; error = res.error;
             }
 
-            // Fallback if company_login_id format check constraint fails
+            if (error && (error.message.includes('role') || error.code === '23503' || error.code === '42703')) {
+              delete insertPayload.role_title;
+              const retryRes = existing 
+                ? await supabase.from('person').update(insertPayload).eq('id', existing.id).select()
+                : await supabase.from('person').insert([insertPayload]).select();
+              data = retryRes.data; error = retryRes.error;
+            }
+
             if (error && (error.message.includes('company_login_id') || error.message.includes('people_company_login_id_format_check'))) {
               delete insertPayload.company_login_id;
               delete insertPayload.manager_company_login_id;
-              const retryRes = await supabase
-                .from('person')
-                .insert([insertPayload])
-                .select();
-              data = retryRes.data;
-              error = retryRes.error;
+              const retryRes = existing 
+                ? await supabase.from('person').update(insertPayload).eq('id', existing.id).select()
+                : await supabase.from('person').insert([insertPayload]).select();
+              data = retryRes.data; error = retryRes.error;
             }
 
             if (error) {
@@ -1584,40 +1595,46 @@ SkillsMatrix/
               continue;
             }
 
-            const insertedPerson = data[0];
-            let assignedTeamName = 'No Team';
-            let assignedTeamId = null;
+            const returnedPerson = data[0];
+            let assignedTeamName = existing ? existing.team : 'No Team';
+            let assignedTeamId = existing ? existing.teamId : null;
 
             if (matchedTeam) {
-              await supabase
-                .from('person_teams')
-                .insert([{
-                  person_id: insertedPerson.id,
-                  team_id: matchedTeam.id,
-                  is_current: true,
-                  valid_from: todayStr
-                }]);
+              // Update team if changed, simplified logic for import to avoid checking all past person_teams
+              await supabase.from('person_teams').insert([{
+                person_id: returnedPerson.id,
+                team_id: matchedTeam.id,
+                is_current: true,
+                valid_from: todayStr
+              }]);
               assignedTeamName = matchedTeam.name;
               assignedTeamId = matchedTeam.id;
             }
 
-            setDevelopers(prev => [...prev, {
-              id: insertedPerson.id,
-              name: insertedPerson.full_name,
-              role: insertedPerson.role_title || roleTitle,
-              email: insertedPerson.email || email,
+            const updatedDevObj = {
+              id: returnedPerson.id,
+              name: returnedPerson.full_name,
+              role: returnedPerson.role_title || roleTitle,
+              email: returnedPerson.email || email,
               team: assignedTeamName,
               teamId: assignedTeamId,
-              managerName: insertedPerson.manager_fullname,
-              managerCompanyLoginId: insertedPerson.manager_company_login_id,
-              companyLoginId: insertedPerson.company_login_id
-            }]);
-            importedCount++;
+              managerName: returnedPerson.manager_fullname,
+              managerCompanyLoginId: returnedPerson.manager_company_login_id,
+              companyLoginId: returnedPerson.company_login_id
+            };
+
+            if (existing) {
+              setDevelopers(prev => prev.map(d => d.id === existing.id ? updatedDevObj : d));
+              updatedCount++;
+            } else {
+              setDevelopers(prev => [...prev, updatedDevObj]);
+              insertedCount++;
+            }
           }
         }
 
-        if (importedCount > 0) {
-          showToast(`Successfully imported ${importedCount} team member${importedCount === 1 ? '' : 's'}!`);
+        if (insertedCount > 0 || updatedCount > 0) {
+          showToast(`Successfully imported members: ${insertedCount} new, ${updatedCount} updated!`);
         } else if (lastError) {
           showToast(`Import failed: ${lastError.message}`);
         } else {
@@ -1690,7 +1707,8 @@ SkillsMatrix/
         
         if (nameIdx === -1) throw new Error(`Could not find a name column in CSV headers.`);
         
-        let importedCount = 0;
+        let insertedCount = 0;
+        let updatedCount = 0;
         let lastError = null;
         for (let i = 1; i < lines.length; i++) {
           const cols = parseCSVLine(lines[i], delimiter);
@@ -1703,24 +1721,35 @@ SkillsMatrix/
           let matchedCat = categories.find(c => c.name.toLowerCase() === (catName || '').toLowerCase());
           
           if (useDemoMode) {
-            setSkills(prev => [...prev, {
-              id: `skill-imp-${Date.now()}-${i}`,
-              name, vendor, description, category_id: matchedCat ? matchedCat.id : null, category: matchedCat ? matchedCat.name : ''
-            }]);
-            importedCount++;
+            const existing = skills.find(s => s.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+              setSkills(prev => prev.map(s => s.id === existing.id ? { ...s, vendor, description, category_id: matchedCat ? matchedCat.id : s.category_id, category: matchedCat ? matchedCat.name : s.category } : s));
+              updatedCount++;
+            } else {
+              setSkills(prev => [...prev, { id: `skill-imp-${Date.now()}-${i}`, name, vendor, description, category_id: matchedCat ? matchedCat.id : null, category: matchedCat ? matchedCat.name : '' }]);
+              insertedCount++;
+            }
           } else {
             const insertPayload = { name };
             if (vendor) insertPayload.vendor = vendor;
             if (description) insertPayload.description = description;
             if (matchedCat) insertPayload.category_id = matchedCat.id;
             
-            const { data, error } = await supabase.from('skills').insert([insertPayload]).select();
-            if (error) { lastError = error; continue; }
-            setSkills(prev => [...prev, data[0]]);
-            importedCount++;
+            const existing = skills.find(s => s.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+              const { data, error } = await supabase.from('skills').update(insertPayload).eq('id', existing.id).select();
+              if (error) { lastError = error; continue; }
+              setSkills(prev => prev.map(s => s.id === existing.id ? data[0] : s));
+              updatedCount++;
+            } else {
+              const { data, error } = await supabase.from('skills').insert([insertPayload]).select();
+              if (error) { lastError = error; continue; }
+              setSkills(prev => [...prev, data[0]]);
+              insertedCount++;
+            }
           }
         }
-        if (importedCount > 0) showToast(`Successfully imported ${importedCount} skills!`);
+        if (insertedCount > 0 || updatedCount > 0) showToast(`Successfully imported skills: ${insertedCount} new, ${updatedCount} updated!`);
         else if (lastError) showToast(`Import failed: ${lastError.message}`);
         else showToast('Import complete: 0 rows found to import.');
       } catch (err) {
@@ -1785,7 +1814,8 @@ SkillsMatrix/
         
         if (nameIdx === -1) throw new Error(`Could not find a name column in CSV headers.`);
         
-        let importedCount = 0;
+        let insertedCount = 0;
+        let updatedCount = 0;
         let lastError = null;
         for (let i = 1; i < lines.length; i++) {
           const cols = parseCSVLine(lines[i], delimiter);
@@ -1794,22 +1824,33 @@ SkillsMatrix/
           const description = descIdx !== -1 ? cols[descIdx] : '';
           
           if (useDemoMode) {
-            setCategories(prev => [...prev, {
-              id: Date.now() + i,
-              name, description
-            }]);
-            importedCount++;
+            const existing = categories.find(c => c.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+              setCategories(prev => prev.map(c => c.id === existing.id ? { ...c, description } : c));
+              updatedCount++;
+            } else {
+              setCategories(prev => [...prev, { id: Date.now() + i, name, description }]);
+              insertedCount++;
+            }
           } else {
             const insertPayload = { name };
             if (description) insertPayload.description = description;
             
-            const { data, error } = await supabase.from('categories').insert([insertPayload]).select();
-            if (error) { lastError = error; continue; }
-            setCategories(prev => [...prev, data[0]]);
-            importedCount++;
+            const existing = categories.find(c => c.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+              const { data, error } = await supabase.from('categories').update(insertPayload).eq('id', existing.id).select();
+              if (error) { lastError = error; continue; }
+              setCategories(prev => prev.map(c => c.id === existing.id ? data[0] : c));
+              updatedCount++;
+            } else {
+              const { data, error } = await supabase.from('categories').insert([insertPayload]).select();
+              if (error) { lastError = error; continue; }
+              setCategories(prev => [...prev, data[0]]);
+              insertedCount++;
+            }
           }
         }
-        if (importedCount > 0) showToast(`Successfully imported ${importedCount} categories!`);
+        if (insertedCount > 0 || updatedCount > 0) showToast(`Successfully imported categories: ${insertedCount} new, ${updatedCount} updated!`);
         else if (lastError) showToast(`Import failed: ${lastError.message}`);
         else showToast('Import complete: 0 rows found to import.');
       } catch (err) {
@@ -1874,7 +1915,8 @@ SkillsMatrix/
         
         if (nameIdx === -1) throw new Error(`Could not find a name column in CSV headers.`);
         
-        let importedCount = 0;
+        let insertedCount = 0;
+        let updatedCount = 0;
         let lastError = null;
         for (let i = 1; i < lines.length; i++) {
           const cols = parseCSVLine(lines[i], delimiter);
@@ -1883,22 +1925,33 @@ SkillsMatrix/
           const description = descIdx !== -1 ? cols[descIdx] : '';
           
           if (useDemoMode) {
-            setTeams(prev => [...prev, {
-              id: Date.now() + i,
-              name, description
-            }]);
-            importedCount++;
+            const existing = teams.find(t => t.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+              setTeams(prev => prev.map(t => t.id === existing.id ? { ...t, description } : t));
+              updatedCount++;
+            } else {
+              setTeams(prev => [...prev, { id: Date.now() + i, name, description }]);
+              insertedCount++;
+            }
           } else {
             const insertPayload = { name };
             if (description) insertPayload.description = description;
             
-            const { data, error } = await supabase.from('teams').insert([insertPayload]).select();
-            if (error) { lastError = error; continue; }
-            setTeams(prev => [...prev, data[0]]);
-            importedCount++;
+            const existing = teams.find(t => t.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+              const { data, error } = await supabase.from('teams').update(insertPayload).eq('id', existing.id).select();
+              if (error) { lastError = error; continue; }
+              setTeams(prev => prev.map(t => t.id === existing.id ? data[0] : t));
+              updatedCount++;
+            } else {
+              const { data, error } = await supabase.from('teams').insert([insertPayload]).select();
+              if (error) { lastError = error; continue; }
+              setTeams(prev => [...prev, data[0]]);
+              insertedCount++;
+            }
           }
         }
-        if (importedCount > 0) showToast(`Successfully imported ${importedCount} teams!`);
+        if (insertedCount > 0 || updatedCount > 0) showToast(`Successfully imported teams: ${insertedCount} new, ${updatedCount} updated!`);
         else if (lastError) showToast(`Import failed: ${lastError.message}`);
         else showToast('Import complete: 0 rows found to import.');
       } catch (err) {
