@@ -292,6 +292,7 @@ function App() {
   const [developers, setDevelopers] = useState([]);
   const [skills, setSkills] = useState([]);
   const [developerSkills, setDeveloperSkills] = useState([]);
+  const [historicalSkills, setHistoricalSkills] = useState(new Set());
   const [teams, setTeams] = useState([]);
   const [personTeams, setPersonTeams] = useState([]);
   const [teamSkills, setTeamSkills] = useState([]);
@@ -502,6 +503,7 @@ function App() {
       }));
       setSkills(mockSkills);
       setDeveloperSkills(mockDeveloperSkills);
+        setHistoricalSkills(new Set(mockDeveloperSkills.map(ds => `${ds.developer_id}_${ds.skill_id}`)));
       setTeams(mockTeams);
       setPersonTeams(mockPersonTeams);
       setTeamSkills(mockTeamSkills);
@@ -549,6 +551,12 @@ function App() {
       if (skillsError) throw skillsError;
 
       // 4. Query person_skill_assessments junction (active rows only)
+      const { data: allHistoryData } = await supabase
+        .from('person_skill_assessments')
+        .select('person_id, skill_id');
+      const historicalSet = new Set(allHistoryData?.map(d => `${d.person_id}_${d.skill_id}`) || []);
+      setHistoricalSkills(historicalSet);
+
       const { data: junctionData, error: junctionError } = await supabase
         .from('person_skill_assessments')
         .select('*')
@@ -647,6 +655,7 @@ function App() {
       }));
       setSkills(mockSkills);
       setDeveloperSkills(mockDeveloperSkills);
+        setHistoricalSkills(new Set(mockDeveloperSkills.map(ds => `${ds.developer_id}_${ds.skill_id}`)));
       setTeams(mockTeams);
       setPersonTeams(mockPersonTeams);
       setCategories(mockCategories);
@@ -2889,6 +2898,7 @@ SkillsMatrix/
 
     try {
       // Optimistic UI Update to remove delay
+      setHistoricalSkills(prev => new Set(prev).add(`${devId}_${skillId}`));
       setDeveloperSkills(prev => {
         if (targetLevel === 'None') {
           return prev.filter((ds) => !(ds.developer_id === devId && ds.skill_id === skillId));
@@ -3056,7 +3066,7 @@ SkillsMatrix/
           onChange={(targetLevel) => handleSetSkillLevel(devId, skillId, targetLevel)}
           disabled={loading}
         />
-                {level !== 'None' && (
+                { (level !== 'None' || historicalSkills.has(`${devId}_${skillId}`)) && (
           <button
             type="button"
             onClick={() => fetchSkillTimeline(devId, skillId, person?.name || 'Unknown', skill?.name || 'Unknown')}
