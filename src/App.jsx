@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from './lib/supabaseClient';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ReferenceLine, LabelList } from 'recharts';
 import pkg from '../package.json';
 
 const APP_VERSION = `v${pkg.version}`;
@@ -7044,15 +7044,27 @@ CREATE INDEX idx_pt_current ON person_teams (person_id, team_id) WHERE is_curren
                         return new Date(actualDate).toLocaleDateString();
                       }}
                     />
-                    <Line 
+                                        <Line 
                       type="stepAfter" 
                       dataKey="level" 
                       stroke="#8b5cf6" 
                       strokeWidth={3} 
                       dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#0f172a' }} 
-                      activeDot={{ r: 6, fill: '#8b5cf6', strokeWidth: 0 }}
-                      animationDuration={1000}
-                    />
+                      activeDot={{ r: 6, fill: '#8b5cf6', strokeWidth: 0 }} 
+                      animationDuration={1000} 
+                    >
+                      {timelineData.length === 1 && (
+                        <LabelList 
+                          dataKey="level" 
+                          position="top" 
+                          offset={12} 
+                          fill="var(--text-primary)" 
+                          fontSize={12}
+                          fontWeight={600}
+                          formatter={(value) => `${value} Star${value !== 1 ? 's' : ''}`}
+                        />
+                      )}
+                    </Line>
                   </LineChart>
                 </ResponsiveContainer>
               )}
