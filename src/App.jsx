@@ -332,6 +332,8 @@ function App() {
   const [inlineMemberEmail, setInlineMemberEmail] = useState('');
   const [selectedDevInfo, setSelectedDevInfo] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [timelineData, setTimelineData] = useState(null);
+  const [timelineContext, setTimelineContext] = useState(null);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState(null);
 
