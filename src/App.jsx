@@ -3046,14 +3046,14 @@ SkillsMatrix/
             border: 'none', 
             cursor: 'pointer', 
             padding: '2px', 
-            color: 'var(--text-muted)',
+            color: 'var(--accent-primary)',
             display: 'flex',
             alignItems: 'center',
-            opacity: 0.6,
-            transition: 'opacity 0.2s ease, color 0.2s ease'
+            opacity: 1,
+            transition: 'opacity 0.2s ease, filter 0.2s ease'
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--accent-primary)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.6'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+          onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.2)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.filter = 'brightness(1)'; }}
         >
           <Activity size={14} />
         </button>
