@@ -3008,7 +3008,11 @@ SkillsMatrix/
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setTimelineData(data.map(d => ({ date: d.valid_from, level: d.competency_level_id })));
+        setTimelineData(data.map((d, index) => ({ 
+          uniqueDate: `${d.valid_from}_${index}`,
+          date: d.valid_from, 
+          level: d.competency_level_id 
+        })));
       } else {
         setTimelineData([]);
       }
@@ -7012,12 +7016,15 @@ CREATE INDEX idx_pt_current ON person_teams (person_id, team_id) WHERE is_curren
                   <LineChart data={timelineData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" vertical={false} />
                     <XAxis 
-                      dataKey="date" 
+                      dataKey="uniqueDate" 
                       stroke="var(--text-muted)" 
                       fontSize={11} 
                       tickLine={false} 
                       axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
-                      tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                      tickFormatter={(val) => {
+                        const actualDate = val ? val.toString().split('_')[0] : '';
+                        return new Date(actualDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+                      }}
                     />
                     <YAxis 
                       domain={[0, 5]} 
@@ -7032,7 +7039,10 @@ CREATE INDEX idx_pt_current ON person_teams (person_id, team_id) WHERE is_curren
                       itemStyle={{ color: 'var(--accent-primary)', fontWeight: 600 }}
                       labelStyle={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}
                       formatter={(value) => [`${value} Star${value !== 1 ? 's' : ''}`, 'Level']}
-                      labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                      labelFormatter={(label) => {
+                        const actualDate = label ? label.toString().split('_')[0] : '';
+                        return new Date(actualDate).toLocaleDateString();
+                      }}
                     />
                     <Line 
                       type="stepAfter" 
