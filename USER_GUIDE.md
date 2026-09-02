@@ -298,6 +298,9 @@ Each developer profile maintains full organizational metadata:
 
 The **Tracked Skills** tab acts as the master technical catalog of your organization.
 
+#### Features
+- **Smart CSV Import & Export Engine**: Download the complete skills catalog as a CSV, or bulk import skills with auto-delimiter detection and category auto-matching.
+
 #### 1. Catalog Attributes & Live Metrics
 - **Skill Name**: Unique name of the technology or competency (e.g., *React*, *Node.js*, *PostgreSQL*, *Docker*).
 - **Category**: Associated domain category (e.g., *Frontend*, *Backend*, *Database*, *DevOps*).
@@ -314,9 +317,12 @@ The **Tracked Skills** tab acts as the master technical catalog of your organiza
 
 ---
 
-### Tab 4: 🏷️ Skill Categories Taxonomy (`categories`)
+### Tab 4: 🗂️ Categories Management (`categories`)
 
-The **Categories** tab manages the high-level taxonomy domain structure used to organize skills into technical discipline groups.
+Categories act as high-level folders to group related technologies (e.g., `Frontend`, `Backend`, `DevOps`, `Design`).
+
+#### Features
+- **Smart CSV Import & Export Engine**: Download all categories as a CSV, or bulk import categories with auto-delimiter detection.
 
 #### 1. Domain Taxonomy Structure
 - **Pre-configured Taxonomy Defaults**: *Frontend*, *Backend*, *Database*, *DevOps*, *Design*, *Other*.
@@ -329,9 +335,12 @@ The **Categories** tab manages the high-level taxonomy domain structure used to 
 
 ---
 
-### Tab 5: 🏢 Teams Governance & Skill Requirements (`teams`)
+### Tab 5: 🏢 Teams Management (`teams`)
 
-The **Teams** tab manages operational teams, roster placements, and target skill profiles required for each team.
+Manage functional or organizational units. Teams allow you to define standardized required skill profiles.
+
+#### Features
+- **Smart CSV Import & Export Engine**: Download all teams as a CSV, or bulk import teams with auto-delimiter detection.
 
 #### 1. Team Administration & Roster Overview
 - **Team CRUD**: Create, edit, and delete operational teams.

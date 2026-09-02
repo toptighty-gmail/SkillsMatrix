@@ -1635,7 +1635,283 @@ SkillsMatrix/
     reader.readAsText(file);
   };
 
-  // CRUD: Update a Developer (Person)
+
+  // --- Export / Import for Skills ---
+  const handleExportSkills = () => {
+    if (skills.length === 0) {
+      showToast('No skills to export');
+      return;
+    }
+    const headers = ['Name', 'Vendor', 'Description', 'Category'];
+    const csvRows = [headers.join(',')];
+    skills.forEach(s => {
+      const escape = (val) => `"${(val || '').toString().replace(/"/g, '""')}"`;
+      const catName = categories.find(c => c.id === s.category_id)?.name || '';
+      csvRows.push([escape(s.name), escape(s.vendor), escape(s.description), escape(catName)].join(','));
+    });
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `skills_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Exported skills to CSV!');
+  };
+
+  const handleImportSkills = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setLoading(true);
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        let text = evt.target.result || '';
+        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+        const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
+        if (lines.length < 2) throw new Error('CSV file must contain a header row and at least one data row.');
+        const headerLine = lines[0];
+        const commaCount = (headerLine.match(/,/g) || []).length;
+        const semiCount = (headerLine.match(/;/g) || []).length;
+        const tabCount = (headerLine.match(/\t/g) || []).length;
+        let delimiter = ',';
+        if (semiCount > commaCount && semiCount > tabCount) delimiter = ';';
+        if (tabCount > commaCount && tabCount > semiCount) delimiter = '\t';
+        const rawHeaders = parseCSVLine(headerLine, delimiter);
+        const headerTokens = rawHeaders.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+        const findIdx = (keywords) => headerTokens.findIndex(h => keywords.some(k => h.includes(k)));
+        
+        const nameIdx = findIdx(['name', 'skill']);
+        const vendorIdx = findIdx(['vendor', 'provider']);
+        const descIdx = findIdx(['description', 'desc']);
+        const catIdx = findIdx(['category']);
+        
+        if (nameIdx === -1) throw new Error(`Could not find a name column in CSV headers.`);
+        
+        let importedCount = 0;
+        let lastError = null;
+        for (let i = 1; i < lines.length; i++) {
+          const cols = parseCSVLine(lines[i], delimiter);
+          const name = cols[nameIdx];
+          if (!name) continue;
+          const vendor = vendorIdx !== -1 ? cols[vendorIdx] : '';
+          const description = descIdx !== -1 ? cols[descIdx] : '';
+          const catName = catIdx !== -1 ? cols[catIdx] : '';
+          
+          let matchedCat = categories.find(c => c.name.toLowerCase() === (catName || '').toLowerCase());
+          
+          if (useDemoMode) {
+            setSkills(prev => [...prev, {
+              id: `skill-imp-${Date.now()}-${i}`,
+              name, vendor, description, category_id: matchedCat ? matchedCat.id : null, category: matchedCat ? matchedCat.name : ''
+            }]);
+            importedCount++;
+          } else {
+            const insertPayload = { name };
+            if (vendor) insertPayload.vendor = vendor;
+            if (description) insertPayload.description = description;
+            if (matchedCat) insertPayload.category_id = matchedCat.id;
+            
+            const { data, error } = await supabase.from('skills').insert([insertPayload]).select();
+            if (error) { lastError = error; continue; }
+            setSkills(prev => [...prev, data[0]]);
+            importedCount++;
+          }
+        }
+        if (importedCount > 0) showToast(`Successfully imported ${importedCount} skills!`);
+        else if (lastError) showToast(`Import failed: ${lastError.message}`);
+        else showToast('Import complete: 0 rows found to import.');
+      } catch (err) {
+        console.error(err);
+        showToast(`Import error: ${err.message}`);
+      } finally {
+        setLoading(false);
+        e.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // --- Export / Import for Categories ---
+  const handleExportCategories = () => {
+    if (categories.length === 0) {
+      showToast('No categories to export');
+      return;
+    }
+    const headers = ['Name', 'Description'];
+    const csvRows = [headers.join(',')];
+    categories.forEach(c => {
+      const escape = (val) => `"${(val || '').toString().replace(/"/g, '""')}"`;
+      csvRows.push([escape(c.name), escape(c.description)].join(','));
+    });
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `categories_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Exported categories to CSV!');
+  };
+
+  const handleImportCategories = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setLoading(true);
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        let text = evt.target.result || '';
+        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+        const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
+        if (lines.length < 2) throw new Error('CSV file must contain a header row and at least one data row.');
+        const headerLine = lines[0];
+        const commaCount = (headerLine.match(/,/g) || []).length;
+        const semiCount = (headerLine.match(/;/g) || []).length;
+        const tabCount = (headerLine.match(/\t/g) || []).length;
+        let delimiter = ',';
+        if (semiCount > commaCount && semiCount > tabCount) delimiter = ';';
+        if (tabCount > commaCount && tabCount > semiCount) delimiter = '\t';
+        const rawHeaders = parseCSVLine(headerLine, delimiter);
+        const headerTokens = rawHeaders.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+        const findIdx = (keywords) => headerTokens.findIndex(h => keywords.some(k => h.includes(k)));
+        
+        const nameIdx = findIdx(['name', 'category']);
+        const descIdx = findIdx(['description', 'desc']);
+        
+        if (nameIdx === -1) throw new Error(`Could not find a name column in CSV headers.`);
+        
+        let importedCount = 0;
+        let lastError = null;
+        for (let i = 1; i < lines.length; i++) {
+          const cols = parseCSVLine(lines[i], delimiter);
+          const name = cols[nameIdx];
+          if (!name) continue;
+          const description = descIdx !== -1 ? cols[descIdx] : '';
+          
+          if (useDemoMode) {
+            setCategories(prev => [...prev, {
+              id: Date.now() + i,
+              name, description
+            }]);
+            importedCount++;
+          } else {
+            const insertPayload = { name };
+            if (description) insertPayload.description = description;
+            
+            const { data, error } = await supabase.from('categories').insert([insertPayload]).select();
+            if (error) { lastError = error; continue; }
+            setCategories(prev => [...prev, data[0]]);
+            importedCount++;
+          }
+        }
+        if (importedCount > 0) showToast(`Successfully imported ${importedCount} categories!`);
+        else if (lastError) showToast(`Import failed: ${lastError.message}`);
+        else showToast('Import complete: 0 rows found to import.');
+      } catch (err) {
+        console.error(err);
+        showToast(`Import error: ${err.message}`);
+      } finally {
+        setLoading(false);
+        e.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // --- Export / Import for Teams ---
+  const handleExportTeams = () => {
+    if (teams.length === 0) {
+      showToast('No teams to export');
+      return;
+    }
+    const headers = ['Name', 'Description'];
+    const csvRows = [headers.join(',')];
+    teams.forEach(t => {
+      const escape = (val) => `"${(val || '').toString().replace(/"/g, '""')}"`;
+      csvRows.push([escape(t.name), escape(t.description)].join(','));
+    });
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `teams_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Exported teams to CSV!');
+  };
+
+  const handleImportTeams = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setLoading(true);
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        let text = evt.target.result || '';
+        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+        const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
+        if (lines.length < 2) throw new Error('CSV file must contain a header row and at least one data row.');
+        const headerLine = lines[0];
+        const commaCount = (headerLine.match(/,/g) || []).length;
+        const semiCount = (headerLine.match(/;/g) || []).length;
+        const tabCount = (headerLine.match(/\t/g) || []).length;
+        let delimiter = ',';
+        if (semiCount > commaCount && semiCount > tabCount) delimiter = ';';
+        if (tabCount > commaCount && tabCount > semiCount) delimiter = '\t';
+        const rawHeaders = parseCSVLine(headerLine, delimiter);
+        const headerTokens = rawHeaders.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+        const findIdx = (keywords) => headerTokens.findIndex(h => keywords.some(k => h.includes(k)));
+        
+        const nameIdx = findIdx(['name', 'team']);
+        const descIdx = findIdx(['description', 'desc']);
+        
+        if (nameIdx === -1) throw new Error(`Could not find a name column in CSV headers.`);
+        
+        let importedCount = 0;
+        let lastError = null;
+        for (let i = 1; i < lines.length; i++) {
+          const cols = parseCSVLine(lines[i], delimiter);
+          const name = cols[nameIdx];
+          if (!name) continue;
+          const description = descIdx !== -1 ? cols[descIdx] : '';
+          
+          if (useDemoMode) {
+            setTeams(prev => [...prev, {
+              id: Date.now() + i,
+              name, description
+            }]);
+            importedCount++;
+          } else {
+            const insertPayload = { name };
+            if (description) insertPayload.description = description;
+            
+            const { data, error } = await supabase.from('teams').insert([insertPayload]).select();
+            if (error) { lastError = error; continue; }
+            setTeams(prev => [...prev, data[0]]);
+            importedCount++;
+          }
+        }
+        if (importedCount > 0) showToast(`Successfully imported ${importedCount} teams!`);
+        else if (lastError) showToast(`Import failed: ${lastError.message}`);
+        else showToast('Import complete: 0 rows found to import.');
+      } catch (err) {
+        console.error(err);
+        showToast(`Import error: ${err.message}`);
+      } finally {
+        setLoading(false);
+        e.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
+\n  // CRUD: Update a Developer (Person)
   const handleUpdateDeveloper = async (devId) => {
     if (!editDevName || !editDevRole) return;
     setLoading(true);
@@ -4256,7 +4532,34 @@ SkillsMatrix/
           {/* Tab 3: Tracked Skills */}
           {activeTab === 'skills' && (
             <div className="glass-panel" style={{ padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Tracked Skills List</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Tracked Skills List</h3>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button 
+                    className="btn-secondary" 
+                    style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}
+                    onClick={handleExportSkills}
+                    title="Export skills to CSV file"
+                  >
+                    <Download size={14} style={{ marginRight: '6px' }} />
+                    Export CSV
+                  </button>
+                  <label 
+                    className="btn-secondary" 
+                    style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem', cursor: 'pointer', margin: 0, display: 'flex', alignItems: 'center' }}
+                    title="Import skills from CSV file"
+                  >
+                    <Upload size={14} style={{ marginRight: '6px' }} />
+                    Import CSV
+                    <input 
+                      type="file" 
+                      accept=".csv" 
+                      style={{ display: 'none' }} 
+                      onChange={handleImportSkills}
+                    />
+                  </label>
+                </div>
+              </div>
               
               {/* Add Skill Form */}
               <form onSubmit={handleAddSkill} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
@@ -4815,7 +5118,34 @@ SkillsMatrix/
           {/* Tab 4: Skill Categories */}
           {activeTab === 'categories' && (
             <div className="glass-panel" style={{ padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Manage Categories</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Manage Categories</h3>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button 
+                    className="btn-secondary" 
+                    style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}
+                    onClick={handleExportCategories}
+                    title="Export categories to CSV file"
+                  >
+                    <Download size={14} style={{ marginRight: '6px' }} />
+                    Export CSV
+                  </button>
+                  <label 
+                    className="btn-secondary" 
+                    style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem', cursor: 'pointer', margin: 0, display: 'flex', alignItems: 'center' }}
+                    title="Import categories from CSV file"
+                  >
+                    <Upload size={14} style={{ marginRight: '6px' }} />
+                    Import CSV
+                    <input 
+                      type="file" 
+                      accept=".csv" 
+                      style={{ display: 'none' }} 
+                      onChange={handleImportCategories}
+                    />
+                  </label>
+                </div>
+              </div>
               
               {/* Add Category Form */}
               <form onSubmit={handleAddCategory} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
@@ -4984,7 +5314,34 @@ SkillsMatrix/
           {/* Tab 4: Teams Management */}
           {activeTab === 'teams' && (
             <div className="glass-panel" style={{ padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Teams Management</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Teams Management</h3>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button 
+                    className="btn-secondary" 
+                    style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}
+                    onClick={handleExportTeams}
+                    title="Export teams to CSV file"
+                  >
+                    <Download size={14} style={{ marginRight: '6px' }} />
+                    Export CSV
+                  </button>
+                  <label 
+                    className="btn-secondary" 
+                    style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem', cursor: 'pointer', margin: 0, display: 'flex', alignItems: 'center' }}
+                    title="Import teams from CSV file"
+                  >
+                    <Upload size={14} style={{ marginRight: '6px' }} />
+                    Import CSV
+                    <input 
+                      type="file" 
+                      accept=".csv" 
+                      style={{ display: 'none' }} 
+                      onChange={handleImportTeams}
+                    />
+                  </label>
+                </div>
+              </div>
               
               {/* Add Team Form */}
               <form onSubmit={handleAddTeam} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem' }}>
