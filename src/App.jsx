@@ -3308,14 +3308,7 @@ SkillsMatrix/
                               ...getPortalDropdownStyle(teamBtnRef)
                             }}
                           >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
-                              <button
-                                type="button"
-                                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                                onClick={() => setSelectedTeamNames([])}
-                              >
-                                Select All (Reset)
-                              </button>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
                               <button
                                 type="button"
                                 style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
@@ -3324,6 +3317,31 @@ SkillsMatrix/
                                 Done
                               </button>
                             </div>
+                            <label
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.45rem 0.5rem',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                color: selectedTeamNames.length === 0 ? '#fff' : 'var(--text-secondary)',
+                                background: selectedTeamNames.length === 0 ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                transition: 'background 0.15s ease',
+                                marginBottom: '0.2rem'
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedTeamNames.length === 0}
+                                onChange={() => setSelectedTeamNames([])}
+                                style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                              />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', width: '100%' }}>
+                                <span style={{ fontWeight: selectedTeamNames.length === 0 ? 600 : 400 }}>Select All</span>
+                              </div>
+                            </label>
 
                             {['No Team', ...teams.map(t => t.name)].map((tName) => {
                               const isChecked = selectedTeamNames.length === 0 || selectedTeamNames.includes(tName);
@@ -3448,14 +3466,7 @@ SkillsMatrix/
                               ...getPortalDropdownStyle(devBtnRef)
                             }}
                           >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
-                              <button
-                                type="button"
-                                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                                onClick={() => setSelectedDevIds([])}
-                              >
-                                Select All (Reset)
-                              </button>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
                               <button
                                 type="button"
                                 style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
@@ -3464,6 +3475,31 @@ SkillsMatrix/
                                 Done
                               </button>
                             </div>
+                            <label
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.45rem 0.5rem',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                color: selectedDevIds.length === 0 ? '#fff' : 'var(--text-secondary)',
+                                background: selectedDevIds.length === 0 ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                transition: 'background 0.15s ease',
+                                marginBottom: '0.2rem'
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedDevIds.length === 0}
+                                onChange={() => setSelectedDevIds([])}
+                                style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                              />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', width: '100%' }}>
+                                <span style={{ fontWeight: selectedDevIds.length === 0 ? 600 : 400 }}>Select All</span>
+                              </div>
+                            </label>
 
                             {(() => {
                               const availDevs = developers
@@ -3600,14 +3636,7 @@ SkillsMatrix/
                               ...getPortalDropdownStyle(skillBtnRef)
                             }}
                           >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
-                              <button
-                                type="button"
-                                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                                onClick={() => setSelectedSkillIds([])}
-                              >
-                                Select All (Reset)
-                              </button>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
                               <button
                                 type="button"
                                 style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
@@ -3616,6 +3645,31 @@ SkillsMatrix/
                                 Done
                               </button>
                             </div>
+                            <label
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.45rem 0.5rem',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                color: selectedSkillIds.length === 0 ? '#fff' : 'var(--text-secondary)',
+                                background: selectedSkillIds.length === 0 ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                transition: 'background 0.15s ease',
+                                marginBottom: '0.2rem'
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedSkillIds.length === 0}
+                                onChange={() => setSelectedSkillIds([])}
+                                style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                              />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', width: '100%' }}>
+                                <span style={{ fontWeight: selectedSkillIds.length === 0 ? 600 : 400 }}>Select All</span>
+                              </div>
+                            </label>
 
                             {skills
                               .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
@@ -3738,14 +3792,7 @@ SkillsMatrix/
                               ...getPortalDropdownStyle(levelBtnRef)
                             }}
                           >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
-                              <button
-                                type="button"
-                                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                                onClick={() => setSelectedLevelFilters([])}
-                              >
-                                Select All (Reset)
-                              </button>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
                               <button
                                 type="button"
                                 style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
@@ -3754,6 +3801,31 @@ SkillsMatrix/
                                 Done
                               </button>
                             </div>
+                            <label
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.45rem 0.5rem',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                color: selectedLevelFilters.length === 0 ? '#fff' : 'var(--text-secondary)',
+                                background: selectedLevelFilters.length === 0 ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                transition: 'background 0.15s ease',
+                                marginBottom: '0.2rem'
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedLevelFilters.length === 0}
+                                onChange={() => setSelectedLevelFilters([])}
+                                style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                              />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', width: '100%' }}>
+                                <span style={{ fontWeight: selectedLevelFilters.length === 0 ? 600 : 400 }}>Select All</span>
+                              </div>
+                            </label>
 
                             {[
                               { level: 0, label: '0 – None', desc: '0 Stars', color: 'var(--text-muted)' },
@@ -4209,22 +4281,40 @@ SkillsMatrix/
                           ...getPortalDropdownStyle(devListTeamBtnRef)
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
-                          <button
-                            type="button"
-                            style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                            onClick={() => setSelectedDevListTeamNames([])}
-                          >
-                            Select All (Reset)
-                          </button>
-                          <button
-                            type="button"
-                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                            onClick={() => setIsDevListTeamDropdownOpen(false)}
-                          >
-                            Done
-                          </button>
-                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setIsDevListTeamDropdownOpen(false)}
+                              >
+                                Done
+                              </button>
+                            </div>
+                            <label
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.45rem 0.5rem',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                color: selectedDevListTeamNames.length === 0 ? '#fff' : 'var(--text-secondary)',
+                                background: selectedDevListTeamNames.length === 0 ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                transition: 'background 0.15s ease',
+                                marginBottom: '0.2rem'
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedDevListTeamNames.length === 0}
+                                onChange={() => setSelectedDevListTeamNames([])}
+                                style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                              />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', width: '100%' }}>
+                                <span style={{ fontWeight: selectedDevListTeamNames.length === 0 ? 600 : 400 }}>Select All</span>
+                              </div>
+                            </label>
 
                         {['No Team', ...teams.map(t => t.name)].map((tName) => {
                           const isChecked = selectedDevListTeamNames.length === 0 || selectedDevListTeamNames.includes(tName);
@@ -4336,22 +4426,40 @@ SkillsMatrix/
                           ...getPortalDropdownStyle(devListRoleBtnRef)
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
-                          <button
-                            type="button"
-                            style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                            onClick={() => setSelectedDevListRoleNames([])}
-                          >
-                            Select All (Reset)
-                          </button>
-                          <button
-                            type="button"
-                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                            onClick={() => setIsDevListRoleDropdownOpen(false)}
-                          >
-                            Done
-                          </button>
-                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setIsDevListRoleDropdownOpen(false)}
+                              >
+                                Done
+                              </button>
+                            </div>
+                            <label
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.45rem 0.5rem',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                color: selectedDevListRoleNames.length === 0 ? '#fff' : 'var(--text-secondary)',
+                                background: selectedDevListRoleNames.length === 0 ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                transition: 'background 0.15s ease',
+                                marginBottom: '0.2rem'
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedDevListRoleNames.length === 0}
+                                onChange={() => setSelectedDevListRoleNames([])}
+                                style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                              />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', width: '100%' }}>
+                                <span style={{ fontWeight: selectedDevListRoleNames.length === 0 ? 600 : 400 }}>Select All</span>
+                              </div>
+                            </label>
 
                         {(() => {
                           const allRoles = Array.from(new Set(developers.map(d => d.role).filter(Boolean))).sort((a, b) => a.localeCompare(b));
@@ -4825,22 +4933,40 @@ SkillsMatrix/
                           ...getPortalDropdownStyle(categoryBtnRef)
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
-                          <button
-                            type="button"
-                            style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                            onClick={() => setSelectedCategoryNames([])}
-                          >
-                            Select All (Reset)
-                          </button>
-                          <button
-                            type="button"
-                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                            onClick={() => setIsCategoryDropdownOpen(false)}
-                          >
-                            Done
-                          </button>
-                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setIsCategoryDropdownOpen(false)}
+                              >
+                                Done
+                              </button>
+                            </div>
+                            <label
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.45rem 0.5rem',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                color: selectedCategoryNames.length === 0 ? '#fff' : 'var(--text-secondary)',
+                                background: selectedCategoryNames.length === 0 ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                transition: 'background 0.15s ease',
+                                marginBottom: '0.2rem'
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedCategoryNames.length === 0}
+                                onChange={() => setSelectedCategoryNames([])}
+                                style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                              />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', width: '100%' }}>
+                                <span style={{ fontWeight: selectedCategoryNames.length === 0 ? 600 : 400 }}>Select All</span>
+                              </div>
+                            </label>
 
                         {[...categories].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((cat) => {
                           const cName = cat.name;
@@ -4966,22 +5092,40 @@ SkillsMatrix/
                           ...getPortalDropdownStyle(vendorBtnRef)
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
-                          <button
-                            type="button"
-                            style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                            onClick={() => setSelectedVendorNames([])}
-                          >
-                            Select All (Reset)
-                          </button>
-                          <button
-                            type="button"
-                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
-                            onClick={() => setIsVendorDropdownOpen(false)}
-                          >
-                            Done
-                          </button>
-                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.25rem 0.5rem 0.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '0.4rem' }}>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                onClick={() => setIsVendorDropdownOpen(false)}
+                              >
+                                Done
+                              </button>
+                            </div>
+                            <label
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.45rem 0.5rem',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                color: selectedVendorNames.length === 0 ? '#fff' : 'var(--text-secondary)',
+                                background: selectedVendorNames.length === 0 ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                transition: 'background 0.15s ease',
+                                marginBottom: '0.2rem'
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedVendorNames.length === 0}
+                                onChange={() => setSelectedVendorNames([])}
+                                style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                              />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', width: '100%' }}>
+                                <span style={{ fontWeight: selectedVendorNames.length === 0 ? 600 : 400 }}>Select All</span>
+                              </div>
+                            </label>
 
                         {(() => {
                           const vendorList = [
