@@ -3344,7 +3344,7 @@ SkillsMatrix/
                             </label>
 
                             {['No Team', ...teams.map(t => t.name)].map((tName) => {
-                              const isChecked = selectedTeamNames.length === 0 || selectedTeamNames.includes(tName);
+                              const isChecked = selectedTeamNames.includes(tName);
                               return (
                                 <label
                                   key={tName}
@@ -3510,7 +3510,7 @@ SkillsMatrix/
                                 <>
                                   {availDevs.map((dev) => {
                                     const devIdStr = String(dev.id);
-                                    const isChecked = selectedDevIds.length === 0 || selectedDevIds.includes(devIdStr);
+                                    const isChecked = selectedDevIds.includes(devIdStr);
                                     return (
                                       <label
                                         key={dev.id}
@@ -3675,7 +3675,7 @@ SkillsMatrix/
                               .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
                               .map((sk) => {
                                 const skIdStr = String(sk.id);
-                                const isChecked = selectedSkillIds.length === 0 || selectedSkillIds.includes(skIdStr);
+                                const isChecked = selectedSkillIds.includes(skIdStr);
                                 return (
                                   <label
                                     key={sk.id}
@@ -3835,7 +3835,7 @@ SkillsMatrix/
                               { level: 4, label: '4 – Strong', desc: '4 Stars', color: 'var(--color-strong)' },
                               { level: 5, label: '5 – Expert', desc: '5 Stars', color: 'var(--color-expert)' }
                             ].map((lvlObj) => {
-                              const isChecked = selectedLevelFilters.length === 0 || selectedLevelFilters.includes(lvlObj.level);
+                              const isChecked = selectedLevelFilters.includes(lvlObj.level);
                               return (
                                 <label
                                   key={lvlObj.level}
@@ -4227,9 +4227,8 @@ SkillsMatrix/
                     className="form-select"
                     onClick={() => setIsDevListTeamDropdownOpen(!isDevListTeamDropdownOpen)}
                     style={{
-                      height: '38px',
-                      padding: '0.4rem 0.85rem',
-                      fontSize: '0.85rem',
+                      height: '42px',
+                              padding: '0.5rem 1rem',
                       display: 'flex',
                       alignItems: 'center',
                       justify: 'space-between',
@@ -4317,7 +4316,7 @@ SkillsMatrix/
                             </label>
 
                         {['No Team', ...teams.map(t => t.name)].map((tName) => {
-                          const isChecked = selectedDevListTeamNames.length === 0 || selectedDevListTeamNames.includes(tName);
+                          const isChecked = selectedDevListTeamNames.includes(tName);
                           return (
                             <label
                               key={tName}
@@ -4372,9 +4371,8 @@ SkillsMatrix/
                     className="form-select"
                     onClick={() => setIsDevListRoleDropdownOpen(!isDevListRoleDropdownOpen)}
                     style={{
-                      height: '38px',
-                      padding: '0.4rem 0.85rem',
-                      fontSize: '0.85rem',
+                      height: '42px',
+                              padding: '0.5rem 1rem',
                       display: 'flex',
                       alignItems: 'center',
                       justify: 'space-between',
@@ -4464,7 +4462,7 @@ SkillsMatrix/
                         {(() => {
                           const allRoles = Array.from(new Set(developers.map(d => d.role).filter(Boolean))).sort((a, b) => a.localeCompare(b));
                           return allRoles.map((r) => {
-                            const isChecked = selectedDevListRoleNames.length === 0 || selectedDevListRoleNames.includes(r);
+                            const isChecked = selectedDevListRoleNames.includes(r);
                             return (
                               <label
                                 key={r}
@@ -4879,9 +4877,8 @@ SkillsMatrix/
                     className="form-select"
                     onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
                     style={{
-                      height: '38px',
-                      padding: '0.4rem 0.85rem',
-                      fontSize: '0.85rem',
+                      height: '42px',
+                              padding: '0.5rem 1rem',
                       display: 'flex',
                       alignItems: 'center',
                       justify: 'space-between',
@@ -4970,7 +4967,7 @@ SkillsMatrix/
 
                         {[...categories].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((cat) => {
                           const cName = cat.name;
-                          const isChecked = selectedCategoryNames.length === 0 || selectedCategoryNames.includes(cName);
+                          const isChecked = selectedCategoryNames.includes(cName);
                           return (
                             <label
                               key={cat.id}
@@ -5038,9 +5035,8 @@ SkillsMatrix/
                     className="form-select"
                     onClick={() => setIsVendorDropdownOpen(!isVendorDropdownOpen)}
                     style={{
-                      height: '38px',
-                      padding: '0.4rem 0.85rem',
-                      fontSize: '0.85rem',
+                      height: '42px',
+                              padding: '0.5rem 1rem',
                       display: 'flex',
                       alignItems: 'center',
                       justify: 'space-between',
@@ -5133,7 +5129,7 @@ SkillsMatrix/
                             'NO_VENDOR'
                           ];
                           return vendorList.map((v) => {
-                            const isChecked = selectedVendorNames.length === 0 || selectedVendorNames.includes(v);
+                            const isChecked = selectedVendorNames.includes(v);
                             const displayLabel = v === 'NO_VENDOR' ? 'No Vendor Specified' : v;
                             return (
                               <label
