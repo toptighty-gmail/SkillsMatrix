@@ -242,9 +242,13 @@ The **Skills Matrix Grid** is the primary interactive hub of the application. It
 - **Star Rating Range**: Click on stars (1 to 5) to instantly evaluate a developer's proficiency level in real time.
 - **Rating Reset Controls**: Click the active star rating again or click the **✕ (reset)** button to revert the rating to **0 stars (None)**.
 - **Interactive Level Tooltips**: Hover over any star to reveal detailed tooltips describing the exact performance expectations for that competency level (0: None, 1: Basic, 2: Emerging, 3: Competent, 4: Strong, 5: Expert).
+- **Skill Timeline & Progress History**: Click the vivid purple Activity icon next to any star rating to view an interactive chronological timeline chart of that developer's skill progression. 
+  - The timeline automatically handles same-day updates to avoid overlapping data points.
+  - An inline label explicitly displays the rating if a developer has only a single history record.
+  - The Activity icon intelligently auto-hides if a team member has zero stars and zero past history, but remains visible if any historical data exists.
 
 #### 2. Comprehensive Multi-Facet Filtering Engine
-The matrix grid includes a multi-select filtering panel to slice data across 7 dimensions:
+The matrix grid includes a multi-select filtering panel to slice data across 7 dimensions. All dropdown filters feature a unified, dark-themed custom portal design to prevent clipping and include an auto-selected "Select All" option by default:
 - **Filter by Team**: Multi-select dropdown to filter developer rows by specific teams (or view all teams).
 - **Filter by Team Member**: Multi-select dropdown to focus on specific developers.
 - **Filter by Skill**: Multi-select dropdown to isolate specific skills across the grid.
@@ -254,6 +258,7 @@ The matrix grid includes a multi-select filtering panel to slice data across 7 d
 - **Real-Time Skill Search**: Instant text search box to filter skill columns by query string on the fly.
 
 #### 3. Matrix Sorting, Column Resizing, & Gap Analysis
+- **Sticky Table Headers**: Table header rows (skill titles and team member names) are locked and remain visible while scrolling through the matrix.
 - **Interactive Drag & Resize Columns**: Drag the vertical resizer handle on the right edge of any table column header (`<th>`) to dynamically adjust column widths across all grids and management tables in real time.
 - **Developer Name Sorting**: Toggle developer row sorting alphabetically in ascending (`A-Z`) or descending (`Z-A`) order.
 - **Team Target Skills Context**: Visual indicator badges highlight target skills designated for each team, making it easy to identify capability gaps where team members fall below target standards.
@@ -488,6 +493,7 @@ The application features dual-mode architecture:
 2. Select a team filter to focus on your team.
 3. Click the star ratings corresponding to each team member and skill cell to record or update competency levels.
 4. When updating a rating, the application marks the previous record as `is_current = false` with `valid_to = YYYY-MM-DD`, and inserts a new active record with `is_current = true` and `valid_from = YYYY-MM-DD`, maintaining a permanent progress history for team reporting.
+5. **Optimistic UI Updates**: Skill rating changes (including setting a skill to 'None') are reflected instantaneously on the matrix grid via optimistic state rendering to prevent any visual delay while background database queries process.
 
 ---
 
