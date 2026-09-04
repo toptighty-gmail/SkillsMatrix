@@ -3093,7 +3093,7 @@ SkillsMatrix/
   };
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${activeTab === 'matrix' ? 'matrix-active-layout' : ''}`}>
       {/* Toast Notification */}
       {toast && (
         <div className="toast">
