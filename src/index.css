@@ -276,7 +276,7 @@ h1, h2, h3, h4, h5, h6 {
   overflow-y: auto;
   width: 100%;
   max-width: 100%;
-  max-height: calc(100vh - 250px);
+  max-height: calc(100vh - 400px);
   min-height: 350px;
   border-radius: 12px;
   position: relative;
