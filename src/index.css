@@ -276,35 +276,12 @@ h1, h2, h3, h4, h5, h6 {
   overflow-y: auto;
   width: 100%;
   max-width: 100%;
-  max-height: calc(100vh - 480px);
-  min-height: 200px;
+  max-height: 65vh;
+  min-height: 300px;
   border-radius: 12px;
   position: relative;
   border: 1px solid var(--border-color);
   box-sizing: border-box;
-}
-
-/* Lock matrix layout to 100vh so scrollbars are always visible without page scroll */
-.app-container.matrix-active-layout {
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.app-container.matrix-active-layout .dashboard-grid,
-.app-container.matrix-active-layout main,
-.app-container.matrix-active-layout .glass-panel {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}
-
-.app-container.matrix-active-layout .matrix-container {
-  flex: 1;
-  min-height: 0;
-  max-height: none;
 }
 
 .matrix-table {
