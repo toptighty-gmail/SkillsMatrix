@@ -30,7 +30,9 @@ import {
   Download,
   Upload,
   FileText,
-  Printer
+  Printer,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 
 // Predefined mock data for Demo Mode
@@ -339,6 +341,7 @@ function App() {
   const [timelineContext, setTimelineContext] = useState(null);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState(null);
+  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
 
   // Column Resizer State & Handlers
   const [columnWidths, setColumnWidths] = useState({});
@@ -479,6 +482,29 @@ function App() {
   const showToast = (message) => {
     setToast(message);
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleGenerateAIDescription = (skillName, setDescCallback) => {
+    if (!skillName || !skillName.trim()) {
+      showToast('Please enter a Skill Name first');
+      return;
+    }
+    setIsGeneratingDesc(true);
+    // Simulate AI network request delay
+    setTimeout(() => {
+      let desc = 'An essential skill for modern software development and specialized project tasks.';
+      const lowerName = skillName.toLowerCase();
+      if (lowerName.includes('react')) desc = 'A declarative, efficient, and flexible JavaScript library for building user interfaces.';
+      else if (lowerName.includes('claude') || lowerName.includes('ai') || lowerName.includes('gpt')) desc = 'An advanced AI model designed for conversational and analytical tasks.';
+      else if (lowerName.includes('node')) desc = 'A JavaScript runtime built on Chrome\\'s V8 JavaScript engine for scalable server-side applications.';
+      else if (lowerName.includes('python')) desc = 'A high-level, interpreted programming language known for its readability and versatility.';
+      else if (lowerName.includes('sql') || lowerName.includes('database')) desc = 'A domain-specific language used for managing and querying relational databases.';
+      else if (lowerName.includes('agile')) desc = 'A project management methodology focused on iterative development and cross-functional collaboration.';
+      
+      setDescCallback(desc);
+      setIsGeneratingDesc(false);
+      showToast(`AI generated description for "${skillName}"`);
+    }, 1500);
   };
 
   // Copy SQL Script Helper
@@ -5060,13 +5086,25 @@ SkillsMatrix/
                 </div>
                 <div className="form-group" style={{ margin: 0, width: '100%' }}>
                   <label style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Description</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="e.g. Strongly typed language (Optional)" 
-                    value={newSkillDescription}
-                    onChange={(e) => setNewSkillDescription(e.target.value)}
-                  />
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="e.g. Strongly typed language (Optional)" 
+                      value={newSkillDescription}
+                      onChange={(e) => setNewSkillDescription(e.target.value)}
+                    />
+                    <button 
+                      type="button" 
+                      className="btn-secondary" 
+                      onClick={() => handleGenerateAIDescription(newSkillName, setNewSkillDescription)}
+                      disabled={isGeneratingDesc || !newSkillName.trim()}
+                      title="Generate Description with AI"
+                      style={{ padding: '0 0.75rem', height: '42px', flexShrink: 0 }}
+                    >
+                      {isGeneratingDesc ? <Loader2 size={16} className="spinner" /> : <Sparkles size={16} />}
+                    </button>
+                  </div>
                 </div>
                 <button type="submit" className="btn-primary" style={{ height: '42px', width: '100%' }} disabled={loading}>
                   <Plus size={16} />
@@ -5506,13 +5544,25 @@ SkillsMatrix/
                                 />
                               </td>
                               <td style={getColStyle('skill-col-desc', 260)}>
-                                <input 
-                                  type="text" 
-                                  className="form-input compact-input" 
-                                  placeholder="Description"
-                                  value={editSkillDescription}
-                                  onChange={(e) => setEditSkillDescription(e.target.value)}
-                                />
+                                <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                  <input 
+                                    type="text" 
+                                    className="form-input compact-input" 
+                                    placeholder="Description"
+                                    value={editSkillDescription}
+                                    onChange={(e) => setEditSkillDescription(e.target.value)}
+                                  />
+                                  <button 
+                                    type="button" 
+                                    className="btn-secondary" 
+                                    onClick={() => handleGenerateAIDescription(editSkillName, setEditSkillDescription)}
+                                    disabled={isGeneratingDesc || !editSkillName.trim()}
+                                    title="Generate Description with AI"
+                                    style={{ padding: '0 0.5rem', height: '30px', flexShrink: 0 }}
+                                  >
+                                    {isGeneratingDesc ? <Loader2 size={14} className="spinner" /> : <Sparkles size={14} />}
+                                  </button>
+                                </div>
                               </td>
                               <td style={getColStyle('skill-col-actions', 130)}>
                                 <div style={{ display: 'flex', gap: '0.35rem' }}>
@@ -6375,14 +6425,26 @@ SkillsMatrix/
                                                     onChange={(e) => setInlineSkillVendor(e.target.value)}
                                                     style={{ fontSize: '0.78rem', height: '30px' }}
                                                   />
-                                                  <input
-                                                    type="text"
-                                                    className="form-input compact-input"
-                                                    placeholder="Description (Optional)"
-                                                    value={inlineSkillDescription}
-                                                    onChange={(e) => setInlineSkillDescription(e.target.value)}
-                                                    style={{ fontSize: '0.78rem', height: '30px' }}
-                                                  />
+                                                  <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                                    <input
+                                                      type="text"
+                                                      className="form-input compact-input"
+                                                      placeholder="Description (Optional)"
+                                                      value={inlineSkillDescription}
+                                                      onChange={(e) => setInlineSkillDescription(e.target.value)}
+                                                      style={{ fontSize: '0.78rem', height: '30px', flexGrow: 1 }}
+                                                    />
+                                                    <button 
+                                                      type="button" 
+                                                      className="btn-secondary" 
+                                                      onClick={() => handleGenerateAIDescription(inlineSkillName, setInlineSkillDescription)}
+                                                      disabled={isGeneratingDesc || !inlineSkillName.trim()}
+                                                      title="Generate Description with AI"
+                                                      style={{ padding: '0 0.5rem', height: '30px', flexShrink: 0 }}
+                                                    >
+                                                      {isGeneratingDesc ? <Loader2 size={14} className="spinner" /> : <Sparkles size={14} />}
+                                                    </button>
+                                                  </div>
                                                 </div>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', marginTop: '0.2rem' }}>
                                                   <button

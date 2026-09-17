@@ -1039,3 +1039,7 @@ body.is-resizing-col {
 
 
 
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.spinner { animation: spin 1s linear infinite; }
+
