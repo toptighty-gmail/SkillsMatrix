@@ -5100,7 +5100,7 @@ SkillsMatrix/
                       onClick={() => handleGenerateAIDescription(newSkillName, setNewSkillDescription)}
                       disabled={isGeneratingDesc || !newSkillName.trim()}
                       title="Generate Description with AI"
-                      style={{ padding: '0 0.75rem', height: '42px', flexShrink: 0 }}
+                      style={{ padding: '0', height: '42px', width: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                     >
                       {isGeneratingDesc ? <Loader2 size={16} className="spinner" /> : <Sparkles size={16} />}
                     </button>
@@ -5558,7 +5558,7 @@ SkillsMatrix/
                                     onClick={() => handleGenerateAIDescription(editSkillName, setEditSkillDescription)}
                                     disabled={isGeneratingDesc || !editSkillName.trim()}
                                     title="Generate Description with AI"
-                                    style={{ padding: '0 0.5rem', height: '30px', flexShrink: 0 }}
+                                    style={{ padding: '0', height: '30px', width: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                                   >
                                     {isGeneratingDesc ? <Loader2 size={14} className="spinner" /> : <Sparkles size={14} />}
                                   </button>
@@ -6440,7 +6440,7 @@ SkillsMatrix/
                                                       onClick={() => handleGenerateAIDescription(inlineSkillName, setInlineSkillDescription)}
                                                       disabled={isGeneratingDesc || !inlineSkillName.trim()}
                                                       title="Generate Description with AI"
-                                                      style={{ padding: '0 0.5rem', height: '30px', flexShrink: 0 }}
+                                                      style={{ padding: '0', height: '30px', width: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                                                     >
                                                       {isGeneratingDesc ? <Loader2 size={14} className="spinner" /> : <Sparkles size={14} />}
                                                     </button>
