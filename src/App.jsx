@@ -496,7 +496,7 @@ function App() {
       const lowerName = skillName.toLowerCase();
       if (lowerName.includes('react')) desc = 'A declarative, efficient, and flexible JavaScript library for building user interfaces.';
       else if (lowerName.includes('claude') || lowerName.includes('ai') || lowerName.includes('gpt')) desc = 'An advanced AI model designed for conversational and analytical tasks.';
-      else if (lowerName.includes('node')) desc = 'A JavaScript runtime built on Chrome\\'s V8 JavaScript engine for scalable server-side applications.';
+      else if (lowerName.includes('node')) desc = 'A JavaScript runtime built on Chrome\'s V8 JavaScript engine for scalable server-side applications.';
       else if (lowerName.includes('python')) desc = 'A high-level, interpreted programming language known for its readability and versatility.';
       else if (lowerName.includes('sql') || lowerName.includes('database')) desc = 'A domain-specific language used for managing and querying relational databases.';
       else if (lowerName.includes('agile')) desc = 'A project management methodology focused on iterative development and cross-functional collaboration.';
