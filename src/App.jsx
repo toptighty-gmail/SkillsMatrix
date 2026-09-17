@@ -1542,7 +1542,7 @@ SkillsMatrix/
             : null;
 
           if (useDemoMode) {
-            const existing = developers.find(d => d.name.toLowerCase() === fullName.toLowerCase());
+            const existing = developers.find(d => d.name.trim().toLowerCase() === fullName.trim().toLowerCase());
             if (existing) {
               setDevelopers(prev => prev.map(d => d.id === existing.id ? { 
                 ...d, 
@@ -1577,7 +1577,7 @@ SkillsMatrix/
             if (managerName) insertPayload.manager_fullname = managerName;
             if (managerLoginId) insertPayload.manager_company_login_id = managerLoginId;
 
-            const existing = developers.find(d => d.name.toLowerCase() === fullName.toLowerCase());
+            const existing = developers.find(d => d.name.trim().toLowerCase() === fullName.trim().toLowerCase());
             
             let data, error;
             if (existing) {
@@ -1737,7 +1737,7 @@ SkillsMatrix/
           let matchedCat = categories.find(c => c.name.toLowerCase() === (catName || '').toLowerCase());
           
           if (useDemoMode) {
-            const existing = skills.find(s => s.name.toLowerCase() === name.toLowerCase());
+            const existing = skills.find(s => s.name.trim().toLowerCase() === name.trim().toLowerCase());
             if (existing) {
               setSkills(prev => prev.map(s => s.id === existing.id ? { ...s, vendor, description, category_id: matchedCat ? matchedCat.id : s.category_id, category: matchedCat ? matchedCat.name : s.category } : s));
               updatedCount++;
@@ -1751,7 +1751,7 @@ SkillsMatrix/
             if (description) insertPayload.description = description;
             if (matchedCat) insertPayload.category_id = matchedCat.id;
             
-            const existing = skills.find(s => s.name.toLowerCase() === name.toLowerCase());
+            const existing = skills.find(s => s.name.trim().toLowerCase() === name.trim().toLowerCase());
             if (existing) {
               const { data, error } = await supabase.from('skills').update(insertPayload).eq('id', existing.id).select();
               if (error) { lastError = error; continue; }
@@ -1840,7 +1840,7 @@ SkillsMatrix/
           const description = descIdx !== -1 ? cols[descIdx] : '';
           
           if (useDemoMode) {
-            const existing = categories.find(c => c.name.toLowerCase() === name.toLowerCase());
+            const existing = categories.find(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
             if (existing) {
               setCategories(prev => prev.map(c => c.id === existing.id ? { ...c, description } : c));
               updatedCount++;
@@ -1852,7 +1852,7 @@ SkillsMatrix/
             const insertPayload = { name };
             if (description) insertPayload.description = description;
             
-            const existing = categories.find(c => c.name.toLowerCase() === name.toLowerCase());
+            const existing = categories.find(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
             if (existing) {
               const { data, error } = await supabase.from('categories').update(insertPayload).eq('id', existing.id).select();
               if (error) { lastError = error; continue; }
@@ -1941,7 +1941,7 @@ SkillsMatrix/
           const description = descIdx !== -1 ? cols[descIdx] : '';
           
           if (useDemoMode) {
-            const existing = teams.find(t => t.name.toLowerCase() === name.toLowerCase());
+            const existing = teams.find(t => t.name.trim().toLowerCase() === name.trim().toLowerCase());
             if (existing) {
               setTeams(prev => prev.map(t => t.id === existing.id ? { ...t, description } : t));
               updatedCount++;
@@ -1953,7 +1953,7 @@ SkillsMatrix/
             const insertPayload = { name };
             if (description) insertPayload.description = description;
             
-            const existing = teams.find(t => t.name.toLowerCase() === name.toLowerCase());
+            const existing = teams.find(t => t.name.trim().toLowerCase() === name.trim().toLowerCase());
             if (existing) {
               const { data, error } = await supabase.from('teams').update(insertPayload).eq('id', existing.id).select();
               if (error) { lastError = error; continue; }
