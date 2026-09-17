@@ -1755,12 +1755,12 @@ SkillsMatrix/
             if (existing) {
               const { data, error } = await supabase.from('skills').update(insertPayload).eq('id', existing.id).select();
               if (error) { lastError = error; continue; }
-              setSkills(prev => prev.map(s => s.id === existing.id ? data[0] : s));
+              setSkills(prev => prev.map(s => s.id === existing.id ? { ...data[0], category: matchedCat ? matchedCat.name : '' } : s));
               updatedCount++;
             } else {
               const { data, error } = await supabase.from('skills').insert([insertPayload]).select();
               if (error) { lastError = error; continue; }
-              setSkills(prev => [...prev, data[0]]);
+              setSkills(prev => [...prev, { ...data[0], category: matchedCat ? matchedCat.name : '' }]);
               insertedCount++;
             }
           }
