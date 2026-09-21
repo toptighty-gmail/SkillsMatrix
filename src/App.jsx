@@ -484,27 +484,37 @@ function App() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleGenerateAIDescription = (skillName, setDescCallback) => {
-    if (!skillName || !skillName.trim()) {
+  const handleGenerateAIDescription = async (skillName, setDescCallback) => {
+    const trimmedSkillName = skillName?.trim();
+    if (!trimmedSkillName) {
       showToast('Please enter a Skill Name first');
       return;
     }
+
+    if (!supabase) {
+      showToast('Supabase is not configured.');
+      return;
+    }
+
     setIsGeneratingDesc(true);
-    // Simulate AI network request delay
-    setTimeout(() => {
-      let desc = 'An essential skill for modern software development and specialized project tasks.';
-      const lowerName = skillName.toLowerCase();
-      if (lowerName.includes('react')) desc = 'A declarative, efficient, and flexible JavaScript library for building user interfaces.';
-      else if (lowerName.includes('claude') || lowerName.includes('ai') || lowerName.includes('gpt')) desc = 'An advanced AI model designed for conversational and analytical tasks.';
-      else if (lowerName.includes('node')) desc = 'A JavaScript runtime built on Chrome\'s V8 JavaScript engine for scalable server-side applications.';
-      else if (lowerName.includes('python')) desc = 'A high-level, interpreted programming language known for its readability and versatility.';
-      else if (lowerName.includes('sql') || lowerName.includes('database')) desc = 'A domain-specific language used for managing and querying relational databases.';
-      else if (lowerName.includes('agile')) desc = 'A project management methodology focused on iterative development and cross-functional collaboration.';
-      
-      setDescCallback(desc);
+    try {
+      const { data, error } = await supabase.functions.invoke('describe-skill', {
+        body: { skillName: trimmedSkillName },
+      });
+
+      if (error) throw error;
+      if (typeof data?.description !== 'string' || !data.description.trim()) {
+        throw new Error('The description service returned no description.');
+      }
+
+      setDescCallback(data.description.trim());
+      showToast(`AI generated description for "${trimmedSkillName}"`);
+    } catch (error) {
+      console.error('describe-skill request failed:', error);
+      showToast('Unable to generate a description. Please try again.');
+    } finally {
       setIsGeneratingDesc(false);
-      showToast(`AI generated description for "${skillName}"`);
-    }, 1500);
+    }
   };
 
   // Copy SQL Script Helper
